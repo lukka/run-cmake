@@ -1,0 +1,107 @@
+# Copyright (c) 2019 Luca Cappa
+# Released under the term specified in file LICENSE.txt
+# SPDX short identifier: MIT
+
+name: 'run-cmake'
+description: 'Run cmake to build C/C++ dependencies.'
+author: 'Luca Cappa https://github.com/lukka'
+inputs:
+
+  cmakeListsOrSettingsJson:
+    #options
+    #  "CMakeListsTxtBasic": "Using a CMakeLists.txt - Basic configuration",
+    #  "CMakeListsTxtAdvanced": "Using a CMakeLists.txt - Advanced configuration",
+    #  "CMakeSettingsJson": "Using a CMakeSettings.json"
+    default: "CMakeListsTxtBasic"
+    required: false
+    description: "Select between targeting a CMakeLists.txt, or leveraging a CMakeSettings.json file of Visual Studio."
+
+  cmakeListsTxtPath:
+    default: "${{ github.workspace }}/CMakeLists.txt"
+    required: false,
+    description: "Path to CMakeLists.txt"
+
+  cmakeSettingsJsonPath:
+    default: "${{ github.workspace }}//CMakeSettings.json",
+    required: false,
+    description: "Path to CMakeSettings.json",
+
+  cmakeToolchainPath:
+    default: ""
+    required: false
+    description: "Path to toolchain .cmake file."
+
+  useVcpkgToolchainFile:
+    default: false
+    required: false
+    description: "Indicates whether to use vcpkg's CMake toolchain file if VCPKG_ROOT environment variable is defined. If there is already a toolchain.cmake file passed in, that will be passed in with '-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=/path/to/toolchain.cmake'."
+
+  vcpkgTriplet:
+    default: "${{ env.VCPKG_TRIPLET }}"
+    required: false
+    description: "Specify the triplet used with vcpkg. The task 'Run vcpkg' sets the default one in VCPKG_TRIPLET environment variable. Possible values are any file name with no extension present in the vcpkgroot/trplet directory, e.g. x64-linux, x64-windows, x64-osx and so forth."
+
+  cmakeBuildType:
+    default: "Debug"
+    required: false
+    description: "Select the build configuration, typically Debug or Release."
+
+  cmakeGenerator:
+    #options
+    #    "Ninja": "Ninja",
+    #    "UnixMakefiles": "Unix Makefiles",
+    #    "VS16Win64": "Visual Studio 2019 x64",
+    #    "VS16Arm64": "Visual Studio 2019 ARM64",
+    #    "VS16Arm": "Visual Studio 2019 ARM",
+    #    "VS16Win32": "Visual Studio 2019 Win32",
+    #    "VS15Arm64": "Visual Studio 2017 x64",
+    #    "VS15Win64": "Visual Studio 2017 ARM64",
+    #    "VS15Arm": "Visual Studio 2017 ARM",
+    #    "VS15Win32": "Visual Studio 2017 Win32"
+    default: "Ninja"
+    description: "Specify the CMake generator to be used.",
+    required": false
+    
+  buildDirectory:
+    default: "${{ github.workspace }}"
+    required: false
+    description: "Set the build directory, i.e. where CMake generates the build system files. Defaults to `$(Build.ArtifactStagingDirectory)` for CMakeLists.txt, and to `$(Build.ArtifactStagingDirectory)/{name}` for CMakeSettings.json."
+
+  cmakeAppendedArgs:
+    default: ""
+    required: false
+    description: "Provides a mean to provide all the CMake arguments. This is required when using CMakeLists.txt in Advanced mode. For CMakeSettings.json, the arguments are already inferred, but you can append your arguments providing them here."
+
+  configurationRegexFilter:
+    default: ".*",
+    required: true,
+    description: "The regular expression selects which CMakeSettings.json's configuration(s) to build, one or more."
+
+  ninjaPath:
+    default: ""
+    required: false
+    description: "Full path to ninja build tool. If not specified, the one in PATH environment variable will be used. If not available, it will be downloaded from Internet."
+
+  ninjaDownloadUrl:
+    default: ""
+    required: false
+    description: "URL to download ninja build tool from."
+
+  cmakeWrapperCommand:
+    default: ""
+    required: false
+    description: "The shell command that woud setup the environment and then invoke the cmake command. An example is 'emcmake' of Emscripten SDK.",
+
+  buildWithCMake:
+    default: true
+    required: false
+    description: "Indicates whether to run 'cmake --build' after CMake project files have been generated successfully."
+
+  buildWithCMakeArgs:
+    default: ""
+    required": false
+    description: "Additional build arguments such '-j4', '--config Debug', '--clean-first' and so forth. Separate CMake argument to the native make program arguments with '--' ."
+
+  runs:
+  using: 'node12'
+  main: 'dist/index.js'
