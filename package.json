@@ -11,7 +11,7 @@
   "scripts": {
     "pack": "gulp && ncc build build/src/cmake-action.js -o dist",
     "clean": "rm -rf ./build",
-    "compile": "gulp build",
+    "build": "gulp build",
     "lint": "gulp eslint"
   },
   "devDependencies": {
@@ -40,6 +40,7 @@
     "adm-zip": "^0.4.13",
     "strip-json-comments": "^3.0.1",
     "lodash.template": ">=4.5.0",
-    "follow-redirects": "^1.9.0"
+    "follow-redirects": "^1.9.0",
+    "del": "^5.1.0"
   }
 }

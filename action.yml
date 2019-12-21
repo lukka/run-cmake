@@ -3,49 +3,49 @@
 # SPDX short identifier: MIT
 
 name: 'run-cmake'
-description: 'Run cmake to build C/C++ dependencies.'
+description: 'Run CMake to build C/C++ source code.'
 author: 'Luca Cappa https://github.com/lukka'
 inputs:
 
   cmakeListsOrSettingsJson:
-    #options
+    # Different options:
     #  "CMakeListsTxtBasic": "Using a CMakeLists.txt - Basic configuration",
     #  "CMakeListsTxtAdvanced": "Using a CMakeLists.txt - Advanced configuration",
     #  "CMakeSettingsJson": "Using a CMakeSettings.json"
     default: "CMakeListsTxtBasic"
     required: false
     description: "Select between targeting a CMakeLists.txt, or leveraging a CMakeSettings.json file of Visual Studio."
-
+  # For both CMakeListsTxtBasic and CMakeListsTxtAdvanced.
   cmakeListsTxtPath:
     default: "${{ github.workspace }}/CMakeLists.txt"
     required: false,
     description: "Path to CMakeLists.txt"
-
+  # For CMakeSettingsJson.
   cmakeSettingsJsonPath:
-    default: "${{ github.workspace }}//CMakeSettings.json",
+    default: "${{ github.workspace }}//CMakeSettings.json"
     required: false,
-    description: "Path to CMakeSettings.json",
-
+    description: "Path to CMakeSettings.json"
+  # For CMakeListsTxtBasic.
   cmakeToolchainPath:
     default: ""
     required: false
     description: "Path to toolchain .cmake file."
-
+  # Any option.
   useVcpkgToolchainFile:
     default: false
     required: false
-    description: "Indicates whether to use vcpkg's CMake toolchain file if VCPKG_ROOT environment variable is defined. If there is already a toolchain.cmake file passed in, that will be passed in with '-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=/path/to/toolchain.cmake'."
-
+    description: "Indicates whether to use vcpkg's CMake toolchain file if RUNVCPKG_VCPKG_ROOT environment variable is defined. If there is already a toolchain.cmake file passed in, that will be passed in with '-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=/path/to/toolchain.cmake'."
+  # Any option.
   vcpkgTriplet:
-    default: "${{ env.VCPKG_TRIPLET }}"
+    default: "${{ env.RUNVCPKG_VCPKG_TRIPLET }}"
     required: false
-    description: "Specify the triplet used with vcpkg. The task 'Run vcpkg' sets the default one in VCPKG_TRIPLET environment variable. Possible values are any file name with no extension present in the vcpkgroot/trplet directory, e.g. x64-linux, x64-windows, x64-osx and so forth."
-
+    description: "Specify the triplet used with vcpkg. The task 'Run vcpkg' sets the default one in RUNVCPKG_VCPKG_TRIPLET environment variable. Possible values are any file name with no extension present in the vcpkgroot/trplet directory, e.g. x64-linux, x64-windows, x64-osx and so forth."
+  # For CMakeListsTxtBasic
   cmakeBuildType:
     default: "Debug"
     required: false
     description: "Select the build configuration, typically Debug or Release."
-
+  # For CMakeListsTxtBasic.
   cmakeGenerator:
     #options
     #    "Ninja": "Ninja",
@@ -59,49 +59,54 @@ inputs:
     #    "VS15Arm": "Visual Studio 2017 ARM",
     #    "VS15Win32": "Visual Studio 2017 Win32"
     default: "Ninja"
-    description: "Specify the CMake generator to be used.",
+    description: "Specify the CMake generator to be used."
     required": false
-    
+  # Any option.
   buildDirectory:
-    default: "${{ github.workspace }}"
+    # This default must match the '_temp' directory of the runner, i.e. match the return value of the action-lib.getArtifactsDir() function.
+    default: "${{ github.workspace }}/../../_temp"
     required: false
-    description: "Set the build directory, i.e. where CMake generates the build system files. Defaults to `$(Build.ArtifactStagingDirectory)` for CMakeLists.txt, and to `$(Build.ArtifactStagingDirectory)/{name}` for CMakeSettings.json."
-
+    description: "Set the build directory, i.e. where CMake generates the build system files. Defaults to `$(Build.ArtifactStagingDirectory)` for CMakeLists.txt, and to `$(Build.ArtifactStagingDirectory)/<configuration-name>` for CMakeSettings.json."
+  # For CMakeListsTxtAdvanced.
   cmakeAppendedArgs:
     default: ""
     required: false
     description: "Provides a mean to provide all the CMake arguments. This is required when using CMakeLists.txt in Advanced mode. For CMakeSettings.json, the arguments are already inferred, but you can append your arguments providing them here."
-
+  # For CMakeSettingsJson.
   configurationRegexFilter:
-    default: ".*",
+    default: ".*"
     required: true,
     description: "The regular expression selects which CMakeSettings.json's configuration(s) to build, one or more."
-
+  # Any option.
   ninjaPath:
     default: ""
     required: false
     description: "Full path to ninja build tool. If not specified, the one in PATH environment variable will be used. If not available, it will be downloaded from Internet."
-
+  # Any option.
   ninjaDownloadUrl:
     default: ""
     required: false
     description: "URL to download ninja build tool from."
-
+  # Any option.
   cmakeWrapperCommand:
     default: ""
     required: false
-    description: "The shell command that woud setup the environment and then invoke the cmake command. An example is 'emcmake' of Emscripten SDK.",
-
+    description: "The shell command that woud setup the environment and then invoke the cmake command. An example is 'emcmake' of Emscripten SDK."
+  # Any option.
   buildWithCMake:
     default: true
     required: false
     description: "Indicates whether to run 'cmake --build' after CMake project files have been generated successfully."
-
+  # For both CMakeListsTxtBasic and CMakeListsTxtAdvanced.
   buildWithCMakeArgs:
     default: ""
     required": false
     description: "Additional build arguments such '-j4', '--config Debug', '--clean-first' and so forth. Separate CMake argument to the native make program arguments with '--' ."
 
-  runs:
+runs:
   using: 'node12'
-  main: 'dist/index.js'
+  main: './dist/index.js'
+
+branding:
+  icon: 'terminal'  
+  color: 'green'
