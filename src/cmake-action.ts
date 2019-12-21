@@ -13,12 +13,12 @@ async function main(): Promise<number> {
     utils.setBaseLib(actionLib);
     const runner: cmakerunner.CMakeRunner = new cmakerunner.CMakeRunner(actionLib);
     await runner.run();
-    core.info('vcpkgSucceeded');
+    core.info('run-cmake action execution succeeded');
     return 0;
   } catch (err) {
     core.debug('Error: ' + err);
     core.error(err);
-    core.setFailed('vcpkgFailed');
+    core.setFailed('run-cmake action execution failed');
     return -1000;
   }
 }
