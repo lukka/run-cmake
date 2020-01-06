@@ -27,7 +27,7 @@ The documentation of the **'run-cmake"** action is identical to the [**'run-cmak
 
 ### <a id='reference'>Action reference: all input/output parameters</a>
 
-[action.yml](https://github.com/lukka/run-cmake/action.yml)
+[action.yml](https://github.com/lukka/run-cmake/blob/v0/action.yml)
 
 ## <a id="samples">Samples</a>
 
