@@ -1,6 +1,6 @@
 [![Action Status](https://github.com/lukka/run-cmake/workflows/build/badge.svg)](https://github.com/lukka/run-cmake/actions)
 
-# [GitHub Action for CMake](https://marketplace.github.com/run-cmake)
+# [GitHub Action for CMake](https://github.com/marketplace/actions/run-cmake)
 
  ## User Manual
  * [Introduction](#intro)
