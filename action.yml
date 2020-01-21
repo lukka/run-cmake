@@ -8,100 +8,84 @@ author: 'Luca Cappa https://github.com/lukka'
 inputs:
 
   cmakeListsOrSettingsJson:
-    # Different options:
-    #  "CMakeListsTxtBasic": "Using a CMakeLists.txt - Basic configuration",
-    #  "CMakeListsTxtAdvanced": "Using a CMakeLists.txt - Advanced configuration",
-    #  "CMakeSettingsJson": "Using a CMakeSettings.json"
     default: "CMakeListsTxtBasic"
-    required: false
-    description: "Select between targeting a CMakeLists.txt, or leveraging a CMakeSettings.json file of Visual Studio."
-  # For both CMakeListsTxtBasic and CMakeListsTxtAdvanced.
+    required: true
+    description: "Select the mode of the action. There are three different modes:
+      CMakeListsTxtBasic: Run CMake using a CMakeLists.txt - Basic configuration,
+      CMakeListsTxtAdvanced: Run CMake using a CMakeLists.txt - Advanced configuration,
+      CMakeSettingsJson: Run CMake using a CMakeSettings.json of Visual Studio."
   cmakeListsTxtPath:
     default: "${{ github.workspace }}/CMakeLists.txt"
     required: false,
-    description: "Path to CMakeLists.txt"
-  # For CMakeSettingsJson.
+    description: "Path to CMakeLists.txt. Used for both CMakeListsTxtBasic and CMakeListsTxtAdvanced."
   cmakeSettingsJsonPath:
     default: "${{ github.workspace }}//CMakeSettings.json"
     required: false,
-    description: "Path to CMakeSettings.json"
-  # For CMakeListsTxtBasic.
+    description: "Path to CMakeSettings.json. Used for CMakeSettingsJson."
   cmakeToolchainPath:
     default: ""
     required: false
-    description: "Path to toolchain .cmake file."
-  # Any option.
+    description: "Path to toolchain .cmake file. Used for CMakeListsTxtBasic."
   useVcpkgToolchainFile:
     default: false
     required: false
-    description: "Indicates whether to use vcpkg's CMake toolchain file if RUNVCPKG_VCPKG_ROOT environment variable is defined. If there is already a toolchain.cmake file passed in, that will be passed in with '-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=/path/to/toolchain.cmake'."
-  # Any option.
+    description: "Indicates whether to use vcpkg's CMake toolchain file if RUNVCPKG_VCPKG_ROOT environment variable is defined. If there is already a toolchain.cmake file passed in, that will be passed in with '-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=/path/to/toolchain.cmake'. Used by any mode."
   vcpkgTriplet:
     default: "${{ env.RUNVCPKG_VCPKG_TRIPLET }}"
     required: false
-    description: "Specify the triplet used with vcpkg. The task 'Run vcpkg' sets the default one in RUNVCPKG_VCPKG_TRIPLET environment variable. Possible values are any file name with no extension present in the vcpkgroot/trplet directory, e.g. x64-linux, x64-windows, x64-osx and so forth."
-  # For CMakeListsTxtBasic
+    description: "Specify the triplet used with vcpkg. The task 'Run vcpkg' sets the default one in RUNVCPKG_VCPKG_TRIPLET environment variable. Possible values are any file name with no extension present in the vcpkgroot/trplet directory, e.g. x64-linux, x64-windows, x64-osx and so forth. Used by any mode."
   cmakeBuildType:
     default: "Debug"
     required: false
-    description: "Select the build configuration, typically Debug or Release."
-  # For CMakeListsTxtBasic.
+    description: "Select the build configuration, typically Debug or Release. Used by CMakeListsTxtBasic."
   cmakeGenerator:
-    #options
-    #    "Ninja": "Ninja",
-    #    "UnixMakefiles": "Unix Makefiles",
-    #    "VS16Win64": "Visual Studio 2019 x64",
-    #    "VS16Arm64": "Visual Studio 2019 ARM64",
-    #    "VS16Arm": "Visual Studio 2019 ARM",
-    #    "VS16Win32": "Visual Studio 2019 Win32",
-    #    "VS15Arm64": "Visual Studio 2017 x64",
-    #    "VS15Win64": "Visual Studio 2017 ARM64",
-    #    "VS15Arm": "Visual Studio 2017 ARM",
-    #    "VS15Win32": "Visual Studio 2017 Win32"
     default: "Ninja"
-    description: "Specify the CMake generator to be used."
-    required": false
-  # Any option.
+    description: "Specify the CMake generator to use. Possible values:
+        Ninja: Ninja,
+        UnixMakefiles: Unix Makefiles,
+        VS16Win64: Visual Studio 2019 x64,
+        VS16Arm64: Visual Studio 2019 ARM64,
+        VS16Arm: Visual Studio 2019 ARM,
+        VS16Win32: Visual Studio 2019 Win32,
+        VS15Arm64: Visual Studio 2017 x64,
+        VS15Win64: Visual Studio 2017 ARM64,
+        VS15Arm: Visual Studio 2017 ARM,
+        VS15Win32: Visual Studio 2017 Win32. 
+        Used by CMakeListsTxtBasic."
+    required: false
   buildDirectory:
     # This default must match the '_temp' directory of the runner, i.e. match the return value of the action-lib.getArtifactsDir() function.
     default: "${{ github.workspace }}/../../_temp"
     required: false
-    description: "Set the build directory, i.e. where CMake generates the build system files. Defaults to `$(Build.ArtifactStagingDirectory)` for CMakeLists.txt, and to `$(Build.ArtifactStagingDirectory)/<configuration-name>` for CMakeSettings.json."
-  # For CMakeListsTxtAdvanced.
+    description: "Set the build directory, i.e. where CMake generates the build system files. Defaults to `$(Build.ArtifactStagingDirectory)` for CMakeLists.txt, and to `$(Build.ArtifactStagingDirectory)/<configuration-name>` for CMakeSettings.json. Used by any mode."
   cmakeAppendedArgs:
     default: ""
     required: false
-    description: "Provides a mean to provide all the CMake arguments. This is required when using CMakeLists.txt in Advanced mode. For CMakeSettings.json, the arguments are already inferred, but you can append your arguments providing them here."
-  # For CMakeSettingsJson.
+    description: "Provides a mean to provide all the CMake arguments. This is required when using CMakeLists.txt in Advanced mode. For CMakeSettings.json, the arguments are already inferred, but you can append your arguments providing them here.  Used by CMakeListsTxtAdvanced."
   configurationRegexFilter:
     default: ".*"
     required: true,
-    description: "The regular expression selects which CMakeSettings.json's configuration(s) to build, one or more."
-  # Any option.
+    description: "The regular expression selects which CMakeSettings.json's configuration(s) to build, one or more. Used by CMakeSettingsJson."
   ninjaPath:
     default: ""
     required: false
-    description: "Full path to ninja build tool. If not specified, the one in PATH environment variable will be used. If not available, it will be downloaded from Internet."
-  # Any option.
+    description: "Full path to ninja build tool. If not specified, the one in PATH environment variable will be used. If not available, it will be downloaded from Internet. Used by any mode."
   ninjaDownloadUrl:
     default: ""
     required: false
-    description: "URL to download ninja build tool from."
-  # Any option.
+    description: "URL to download ninja build tool from. Used by any mode."
   cmakeWrapperCommand:
     default: ""
     required: false
-    description: "The shell command that woud setup the environment and then invoke the cmake command. An example is 'emcmake' of Emscripten SDK."
-  # Any option.
+    description: "The shell command that woud setup the environment and then invoke the cmake command. An example is 'emcmake' of Emscripten SDK. Used by any mode."
   buildWithCMake:
     default: true
     required: false
-    description: "Indicates whether to run 'cmake --build' after CMake project files have been generated successfully."
-  # For both CMakeListsTxtBasic and CMakeListsTxtAdvanced.
+    description: "Indicates whether to run 'cmake --build' after CMake project files have been generated successfully. Used by any mode."
   buildWithCMakeArgs:
     default: ""
     required": false
-    description: "Additional build arguments such '-j4', '--config Debug', '--clean-first' and so forth. Separate CMake argument to the native make program arguments with '--' ."
+    description: "Additional parameters for both CMake and the make program (e.g. ninja or make).  Separate CMake arguments to the native make program arguments with '--', such as: '--clean-first --config Debug -- -j0'. Used by both CMakeListsTxtBasic and CMakeListsTxtAdvanced"
 
 runs:
   using: 'node12'

@@ -1,0 +1,168 @@
+{
+    "environments": [
+      { "OPENALDIR": "C:\\\\Program Files (x86)\\\\OpenAL 1.1 SDK\\" }
+    ],
+    "configurations": [
+      {
+        "name": "x86-Debug",
+        "generator": "Ninja",
+        "configurationType": "Debug",
+        "inheritEnvironments": [ "msvc_x86" ],
+        "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+        "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+        "cmakeCommandArgs": "",
+        "buildCommandArgs": "-v",
+        "ctestCommandArgs": ""
+      },
+      {
+        "name": "x86-Release",
+        "generator": "Ninja",
+        "configurationType": "RelWithDebInfo",
+        "inheritEnvironments": [ "msvc_x86" ],
+        "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+        "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+        "cmakeCommandArgs": "",
+        "buildCommandArgs": "-v",
+        "ctestCommandArgs": ""
+      },
+      {
+        "name": "x64-Debug",
+        "generator": "Ninja",
+        "configurationType": "Debug",
+        "inheritEnvironments": [ "msvc_x64_x64" ],
+        "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+        "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+        "cmakeCommandArgs": "",
+        "buildCommandArgs": "-v",
+        "ctestCommandArgs": ""
+      },
+      {
+        "name": "x64-Release",
+        "generator": "Ninja",
+        "configurationType": "RelWithDebInfo",
+        "inheritEnvironments": [ "msvc_x64_x64" ],
+        "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+        "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+        "cmakeCommandArgs": "",
+        "buildCommandArgs": "-v",
+        "ctestCommandArgs": ""
+      },
+      {
+        "name": "Linux-Debug",
+        "generator": "Unix Makefiles",
+        "remoteMachineName": "::1",
+        "configurationType": "Debug",
+        "remoteCMakeListsRoot": "/var/tmp/src/${workspaceHash}/${name}/",
+        "cmakeExecutable": "/usr/bin/cmake",
+        "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+        "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+        "remoteBuildRoot": "/var/tmp/build/${workspaceHash}/build/${name}/",
+        "remoteInstallRoot": "/var/tmp/build/${workspaceHash}/install/${name}",
+        "remoteCopySources": true,
+        "remoteCopySourcesOutputVerbosity": "Normal",
+        "remoteCopySourcesMethod": "rsync",
+        "cmakeCommandArgs": "",
+        "buildCommandArgs": "-j",
+        "ctestCommandArgs": "",
+        "inheritEnvironments": [ "linux_x64" ]
+      },
+      {
+        "name": "Linux-Release",
+        "generator": "Unix Makefiles",
+        "remoteMachineName": "::1",
+        "configurationType": "Release",
+        "remoteCMakeListsRoot": "/var/tmp/src/${workspaceHash}/${name}",
+        "cmakeExecutable": "/usr/local/bin/cmake",
+        "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+        "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+        "remoteBuildRoot": "/var/tmp/build/${workspaceHash}/build/${name}",
+        "remoteInstallRoot": "/var/tmp/build/${workspaceHash}/install/${name}",
+        "remoteCopySources": true,
+        "remoteCopySourcesOutputVerbosity": "Normal",
+        "remoteCopySourcesMethod": "rsync",
+        "cmakeCommandArgs": "",
+        "buildCommandArgs": "-j",
+        "ctestCommandArgs": "",
+        "inheritEnvironments": [ "linux_x64" ]
+      },
+      {
+        "environments": [
+        ],
+        "name": "Emscripten Windows Ninja",
+        "generator": "Ninja",
+        "configurationType": "Debug",
+        "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+        "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+        "cmakeCommandArgs": "-DCMAKE_TOOLCHAIN_FILE=${env.EMSCRIPTEN}/cmake/Modules/Platform/Emscripten.cmake",
+        "buildCommandArgs": "",
+        "ctestCommandArgs": ""
+      },
+      {
+        "environments": [
+          {
+            "namespace": "",
+            "CONFIGURATION": "Debug"
+          }
+        ],
+        "name": "Emscripten Linux Debug",
+        "generator": "Unix Makefiles",
+        "configurationType": "Debug",
+        "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+        "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+        "remoteMachineName": "::1",
+        "remoteCMakeListsRoot": "/var/tmp/src/${workspaceHash}/${name}/",
+        "cmakeExecutable": "/usr/bin/cmake",
+        "remoteBuildRoot": "/var/tmp/build/${workspaceHash}/build/${name}/",
+        "remoteInstallRoot": "/var/tmp/build/${workspaceHash}/install/${name}",
+        "remoteCopySources": true,
+        "remoteCopySourcesOutputVerbosity": "Normal",
+        "remoteCopySourcesMethod": "rsync",
+        "cmakeCommandArgs": "-DUSE_WASM=1 -DCMAKE_TOOLCHAIN_FILE=$EMSCRIPTEN/cmake/Modules/Platform/Emscripten.cmake -DCMAKE_BUILD_TYPE=${CONF}",
+        "buildCommandArgs": "VERBOSE=1",
+        "ctestCommandArgs": "",
+        "inheritEnvironments": [ "linux_x64" ]
+      },
+      {
+        "environments": [
+          {
+            "namespace": "",
+            "CONFIGURATION": "Release"
+          }
+        ],
+        "name": "Emscripten Windows Release MakeExe",
+        "generator": "Unix Makefiles",
+        "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+        "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+        "cmakeExecutable": "/usr/bin/cmake",
+        "cmakeCommandArgs": "-DUSE_WASM=1 -DCMAKE_MAKE_PROGRAM=D:\\temp\\make-3.81-bin\\bin\\make.exe -DCMAKE_TOOLCHAIN_FILE=${env.EMSCRIPTEN}/cmake/Modules/Platform/Emscripten.cmake -DCMAKE_BUILD_TYPE=${CONFIGURATION}",
+        "buildCommandArgs": "VERBOSE=1 -j",
+        "ctestCommandArgs": "",
+        "inheritEnvironments": [ "linux_x86" ]
+      },
+  
+      {
+        "environments": [
+          {
+            "namespace": "",
+            "CONFIGURATION": "Release"
+          }
+        ],
+        "name": "Emscripten Linux Release",
+        "generator": "Unix Makefiles",
+        "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+        "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+        "remoteMachineName": "::1",
+        "remoteCMakeListsRoot": "/var/tmp/src/${workspaceHash}/${name}/",
+        "cmakeExecutable": "/usr/bin/cmake",
+        "remoteBuildRoot": "/var/tmp/build/${workspaceHash}/build/${name}/",
+        "remoteInstallRoot": "/var/tmp/build/${workspaceHash}/install/${name}",
+        "remoteCopySources": true,
+        "remoteCopySourcesOutputVerbosity": "Normal",
+        "remoteCopySourcesMethod": "rsync",
+        "cmakeCommandArgs": "-DCMAKE_TOOLCHAIN_FILE=$EMSCRIPTEN/cmake/Modules/Platform/Emscripten.cmake -DCMAKE_BUILD_TYPE=${CONFIGURATION}",
+        "buildCommandArgs": "VERBOSE=1",
+        "ctestCommandArgs": "",
+        "inheritEnvironments": [ "linux_x64" ]
+      }
+    ]
+  }
