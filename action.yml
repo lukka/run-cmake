@@ -17,15 +17,15 @@ inputs:
   cmakeListsTxtPath:
     default: "${{ github.workspace }}/CMakeLists.txt"
     required: false,
-    description: "Path to CMakeLists.txt. Used for both CMakeListsTxtBasic and CMakeListsTxtAdvanced."
+    description: "Path to CMakeLists.txt. Used for both CMakeListsTxtBasic and CMakeListsTxtAdvanced modes."
   cmakeSettingsJsonPath:
     default: "${{ github.workspace }}//CMakeSettings.json"
     required: false,
-    description: "Path to CMakeSettings.json. Used for CMakeSettingsJson."
+    description: "Path to CMakeSettings.json. Used for CMakeSettingsJson mode."
   cmakeToolchainPath:
     default: ""
     required: false
-    description: "Path to toolchain .cmake file. Used for CMakeListsTxtBasic."
+    description: "Path to toolchain .cmake file. Used for CMakeListsTxtBasic mode."
   useVcpkgToolchainFile:
     default: false
     required: false
@@ -37,7 +37,7 @@ inputs:
   cmakeBuildType:
     default: "Debug"
     required: false
-    description: "Select the build configuration, typically Debug or Release. Used by CMakeListsTxtBasic."
+    description: "Select the build configuration, typically Debug or Release. Used by CMakeListsTxtBasic mode."
   cmakeGenerator:
     default: "Ninja"
     description: "Specify the CMake generator to use. Possible values:
@@ -51,7 +51,7 @@ inputs:
         VS15Win64: Visual Studio 2017 ARM64,
         VS15Arm: Visual Studio 2017 ARM,
         VS15Win32: Visual Studio 2017 Win32. 
-        Used by CMakeListsTxtBasic."
+        Used by CMakeListsTxtBasic mode."
     required: false
   buildDirectory:
     # This default must match the '_temp' directory of the runner, i.e. match the return value of the action-lib.getArtifactsDir() function.
@@ -61,11 +61,11 @@ inputs:
   cmakeAppendedArgs:
     default: ""
     required: false
-    description: "Provides a mean to provide all the CMake arguments. This is required when using CMakeLists.txt in Advanced mode. For CMakeSettings.json, the arguments are already inferred, but you can append your arguments providing them here.  Used by CMakeListsTxtAdvanced."
+    description: "Provides a mean to provide all the CMake arguments. This is required when using CMakeLists.txt in Advanced mode. For CMakeSettings.json, the arguments are already inferred, but you can append your arguments providing them here.  Used by CMakeListsTxtAdvanced and CMakeSettingsJson modes."
   configurationRegexFilter:
     default: ".*"
     required: true,
-    description: "The regular expression selects which CMakeSettings.json's configuration(s) to build, one or more. Used by CMakeSettingsJson."
+    description: "The regular expression selects which CMakeSettings.json's configuration(s) to build, one or more. Used by CMakeSettingsJson mode."
   ninjaPath:
     default: ""
     required: false
@@ -85,7 +85,7 @@ inputs:
   buildWithCMakeArgs:
     default: ""
     required": false
-    description: "Additional parameters for both CMake and the make program (e.g. ninja or make).  Separate CMake arguments to the native make program arguments with '--', such as: '--clean-first --config Debug -- -j0'. Used by both CMakeListsTxtBasic and CMakeListsTxtAdvanced"
+    description: "Additional parameters for both CMake and the make program (e.g. ninja or make).  Separate CMake arguments to the native make program arguments with '--', such as: '--clean-first --config Debug -- -j0'. Used by both CMakeListsTxtBasic and CMakeListsTxtAdvanced modes"
 
 runs:
   using: 'node12'
