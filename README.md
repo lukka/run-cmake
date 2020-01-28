@@ -2,7 +2,8 @@
 
 # [The **run-cmake** action for using CMake on GitHub](https://github.com/marketplace/actions/run-cmake)
 
-Build C++ software with the multi-platform **run-cmake**, that runs [CMake](https://cmake.org) on GitHub workflows. . Samples provided use [GitHub hosted runners](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/virtual-environments-for-github-hosted-runners) and [Caching](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/caching-dependencies-to-speed-up-workflows).
+Build C++ software with the multi-platform **run-cmake** action, that runs [CMake](https://cmake.org) on GitHub workflows. Samples provided use [GitHub hosted runners](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/virtual-environments-for-github-hosted-runners) and [Caching](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/caching-dependencies-to-speed-up-workflows).
+
 A good companion is the [run-vcpkg](https://github.com/marketplace/actions/run-vcpkg) action.
 
  ## User Manual
@@ -82,11 +83,11 @@ To build, pack and test:
  
  > jest
 
-Basic tests are implemented in this repository, which run the action on a simple [smoke tests](https://en.wikipedia.org/wiki/Smoke_testing_(software)).
+[Smoke tests](https://en.wikipedia.org/wiki/Smoke_testing_(software)) are implemented in this repository, which tun the action on all platforms.
 
-Complex tests are executed in the builds of [CppBuildTasks](https://github.com/lukka/CppBuildTasks/) repository that shares the same engine in the [run-cmake-vcpkg-action-libs](https://github.com/lukka/run-cmake-vcpkg-action-libs) submodule.
+Rigorous tests are executed in the builds of [CppBuildTasks](https://github.com/lukka/CppBuildTasks/) repository that shares the same engine in the [run-cmake-vcpkg-action-libs](https://github.com/lukka/run-cmake-vcpkg-action-libs) submodule.
 
-It would be desirable to have extensive unit tests implemented in this repository as well.
+It would be desirable to have extensive tests implemented in this repository as well.
 
 Validation tests on various scenarios are run using the workflows of the [Samples](#samples).
 
