@@ -19254,13 +19254,13 @@ class CMakeRunner {
                     let cmake;
                     if (this.sourceScript) {
                         cmake = this.tl.tool(this.sourceScript);
-                        cmakeArgs += yield this.tl.which('cmake', true);
+                        cmakeArgs += (yield this.tl.which('cmake', true)) + " ";
                     }
                     else {
                         cmake = this.tl.tool(yield this.tl.which('cmake', true));
                     }
                     if (this.taskMode == TaskModeType.CMakeListsTxtAdvanced) {
-                        cmakeArgs = (_a = this.appendedArgs, (_a !== null && _a !== void 0 ? _a : ""));
+                        cmakeArgs += (_a = this.appendedArgs, (_a !== null && _a !== void 0 ? _a : ""));
                         // If Ninja is required, specify the path to it.
                         if (utils.isNinjaGenerator(cmakeArgs)) {
                             if (!utils.isMakeProgram(cmakeArgs)) {
