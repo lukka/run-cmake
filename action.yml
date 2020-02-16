@@ -29,7 +29,7 @@ inputs:
   useVcpkgToolchainFile:
     default: false
     required: false
-    description: "Indicates whether to use vcpkg's CMake toolchain file if RUNVCPKG_VCPKG_ROOT environment variable is defined. If there is already a toolchain.cmake file passed in, that will be passed in with '-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=/path/to/toolchain.cmake'. Used by any mode."
+    description: "Indicates whether to use vcpkg's CMake toolchain file if RUNVCPKG_VCPKG_ROOT environment variable is defined, for example by a previous run-vcpkg action execution. If the variable is defined, its content would be passed with '-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=<RUNVCPKG_VCPKG_ROOT>/scripts/buildsystems/vcpkg.cmake'. Used by any mode."
   vcpkgTriplet:
     default: "${{ env.RUNVCPKG_VCPKG_TRIPLET }}"
     required: false
