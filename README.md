@@ -97,6 +97,10 @@ project: [OPM/ResInsight](https://github.com/OPM/ResInsight/) | |
 |----------|-------|
 [Windows, Linux](https://github.com/OPM/ResInsight/blob/dev/.github/workflows/main.yml) | [![CI](https://github.com/OPM/ResInsight/workflows/ResInsight%20Build/badge.svg)](https://github.com/OPM/ResInsight/actions)
 
+project: [iovw/Notepad--](https://github.com/iovw/Notepad--/) | | 
+|----------|-------|
+[Windows](https://github.com/iovw/Notepad--/blob/master/.github/workflows/ccpp.yml) | [![CI](https://github.com/iovw/Notepad--/workflows/C/C++%20CI/badge.svg)](https://github.com/iovw/Notepad--/actions)
+
 # Developers information
 
 ## Prerequisites
