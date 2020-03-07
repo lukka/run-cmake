@@ -89,10 +89,13 @@ project: [CppOpenGLWebAssemblyCMake](https://github.com/lukka/CppOpenGLWebAssemb
 |----------|-------|
 [WASM, Linux, macOS](https://github.com/lukka/CppOpenGLWebAssemblyCMake/blob/master/.github/workflows/build.yml) | [![Actions Status](https://github.com/lukka/CppOpenGLWebAssemblyCMake/workflows/hosted-wasm-macos-linux/badge.svg)](https://github.com/lukka/CppOpenGLWebAssemblyCMake/actions)
 
-
 project: [quiniouben/vban](https://github.com/quiniouben/vban/) | | 
 |----------|-------|
 [Windows, Linux](https://github.com/quiniouben/vban/blob/master/.github/workflows/main.yml) | [![CI](https://github.com/quiniouben/vban/workflows/CI/badge.svg)](https://github.com/quiniouben/vban/actions)
+
+project: [OPM/ResInsight](https://github.com/OPM/ResInsight/) | | 
+|----------|-------|
+[Windows, Linux](https://github.com/OPM/ResInsight/blob/dev/.github/workflows/main.yml) | [![CI](https://github.com/OPM/ResInsight/workflows/ResInsight%20Build/badge.svg)](https://github.com/OPM/ResInsight/actions)
 
 # Developers information
 
