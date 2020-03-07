@@ -1,4 +1,4 @@
-[![Action Status](https://github.com/lukka/run-cmake/workflows/build/badge.svg)](https://github.com/lukka/run-cmake/actions)
+[![Action Status](https://github.com/lukka/run-cmake/workflows/build-test/badge.svg)](https://github.com/lukka/run-cmake/actions)
 
 # [The **run-cmake** action for using CMake on GitHub](https://github.com/marketplace/actions/run-cmake)
 
