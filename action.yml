@@ -84,8 +84,12 @@ inputs:
     description: "Indicates whether to run 'cmake --build' after CMake project files have been generated successfully. Used by any mode."
   buildWithCMakeArgs:
     default: ""
-    required": false
+    required: false
     description: "Additional parameters for both CMake and the make program (e.g. ninja or make).  Separate CMake arguments to the native make program arguments with '--', such as: '--clean-first --config Debug -- -j0'. Used by both CMakeListsTxtBasic and CMakeListsTxtAdvanced modes"
+  useShell:
+    default: true
+    required: false
+    description: "Specify which shell to be used when launching commands. 'true' means the default shell is used. 'false' means no shell is used. It also can be an absolute with arguments of the shell to spawn commands with."
 
 runs:
   using: 'node12'

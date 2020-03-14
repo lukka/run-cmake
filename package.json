@@ -32,13 +32,14 @@
     "ts-node": "^8.5.4",
     "ts-jest": "^24.2.0",
     "typescript": "^3.7.3",
-    "jest-circus": "^24.9.0"
+    "jest-circus": "^24.9.0",
+    "minimist": ">=1.2.2"
   },
   "dependencies": {
-    "@actions/core": "^1.2.0",
-    "@actions/exec": "^1.0.1",
-    "@actions/github": "^1.1.0",
-    "@actions/io": "^1.0.1",
+    "@actions/core": "^1.2.3",
+    "@actions/exec": "^1.0.3",
+    "@actions/github": "^2.1.1",
+    "@actions/io": "^1.0.2",
     "@types/adm-zip": "^0.4.32",
     "@types/follow-redirects": "^1.8.0",
     "@types/jest": "^24.9.0",
