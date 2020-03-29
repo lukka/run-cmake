@@ -14,17 +14,14 @@ const testScript = path.join(__dirname, '..', 'dist', 'index.js');;
 
 jest.setTimeout(15 * 1000)
 
-function envTest(useShell: boolean, envVarValue: string): void {
-    const MYENVVAR = "MYENVVAR";
+function envTest(useShell: boolean, envVarValue?: string): void {
+    process.env["MYENVVAR"] = envVarValue;
+    const MYENVVAR = (process.platform === 'win32') ? "%MYENVVAR%" : "$MYENVVAR";
     process.env.INPUT_USESHELL = useShell ? 'true' : 'false';
-    if (envVarValue)
-        process.env[MYENVVAR] = envVarValue;
-    else
-        delete process.env.MYENVVAR;
     process.env.INPUT_CMAKELISTSORSETTINGSJSON = 'CMakeListsTxtAdvanced';
     process.env.INPUT_BUILDDIRECTORY = buildDirectory;
     process.env.INPUT_CMAKELISTSTXTPATH = path.join(assetDirectory, 'CMakeLists.txt');
-    process.env.INPUT_CMAKEAPPENDEDARGS = `-G$${MYENVVAR}`;
+    process.env.INPUT_CMAKEAPPENDEDARGS = `%MYENVVAR% -GNinja -DCMAKE_TOOLCHAIN_FILE=${MYENVVAR}`;
     process.env.INPUT_BUILDWITHCMAKE = 'true';
     const options: cp.ExecSyncOptions = {
         env: process.env,
@@ -44,6 +41,7 @@ describe('run-cmake tests', () => {
             .forEach((key) => {
                 delete process.env[key];
             });
+        process.env.GITHUB_WORKSPACE = assetDirectory;
     }, 300000);
 
     afterAll(async () => {
@@ -86,7 +84,9 @@ describe('run-cmake tests', () => {
     test('basic test for CMakeSettingsJson', () => {
         process.env.INPUT_CMAKELISTSORSETTINGSJSON = 'CMakeSettingsJson';
         process.env.INPUT_BUILDDIRECTORY = buildDirectory;
-        process.env.INPUT_CONFIGURATIONREGEXFILTER = '.*inux.*';
+        process.platform === "win32" ? 
+            process.env.INPUT_CONFIGURATIONREGEXFILTER = 'x64.*':
+            process.env.INPUT_CONFIGURATIONREGEXFILTER = '.*inux.*';
         process.env.INPUT_CMAKESETTINGSJSONPATH = path.join(assetDirectory, 'CMakeSettings.json');
         process.env.INPUT_BUILDWITHCMAKE = 'true';
         process.env.INPUT_USESHELL = 'true';
@@ -101,11 +101,11 @@ describe('run-cmake tests', () => {
     test('basic test for environment variables in input, no shell', () => {
         // Since building will be using an environment variable that will not be
         // resolved since not being run inside a shell, it will throw.
-        expect(() => envTest(false, "Ninja")).toThrow();
+        expect(() => envTest(false, undefined)).toThrow();
     });
 
     test('basic test for environment variables in input, with shell', () => {
-        envTest(true, "Ninja");
+        envTest(true, path.join(assetDirectory, "toolchain.cmake"));
     });
 
 });

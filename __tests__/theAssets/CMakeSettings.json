@@ -48,6 +48,18 @@
         "ctestCommandArgs": ""
       },
       {
+        "name": "x64-Release-VS",
+        "generator": "Visual Studio 16 2019 Win64",
+        "configurationType": "Release",
+        "inheritEnvironments": [
+            "msvc_x64"
+        ],
+        "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+        "cmakeCommandArgs": "--verbose",
+        "buildCommandArgs": "-ds",
+        "ctestCommandArgs": ""
+    },
+      {
         "name": "Linux-Debug",
         "generator": "Unix Makefiles",
         "remoteMachineName": "::1",

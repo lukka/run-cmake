@@ -1058,19 +1058,19 @@ const path = __webpack_require__(622);
 const cp = __webpack_require__(129);
 function escapeCmdCommand(command) {
     command = command.trim();
-    if (/^\".*\"$/.test(command))
+    if (!/^\".*\"$/.test(command))
         command = `\"${command}\"`;
     return command;
 }
 function escapeShArgument(argument) {
-    // escape blanks: blank -> \blank
-    return argument.replace(' ', '\\ ');
+    // escape all blanks: blank -> \blank
+    return argument.replace(/ /g, '\\ ');
 }
 function escapeCmdExeArgument(argument) {
     // \" -> \\"
     argument = argument.replace(/(\\*)"/g, '$1$1\\"');
     // \$ -> \\$
-    argument = argument.replace(/(\\*)$/, '$1$1');
+    argument = argument.replace(/(\\*)$/g, '$1$1');
     // All other backslashes occur literally.
     // Quote the whole thing:
     argument = `"${argument}"`;
@@ -1099,14 +1099,14 @@ function escapeCmdExeArgument(argument) {
  * @static
  * @param {string} commandPath
  * @param {string[]} args
- * @param {baselib.ExecOptions} [options2]
+ * @param {baselib.ExecOptions} [execOptions]
  * @returns {Promise<number>}
  * @memberof ActionLib
  */
-function exec(commandPath, args, options2) {
-    var _a, _b, _c, _d, _e;
+function exec(commandPath, args, execOptions) {
+    var _a, _b, _c, _d, _e, _f, _g;
     return __awaiter(this, void 0, void 0, function* () {
-        core.debug(`exec(${commandPath}, ${JSON.stringify(args)}, {${(_a = options2) === null || _a === void 0 ? void 0 : _a.cwd}})<<`);
+        core.debug(`exec(${commandPath}, ${JSON.stringify(args)}, {${(_a = execOptions) === null || _a === void 0 ? void 0 : _a.cwd}})<<`);
         let useShell = false;
         if (process.env.INPUT_USESHELL === 'true')
             useShell = true;
@@ -1119,8 +1119,8 @@ function exec(commandPath, args, options2) {
         const opts = {
             shell: useShell,
             windowsVerbatimArguments: false,
-            cwd: (_b = options2) === null || _b === void 0 ? void 0 : _b.cwd,
-            env: (_c = options2) === null || _c === void 0 ? void 0 : _c.env,
+            cwd: (_b = execOptions) === null || _b === void 0 ? void 0 : _b.cwd,
+            env: (_c = execOptions) === null || _c === void 0 ? void 0 : _c.env,
             stdio: "pipe",
         };
         let args2 = args;
@@ -1139,21 +1139,21 @@ function exec(commandPath, args, options2) {
             commandPath = escapeShArgument(commandPath);
         }
         args = args2;
-        core.debug(`exec(${commandPath}, ${JSON.stringify(args)}, {cwd=${(_d = opts) === null || _d === void 0 ? void 0 : _d.cwd}, shell=${(_e = opts) === null || _e === void 0 ? void 0 : _e.shell}})`);
+        core.debug(`cp.spawn(${commandPath}, ${JSON.stringify(args)}, {cwd=${(_d = opts) === null || _d === void 0 ? void 0 : _d.cwd}, shell=${(_e = opts) === null || _e === void 0 ? void 0 : _e.shell}, path=${JSON.stringify((_g = (_f = opts) === null || _f === void 0 ? void 0 : _f.env) === null || _g === void 0 ? void 0 : _g.PATH)}})`);
         return new Promise((resolve, reject) => {
             const child = cp.spawn(`${commandPath}`, args, opts);
-            if (options2 && child.stdout) {
+            if (execOptions && child.stdout) {
                 child.stdout.on('data', (chunk) => {
-                    if (options2.listeners && options2.listeners.stdout) {
-                        options2.listeners.stdout(chunk);
+                    if (execOptions.listeners && execOptions.listeners.stdout) {
+                        execOptions.listeners.stdout(chunk);
                     }
                     process.stdout.write(chunk);
                 });
             }
-            if (options2 && child.stderr) {
+            if (execOptions && child.stderr) {
                 child.stderr.on('data', (chunk) => {
-                    if (options2.listeners && options2.listeners.stderr) {
-                        options2.listeners.stderr(chunk);
+                    if (execOptions.listeners && execOptions.listeners.stderr) {
+                        execOptions.listeners.stderr(chunk);
                     }
                     process.stdout.write(chunk);
                 });
@@ -1242,7 +1242,9 @@ class ToolRunner {
                 stderr: (data) => void {
                 // Nothing to do.
                 },
-                stdline: (data) => void {},
+                stdline: (data) => void {
+                // Nothing to do.
+                },
                 errline: (data) => void {
                 // Nothing to do.
                 },
@@ -1322,15 +1324,19 @@ class ActionLib {
         this.debug(`getBoolInput(${name}, ${isRequired}) -> '${value}'`);
         return value;
     }
-    getPathInput(name, isRequired) {
-        const value = core.getInput(name, { required: isRequired });
+    getPathInput(name, isRequired, checkExists) {
+        const value = path.resolve(core.getInput(name, { required: isRequired }));
         this.debug(`getPathInput(${name}) -> '${value}'`);
+        if (checkExists) {
+            if (!fs.existsSync(value))
+                throw new Error(`input path '${value}' for '${name}' does not exist.`);
+        }
         return value;
     }
     isFilePathSupplied(name) {
         var _a, _b;
         // normalize paths
-        const pathValue = this.resolve((_a = this.getPathInput(name, false), (_a !== null && _a !== void 0 ? _a : '')));
+        const pathValue = this.resolve((_a = this.getPathInput(name, false, false), (_a !== null && _a !== void 0 ? _a : '')));
         const repoRoot = this.resolve((_b = process.env.GITHUB_WORKSPACE, (_b !== null && _b !== void 0 ? _b : '')));
         const isSupplied = pathValue !== repoRoot;
         this.debug(`isFilePathSupplied(s file path=('${name}') -> '${isSupplied}'`);
@@ -9782,7 +9788,8 @@ class CMakeSettingsJsonRunner {
             if (filteredConfigurations.length === 0) {
                 throw new Error(`No matching configuration for filter: '${this.configurationFilter}'.`);
             }
-            const exitCodes = [];
+            // Store and restore the PATH env var for each configuration, to prevent side effects among configurations.
+            const originalPath = process.env.PATH;
             for (const configuration of filteredConfigurations) {
                 console.log(`Processing configuration: '${configuration.name}'.`);
                 let cmakeArgs = [];
@@ -9803,8 +9810,8 @@ class CMakeSettingsJsonRunner {
                 // The build directory value specified in CMakeSettings.json is ignored.
                 // This is because:
                 // 1. you want to build targeting an empty binary directory;
-                // 2. the default in CMakeSettings.json is under the source tree, which is not cleared upon each build run.
-                // Instead if users did not provided a specific path, force it to
+                // 2. the default location in CMakeSettings.json is under the source tree, whose content is not deleted upon each build run.
+                // Instead if users did not provided a specific path, let's force it to
                 // "$(Build.ArtifactStagingDirectory)/{name}" which should be empty.
                 console.log(`Note: the run-cmake task always ignore the 'buildRoot' value specified in the CMakeSettings.json (buildRoot=${configuration.buildDir}). User can override the default value by setting the '${globals.buildDirectory}' input.`);
                 const artifactsDir = yield this.tl.getArtifactsDir();
@@ -9814,7 +9821,9 @@ class CMakeSettingsJsonRunner {
                     evaledConf.buildDir = path.join(artifactsDir, configuration.name);
                 }
                 else {
-                    evaledConf.buildDir = this.buildDir;
+                    // Append the configuration name to the user provided build directory. This is mandatory to have each 
+                    // build in a different directory.
+                    evaledConf.buildDir = path.join(this.buildDir, configuration.name);
                 }
                 console.log(`Overriding build directory to: '${evaledConf.buildDir}'`);
                 cmakeArgs = cmakeArgs.concat(evaledConf.getGeneratorArgs().filter(this.notEmpty));
@@ -9873,6 +9882,8 @@ class CMakeSettingsJsonRunner {
                     //only. They need to be put after '--', otherwise would be passed to directly to cmake.
                     ` ${evaledConf.getGeneratorBuildArgs()} -- ${evaledConf.makeArgs}`, options);
                 }
+                // Restore the original PATH environment variable.
+                process.env.PATH = originalPath;
             }
         });
     }
@@ -10793,7 +10804,7 @@ function injectEnvVariables(vcpkgRoot, triplet) {
         const map = parseVcpkgEnvOutput(output.stdout);
         for (const key in map) {
             if (key.toUpperCase() === "PATH") {
-                process.env[key] = map[key] + path.delimiter + process.env[key];
+                process.env[key] = process.env[key] + path.delimiter + map[key];
             }
             else {
                 process.env[key] = map[key];
@@ -19311,8 +19322,10 @@ class CMakeRunner {
             throw new Error(`ctor(): invalid task mode '${mode}'.`);
         }
         this.taskMode = taskMode;
-        this.cmakeSettingsJsonPath = (_b = this.tl.getPathInput(globals.cmakeSettingsJsonPath, this.taskMode === TaskModeType.CMakeSettingsJson), (_b !== null && _b !== void 0 ? _b : ""));
-        this.cmakeListsTxtPath = (_c = this.tl.getPathInput(globals.cmakeListsTxtPath, this.taskMode === TaskModeType.CMakeListsTxtBasic), (_c !== null && _c !== void 0 ? _c : ""));
+        let required = this.taskMode === TaskModeType.CMakeSettingsJson;
+        this.cmakeSettingsJsonPath = (_b = this.tl.getPathInput(globals.cmakeSettingsJsonPath, required, required), (_b !== null && _b !== void 0 ? _b : ""));
+        required = this.taskMode !== TaskModeType.CMakeSettingsJson;
+        this.cmakeListsTxtPath = (_c = this.tl.getPathInput(globals.cmakeListsTxtPath, required, required), (_c !== null && _c !== void 0 ? _c : ""));
         this.buildDir = (_d = this.tl.getInput(globals.buildDirectory, this.taskMode === TaskModeType.CMakeListsTxtBasic), (_d !== null && _d !== void 0 ? _d : ""));
         this.appendedArgs = (_e = this.tl.getInput(globals.cmakeAppendedArgs, false), (_e !== null && _e !== void 0 ? _e : ""));
         this.configurationFilter = (_f = this.tl.getInput(globals.configurationRegexFilter, false), (_f !== null && _f !== void 0 ? _f : ""));
@@ -19329,7 +19342,7 @@ class CMakeRunner {
         this.ninjaDownloadUrl = (_k = this.tl.getInput(globals.ninjaDownloadUrl, false), (_k !== null && _k !== void 0 ? _k : ""));
         this.doBuild = (_l = this.tl.getBoolInput(globals.buildWithCMake, false), (_l !== null && _l !== void 0 ? _l : false));
         this.doBuildArgs = (_m = this.tl.getInput(globals.buildWithCMakeArgs, false), (_m !== null && _m !== void 0 ? _m : ""));
-        this.cmakeSourceDir = path.dirname((_o = this.cmakeListsTxtPath, (_o !== null && _o !== void 0 ? _o : "")));
+        this.cmakeSourceDir = path.dirname((_o = path.resolve(this.cmakeListsTxtPath), (_o !== null && _o !== void 0 ? _o : "")));
         this.useVcpkgToolchainFile = (_p = this.tl.getBoolInput(globals.useVcpkgToolchainFile, false), (_p !== null && _p !== void 0 ? _p : false));
         this.cmakeBuildType = (_q = this.tl.getInput(globals.cmakeBuildType, this.taskMode === TaskModeType.CMakeListsTxtBasic), (_q !== null && _q !== void 0 ? _q : ""));
         this.vcpkgTriplet = (_r = this.tl.getInput(globals.vcpkgTriplet, false), (_r !== null && _r !== void 0 ? _r : ""));
@@ -19381,7 +19394,9 @@ class CMakeRunner {
                             }
                         }
                         if (this.appendedArgs) {
+                            this.tl.debug(`Parsing additional CMake args: ${this.appendedArgs}`);
                             const addedArgs = cmake._argStringToArray(this.appendedArgs);
+                            this.tl.debug(`Appending args: ${JSON.stringify(addedArgs)}`);
                             cmakeArgs = [...cmakeArgs, ...addedArgs];
                         }
                     }
