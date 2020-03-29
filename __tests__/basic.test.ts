@@ -14,16 +14,21 @@ const testScript = path.join(__dirname, '..', 'dist', 'index.js');;
 
 jest.setTimeout(15 * 1000)
 
-function envTest(): void {
+function envTest(useShell: boolean, envVarValue: string): void {
+    const MYENVVAR = "MYENVVAR";
+    process.env.INPUT_USESHELL = useShell ? 'true' : 'false';
+    if (envVarValue)
+        process.env[MYENVVAR] = envVarValue;
+    else
+        delete process.env.MYENVVAR;
     process.env.INPUT_CMAKELISTSORSETTINGSJSON = 'CMakeListsTxtAdvanced';
     process.env.INPUT_BUILDDIRECTORY = buildDirectory;
     process.env.INPUT_CMAKELISTSTXTPATH = path.join(assetDirectory, 'CMakeLists.txt');
-    process.env.MYENVVAR = '-DMYENVVAR=myenvvar';
+    process.env.INPUT_CMAKEAPPENDEDARGS = `-G$${MYENVVAR}`;
     process.env.INPUT_BUILDWITHCMAKE = 'true';
-    process.env.INPUT_CMAKEAPPENDEDARGS = '$MYENVVAR';
     const options: cp.ExecSyncOptions = {
         env: process.env,
-        stdio: "inherit"
+        stdio: "inherit",
     };
     console.log(cp.execSync(`node ${testScript}`, options)?.toString());
 }
@@ -94,15 +99,13 @@ describe('run-cmake tests', () => {
     })
 
     test('basic test for environment variables in input, no shell', () => {
-        process.env.INPUT_USESHELL = 'false';
-        // Since building will be using an environment variable that willnot be
-        // resolved since not run inside a shell, it will throw.
-        expect(envTest).toThrow();
+        // Since building will be using an environment variable that will not be
+        // resolved since not being run inside a shell, it will throw.
+        expect(() => envTest(false, "Ninja")).toThrow();
     });
 
     test('basic test for environment variables in input, with shell', () => {
-        process.env.INPUT_USESHELL = 'true';
-        envTest();
+        envTest(true, "Ninja");
     });
 
 });

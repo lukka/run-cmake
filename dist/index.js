@@ -1056,6 +1056,12 @@ const io = __webpack_require__(1);
 const fs = __webpack_require__(747);
 const path = __webpack_require__(622);
 const cp = __webpack_require__(129);
+function escapeCmdCommand(command) {
+    command = command.trim();
+    if (/^\".*\"$/.test(command))
+        command = `\"${command}\"`;
+    return command;
+}
 function escapeShArgument(argument) {
     // escape blanks: blank -> \blank
     return argument.replace(' ', '\\ ');
@@ -1122,16 +1128,20 @@ function exec(commandPath, args, options2) {
             (process.platform === 'win32' && typeof useShell === 'boolean' && useShell === true)) {
             args2 = [];
             args.map((arg) => args2.push(escapeCmdExeArgument(arg)));
+            // When using a shell, the command must be enclosed by quotes to handle blanks correctly.
+            commandPath = escapeCmdCommand(commandPath);
         }
         else if (((typeof useShell === 'string' && !useShell.includes('cmd')) ||
             (process.platform !== 'win32' && typeof useShell === 'boolean' && useShell === true))) {
             args2 = [];
             args.map((arg) => args2.push(escapeShArgument(arg)));
+            // When using a Unix shell, blanks needs to be escaped in the command as well.
+            commandPath = escapeShArgument(commandPath);
         }
         args = args2;
-        core.debug(`exec("${commandPath}", ${JSON.stringify(args)}, {cwd=${(_d = opts) === null || _d === void 0 ? void 0 : _d.cwd}, shell=${(_e = opts) === null || _e === void 0 ? void 0 : _e.shell}})`);
+        core.debug(`exec(${commandPath}, ${JSON.stringify(args)}, {cwd=${(_d = opts) === null || _d === void 0 ? void 0 : _d.cwd}, shell=${(_e = opts) === null || _e === void 0 ? void 0 : _e.shell}})`);
         return new Promise((resolve, reject) => {
-            const child = cp.spawn(`"${commandPath}"`, args, opts);
+            const child = cp.spawn(`${commandPath}`, args, opts);
             if (options2 && child.stdout) {
                 child.stdout.on('data', (chunk) => {
                     if (options2.listeners && options2.listeners.stdout) {
@@ -1377,7 +1387,7 @@ class ActionLib {
         return __awaiter(this, void 0, void 0, function* () {
             core.debug(`"which(${name})<<`);
             const filePath = yield io.which(name, required);
-            console.log(filePath);
+            console.log(`tool: ${filePath}`);
             core.debug(`"which(${name}) >> ${filePath}`);
             return filePath;
         });
@@ -10782,11 +10792,12 @@ function injectEnvVariables(vcpkgRoot, triplet) {
         }
         const map = parseVcpkgEnvOutput(output.stdout);
         for (const key in map) {
-            //if (key.toUpperCase() === "PATH") {
-            //  process.env[key] += path.delimiter + map[key];
-            //} else {
-            process.env[key] = map[key];
-            //}
+            if (key.toUpperCase() === "PATH") {
+                process.env[key] = map[key] + path.delimiter + process.env[key];
+            }
+            else {
+                process.env[key] = map[key];
+            }
             baseLib.debug(`set ${key}=${process.env[key]}`);
         }
     });
