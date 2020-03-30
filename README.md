@@ -51,7 +51,7 @@ It is __highly recommended__ to [use vcpkg as a submodule](https://github.com/lu
         cmakeListsTxtPath: '${{ github.workspace }}/cmakesettings.json/CMakeLists.txt'
         useVcpkgToolchainFile: true
         buildDirectory: '${{ runner.workspace }}/b//unixmakefiles'
-        cmakeAppendedArgs: '-G "Ninja" '
+        cmakeAppendedArgs: '-GNinja '
         # Or build multiple configurations out of a CMakeSettings.json file created with Visual Studio.
         # cmakeListsOrSettingsJson: CMakeSettingsJson
         # cmakeSettingsJsonPath: '${{ github.workspace }}/cmakesettings.json/CMakeSettings.json'

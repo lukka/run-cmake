@@ -1050,36 +1050,162 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const baselib = __webpack_require__(42);
 const core = __webpack_require__(470);
-const exec = __webpack_require__(986);
+const toolrunner = __webpack_require__(9);
 const ioutil = __webpack_require__(672);
 const io = __webpack_require__(1);
 const fs = __webpack_require__(747);
 const path = __webpack_require__(622);
+const cp = __webpack_require__(129);
+function escapeCmdCommand(command) {
+    command = command.trim();
+    if (!/^\".*\"$/.test(command))
+        command = `\"${command}\"`;
+    return command;
+}
+function escapeShArgument(argument) {
+    // escape all blanks: blank -> \blank
+    return argument.replace(/ /g, '\\ ');
+}
+function escapeCmdExeArgument(argument) {
+    // \" -> \\"
+    argument = argument.replace(/(\\*)"/g, '$1$1\\"');
+    // \$ -> \\$
+    argument = argument.replace(/(\\*)$/g, '$1$1');
+    // All other backslashes occur literally.
+    // Quote the whole thing:
+    argument = `"${argument}"`;
+    // Prefix with caret ^ any character to be escaped, as in:
+    // http://www.robvanderwoude.com/escapechars.php
+    // Do not escape %, let variable be passed in as is.
+    const metaCharsRegExp = /([()\][!^"`<>&|;, *?])/g;
+    argument = argument.replace(metaCharsRegExp, '^$1');
+    return argument;
+}
+/**
+ * Run a command with arguments in a shell.
+ * Note: -G Ninja or -GNinja? The former works witha shell, the second does not work without a shell.
+ * e.spawnSync('cmake', ['-GNinja', '.'], {shell:false, stdio:'inherit', cwd:'/Users/git_repos/cmake-task-tests/'}) -> Configuring done.
+ * e.spawnSync('cmake', ['-G Ninja', '.'], {shell:false, stdio:'inherit', cwd:'/Users/git_repos/cmake-task-tests/'}) -> CMake Error: Could not create named generator  Ninja
+ * e.spawnSync('cmake', ['-G Ninja', '.'], {shell:true, stdio:'inherit', cwd:'/Users/git_repos/cmake-task-tests/'}) -> -- Configuring done
+ * e.spawnSync('cmake', ['-GNinja', '.'], {shell:true, stdio:'inherit', cwd:'/Users/git_repos/cmake-task-tests/'}) -> -- Configuring done
+ * Hence the caller of this function is always using no spaces in between arguments.
+ * Exception is arbitrary text coming from the user, which will hit this problem when not useing a shell.
+ *
+ * Other corner cases:
+ * e.spawnSync('cmake', ['-GUnix Makefiles', '.'], {shell:true, stdio:'inherit', cwd:'/Users/git_repos/cmake-task-tests/'}) -> CMake Error: Could not create named generator Unix
+ * e.spawnSync('cmake', ['-GUnix\ Makefiles', '.'], {shell:false, stdio:'inherit', cwd:'/Users/git_repos/cmake-task-tests/'}) -> -- Configuring done
+ > e.spawnSync('cmake', ['-GUnix Makefiles', '.'], {shell:false, stdio:'inherit', cwd:'/Users/git_repos/cmake-task-tests/'}) -> -- Configuring done
+ e.spawnSync('cmake', ['-G Unix Makefiles', '.'], {shell:false, stdio:'inherit', cwd:'/Users/git_repos/cmake-task-tests/'}) -> CMake Error: Could not create named generator  Unix Makefiles
+ * @static
+ * @param {string} commandPath
+ * @param {string[]} args
+ * @param {baselib.ExecOptions} [execOptions]
+ * @returns {Promise<number>}
+ * @memberof ActionLib
+ */
+function exec(commandPath, args, execOptions) {
+    var _a, _b, _c, _d, _e, _f, _g;
+    return __awaiter(this, void 0, void 0, function* () {
+        core.debug(`exec(${commandPath}, ${JSON.stringify(args)}, {${(_a = execOptions) === null || _a === void 0 ? void 0 : _a.cwd}})<<`);
+        let useShell = false;
+        if (process.env.INPUT_USESHELL === 'true')
+            useShell = true;
+        else if (process.env.INPUT_USESHELL === 'false') {
+            useShell = false;
+        }
+        else if (process.env.INPUT_USESHELL) {
+            useShell = process.env.INPUT_USESHELL;
+        }
+        const opts = {
+            shell: useShell,
+            windowsVerbatimArguments: false,
+            cwd: (_b = execOptions) === null || _b === void 0 ? void 0 : _b.cwd,
+            env: (_c = execOptions) === null || _c === void 0 ? void 0 : _c.env,
+            stdio: "pipe",
+        };
+        let args2 = args;
+        if ((typeof useShell === 'string' && useShell.includes('cmd')) ||
+            (process.platform === 'win32' && typeof useShell === 'boolean' && useShell === true)) {
+            args2 = [];
+            args.map((arg) => args2.push(escapeCmdExeArgument(arg)));
+            // When using a shell, the command must be enclosed by quotes to handle blanks correctly.
+            commandPath = escapeCmdCommand(commandPath);
+        }
+        else if (((typeof useShell === 'string' && !useShell.includes('cmd')) ||
+            (process.platform !== 'win32' && typeof useShell === 'boolean' && useShell === true))) {
+            args2 = [];
+            args.map((arg) => args2.push(escapeShArgument(arg)));
+            // When using a Unix shell, blanks needs to be escaped in the command as well.
+            commandPath = escapeShArgument(commandPath);
+        }
+        args = args2;
+        core.debug(`cp.spawn(${commandPath}, ${JSON.stringify(args)}, {cwd=${(_d = opts) === null || _d === void 0 ? void 0 : _d.cwd}, shell=${(_e = opts) === null || _e === void 0 ? void 0 : _e.shell}, path=${JSON.stringify((_g = (_f = opts) === null || _f === void 0 ? void 0 : _f.env) === null || _g === void 0 ? void 0 : _g.PATH)}})`);
+        return new Promise((resolve, reject) => {
+            const child = cp.spawn(`${commandPath}`, args, opts);
+            if (execOptions && child.stdout) {
+                child.stdout.on('data', (chunk) => {
+                    if (execOptions.listeners && execOptions.listeners.stdout) {
+                        execOptions.listeners.stdout(chunk);
+                    }
+                    process.stdout.write(chunk);
+                });
+            }
+            if (execOptions && child.stderr) {
+                child.stderr.on('data', (chunk) => {
+                    if (execOptions.listeners && execOptions.listeners.stderr) {
+                        execOptions.listeners.stderr(chunk);
+                    }
+                    process.stdout.write(chunk);
+                });
+            }
+            child.on('error', (error) => {
+                core.warning(`${error}`);
+                // Wait one second to get still some output.
+                setTimeout(() => {
+                    reject(error);
+                    child.removeAllListeners();
+                }, 1000);
+            });
+            child.on('exit', (exitCode) => {
+                core.debug(`Exit code ${exitCode} received from command '${commandPath}'`);
+                child.removeAllListeners();
+                resolve(exitCode);
+            });
+            child.on('close', (exitCode) => {
+                core.debug(`STDIO streams have closed for command '${commandPath}'`);
+                child.removeAllListeners();
+                resolve(exitCode);
+            });
+        });
+    });
+}
 class ToolRunner {
     constructor(path) {
         this.path = path;
-        this.args = [];
+        this.arguments = [];
+    }
+    _argStringToArray(text) {
+        return this.__argStringToArray(text);
     }
     exec(options) {
-        const options2 = this.convertExecOptions(options);
-        return exec.exec(`"${this.path}"`, this.args, options2);
+        return exec(this.path, this.arguments, options);
     }
     line(val) {
-        this.args = this.args.concat(this.argStringToArray(val));
+        this.arguments = this.arguments.concat(toolrunner.argStringToArray(val));
     }
     arg(val) {
         if (val instanceof Array) {
-            this.args = this.args.concat(val);
+            this.arguments = this.arguments.concat(val);
         }
         else if (typeof (val) === 'string') {
-            this.args = this.args.concat(val.trim());
+            this.arguments = this.arguments.concat(val.trim());
         }
     }
     execSync(options) {
         return __awaiter(this, void 0, void 0, function* () {
             let stdout = "";
             let stderr = "";
-            let options2 = undefined;
+            let options2;
             if (options) {
                 options2 = this.convertExecOptions(options);
                 options2.listeners = {
@@ -1091,7 +1217,7 @@ class ToolRunner {
                     }
                 };
             }
-            const exitCode = yield exec.exec(`"${this.path}"`, this.args, options2);
+            const exitCode = yield exec(this.path, this.arguments, options2);
             const res2 = {
                 code: exitCode,
                 stdout: stdout,
@@ -1116,7 +1242,9 @@ class ToolRunner {
                 stderr: (data) => void {
                 // Nothing to do.
                 },
-                stdline: (data) => void {},
+                stdline: (data) => void {
+                // Nothing to do.
+                },
                 errline: (data) => void {
                 // Nothing to do.
                 },
@@ -1129,7 +1257,7 @@ class ToolRunner {
         result.errStream = options.errStream || process.stderr;
         return result;
     }
-    argStringToArray(argString) {
+    __argStringToArray(argString) {
         const args = [];
         let inQuotes = false;
         let escaped = false;
@@ -1181,6 +1309,7 @@ class ToolRunner {
         }
         return args;
     }
+    ;
 }
 exports.ToolRunner = ToolRunner;
 class ActionLib {
@@ -1195,15 +1324,19 @@ class ActionLib {
         this.debug(`getBoolInput(${name}, ${isRequired}) -> '${value}'`);
         return value;
     }
-    getPathInput(name) {
-        const value = core.getInput(name);
+    getPathInput(name, isRequired, checkExists) {
+        const value = path.resolve(core.getInput(name, { required: isRequired }));
         this.debug(`getPathInput(${name}) -> '${value}'`);
+        if (checkExists) {
+            if (!fs.existsSync(value))
+                throw new Error(`input path '${value}' for '${name}' does not exist.`);
+        }
         return value;
     }
     isFilePathSupplied(name) {
         var _a, _b;
         // normalize paths
-        const pathValue = this.resolve((_a = this.getPathInput(name), (_a !== null && _a !== void 0 ? _a : '')));
+        const pathValue = this.resolve((_a = this.getPathInput(name, false, false), (_a !== null && _a !== void 0 ? _a : '')));
         const repoRoot = this.resolve((_b = process.env.GITHUB_WORKSPACE, (_b !== null && _b !== void 0 ? _b : '')));
         const isSupplied = pathValue !== repoRoot;
         this.debug(`isFilePathSupplied(s file path=('${name}') -> '${isSupplied}'`);
@@ -1241,12 +1374,13 @@ class ActionLib {
         return new ToolRunner(name);
     }
     exec(path, args, options) {
-        return Promise.resolve(exec.exec(`"${path}"`, args, options));
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield exec(path, args, options);
+        });
     }
     execSync(path, args, options) {
         return __awaiter(this, void 0, void 0, function* () {
-            // Note: the exec.exec() fails to launch an executable that contains blanks in its path/name. Sorrounding with double quotes is mandatory.
-            const exitCode = yield exec.exec(`"${path}"`, args, options);
+            const exitCode = yield exec(`"${path}"`, args, options);
             const res2 = {
                 code: exitCode,
                 stdout: "",
@@ -1257,7 +1391,11 @@ class ActionLib {
     }
     which(name, required) {
         return __awaiter(this, void 0, void 0, function* () {
-            return io.which(name, required);
+            core.debug(`"which(${name})<<`);
+            const filePath = yield io.which(name, required);
+            console.log(`tool: ${filePath}`);
+            core.debug(`"which(${name}) >> ${filePath}`);
+            return filePath;
         });
     }
     rmRF(path) {
@@ -1277,7 +1415,10 @@ class ActionLib {
         fs.writeFileSync(path, content);
     }
     resolve(apath) {
-        return path.resolve(apath);
+        core.debug(`"resolve(${apath})<<`);
+        const resolvedPath = path.resolve(apath);
+        core.debug(`"resolve(${apath})>> '${resolvedPath})'`);
+        return resolvedPath;
     }
     stats(path) {
         return fs.statSync(path);
@@ -3476,12 +3617,12 @@ class NinjaDownloader {
             if (utils.isLinux() || utils.isDarwin()) {
                 yield utils.getBaseLib().exec('chmod', ['+x', ninjaPath]);
             }
-            return ninjaPath;
+            return `${ninjaPath}`;
         });
     }
 }
 exports.NinjaDownloader = NinjaDownloader;
-NinjaDownloader.baseUrl = 'https://github.com/ninja-build/ninja/releases/download/v1.9.0';
+NinjaDownloader.baseUrl = 'https://github.com/ninja-build/ninja/releases/download/v1.10.0';
 function retrieveNinjaPath(ninjaPath, ninjaDownloadUrl) {
     return __awaiter(this, void 0, void 0, function* () {
         const baseLib = utils.getBaseLib();
@@ -9121,17 +9262,24 @@ exports.escape = escape;
 
 "use strict";
 
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const os = __webpack_require__(87);
+const os = __importStar(__webpack_require__(87));
 /**
  * Commands
  *
  * Command Format:
- *   ##[name key=value;key=value]message
+ *   ::name key=value,key=value::message
  *
  * Examples:
- *   ##[warning]This is the user warning message
- *   ##[set-secret name=mypassword]definitelyNotAPassword!
+ *   ::warning::This is the message
+ *   ::set-env name=MY_VAR::some value
  */
 function issueCommand(command, properties, message) {
     const cmd = new Command(command, properties, message);
@@ -9167,30 +9315,28 @@ class Command {
                         else {
                             cmdStr += ',';
                         }
-                        // safely append the val - avoid blowing up when attempting to
-                        // call .replace() if message is not a string for some reason
-                        cmdStr += `${key}=${escape(`${val || ''}`)}`;
+                        cmdStr += `${key}=${escapeProperty(val)}`;
                     }
                 }
             }
         }
-        cmdStr += CMD_STRING;
-        // safely append the message - avoid blowing up when attempting to
-        // call .replace() if message is not a string for some reason
-        const message = `${this.message || ''}`;
-        cmdStr += escapeData(message);
+        cmdStr += `${CMD_STRING}${escapeData(this.message)}`;
         return cmdStr;
     }
 }
 function escapeData(s) {
-    return s.replace(/\r/g, '%0D').replace(/\n/g, '%0A');
+    return (s || '')
+        .replace(/%/g, '%25')
+        .replace(/\r/g, '%0D')
+        .replace(/\n/g, '%0A');
 }
-function escape(s) {
-    return s
+function escapeProperty(s) {
+    return (s || '')
+        .replace(/%/g, '%25')
         .replace(/\r/g, '%0D')
         .replace(/\n/g, '%0A')
-        .replace(/]/g, '%5D')
-        .replace(/;/g, '%3B');
+        .replace(/:/g, '%3A')
+        .replace(/,/g, '%2C');
 }
 //# sourceMappingURL=command.js.map
 
@@ -9240,7 +9386,7 @@ class CMakeVariable {
         console.log(`Defining CMake variable: [name:'${name}', value='${value}', type='${type}'].`);
     }
     toString() {
-        return `-D${this.name}:${this.type}="${this.value}"`;
+        return `-D${this.name}:${this.type}=${this.value}`;
     }
 }
 class Variable {
@@ -9353,6 +9499,7 @@ class Configuration {
     }
     getGeneratorArgs() {
         let gen = this.generator;
+        let arch;
         if (gen.includes("Visual Studio")) {
             // for VS generators, add the -A value
             let architectureParam = undefined;
@@ -9370,16 +9517,16 @@ class Configuration {
                     architectureParam = architecture[1];
                 }
             }
-            gen = `-G \"${gen.trim()}\"`;
+            gen = `-G${gen.trim()}`;
             if (architectureParam) {
-                gen += ` -A ${architectureParam}`;
+                arch = `-A${architectureParam.trim()}`;
             }
         }
         else {
             // All non-VS generators are passed as is.
-            gen = `-G "${gen}"`;
+            gen = `-G${gen.trim()}`;
         }
-        return gen;
+        return [gen, arch];
     }
     toString() {
         return `{conf: ${this.name}:${this.type}}`;
@@ -9418,7 +9565,7 @@ class PropertyEvaluator {
         var _a;
         if (env != null) {
             for (const v of env.variables) {
-                if (v.name == variable) {
+                if (v.name === variable) {
                     return _a = v.value, (_a !== null && _a !== void 0 ? _a : "");
                 }
             }
@@ -9467,7 +9614,7 @@ class PropertyEvaluator {
         const variables = [];
         while (true) {
             const match = this.varExp.exec(str);
-            if (match == null)
+            if (match === null)
                 break;
             if (match.length > 1) {
                 const varname = match[1];
@@ -9496,7 +9643,7 @@ class PropertyEvaluator {
                         this.tl.debug(`Warning: could not evaluate '${variable.toString()}'`);
                     }
                 }
-                if (resolved == false) {
+                if (resolved === false) {
                     break;
                 }
             }
@@ -9513,10 +9660,10 @@ function parseEnvironments(envsJson) {
         let name = Configuration.unnamedEnvironmentName;
         const variables = [];
         for (const envi in env) {
-            if (envi == 'environment') {
+            if (envi === 'environment') {
                 name = env[envi];
             }
-            else if (envi == 'namespace') {
+            else if (envi === 'namespace') {
                 namespace = env[envi];
             }
             else {
@@ -9638,18 +9785,19 @@ class CMakeSettingsJsonRunner {
                 return regex.test(configuration.name);
             });
             this.tl.debug(`CMakeSettings.json filtered configurations: '${String(filteredConfigurations)}'."`);
-            if (filteredConfigurations.length == 0) {
+            if (filteredConfigurations.length === 0) {
                 throw new Error(`No matching configuration for filter: '${this.configurationFilter}'.`);
             }
-            const exitCodes = [];
+            // Store and restore the PATH env var for each configuration, to prevent side effects among configurations.
+            const originalPath = process.env.PATH;
             for (const configuration of filteredConfigurations) {
                 console.log(`Processing configuration: '${configuration.name}'.`);
-                let cmakeArgs = ' ';
+                let cmakeArgs = [];
                 // Search for CMake tool and run it
                 let cmake;
                 if (this.sourceScript) {
                     cmake = this.tl.tool(this.sourceScript);
-                    cmakeArgs += yield this.tl.which('cmake', true);
+                    cmakeArgs.push(yield this.tl.which('cmake', true));
                 }
                 else {
                     cmake = this.tl.tool(yield this.tl.which('cmake', true));
@@ -9662,8 +9810,8 @@ class CMakeSettingsJsonRunner {
                 // The build directory value specified in CMakeSettings.json is ignored.
                 // This is because:
                 // 1. you want to build targeting an empty binary directory;
-                // 2. the default in CMakeSettings.json is under the source tree, which is not cleared upon each build run.
-                // Instead if users did not provided a specific path, force it to
+                // 2. the default location in CMakeSettings.json is under the source tree, whose content is not deleted upon each build run.
+                // Instead if users did not provided a specific path, let's force it to
                 // "$(Build.ArtifactStagingDirectory)/{name}" which should be empty.
                 console.log(`Note: the run-cmake task always ignore the 'buildRoot' value specified in the CMakeSettings.json (buildRoot=${configuration.buildDir}). User can override the default value by setting the '${globals.buildDirectory}' input.`);
                 const artifactsDir = yield this.tl.getArtifactsDir();
@@ -9673,39 +9821,46 @@ class CMakeSettingsJsonRunner {
                     evaledConf.buildDir = path.join(artifactsDir, configuration.name);
                 }
                 else {
-                    evaledConf.buildDir = this.buildDir;
+                    // Append the configuration name to the user provided build directory. This is mandatory to have each 
+                    // build in a different directory.
+                    evaledConf.buildDir = path.join(this.buildDir, configuration.name);
                 }
                 console.log(`Overriding build directory to: '${evaledConf.buildDir}'`);
-                cmakeArgs += " " + evaledConf.getGeneratorArgs();
+                cmakeArgs = cmakeArgs.concat(evaledConf.getGeneratorArgs().filter(this.notEmpty));
                 if (utils.isNinjaGenerator(cmakeArgs)) {
                     const ninjaPath = yield ninjalib.retrieveNinjaPath(this.ninjaPath, this.ninjaDownloadUrl);
-                    cmakeArgs += ` -DCMAKE_MAKE_PROGRAM="${ninjaPath}"`;
+                    cmakeArgs.push(`-DCMAKE_MAKE_PROGRAM=${ninjaPath}`);
                 }
-                if (!this.isMultiConfigGenerator(configuration.generator)) {
-                    cmakeArgs += ` -DCMAKE_BUILD_TYPE="${evaledConf.type}"`;
+                if (!this.isMultiConfigGenerator(evaledConf.generator)) {
+                    cmakeArgs.push(`-DCMAKE_BUILD_TYPE=${evaledConf.type}`);
                 }
                 for (const variable of evaledConf.variables) {
-                    cmakeArgs += ' ' + variable.toString();
+                    cmakeArgs.push(variable.toString());
                 }
-                if (configuration.cmakeToolchain) {
-                    cmakeArgs += ` -DCMAKE_TOOLCHAIN_FILE="${evaledConf.cmakeToolchain}"`;
+                if (evaledConf.cmakeToolchain) {
+                    cmakeArgs.push(`-DCMAKE_TOOLCHAIN_FILE=${evaledConf.cmakeToolchain}`);
                 }
                 // Use vcpkg toolchain if requested.
                 if (this.useVcpkgToolchain === true) {
                     cmakeArgs = yield utils.injectVcpkgToolchain(cmakeArgs, this.vcpkgTriplet);
                 }
+                // Add the current args in the tool, add
+                // custom args, and reset the args.
+                for (const arg of cmakeArgs) {
+                    cmake.arg(arg);
+                }
+                cmakeArgs = [];
                 // Add CMake args from CMakeSettings.json file.
-                cmakeArgs += " " + evaledConf.cmakeArgs;
+                cmake.line(evaledConf.cmakeArgs);
                 // Set the source directory.
-                cmakeArgs += " " + path.dirname(this.cmakeSettingsJson);
+                cmake.arg(path.dirname(this.cmakeSettingsJson));
                 // Run CNake with the given arguments.
                 if (!evaledConf.buildDir) {
                     throw new Error("Build directory is not specified.");
                 }
                 // Append user provided CMake arguments.
-                cmakeArgs += " " + this.appendedCMakeArgs;
+                cmake.line(this.appendedCMakeArgs);
                 yield this.tl.mkdirP(evaledConf.buildDir);
-                cmake.line(cmakeArgs);
                 const options = {
                     cwd: evaledConf.buildDir,
                     failOnStdErr: false,
@@ -9718,17 +9873,22 @@ class CMakeSettingsJsonRunner {
                 };
                 this.tl.debug(`Generating project files with CMake in build directory '${options.cwd}' ...`);
                 const code = yield cmake.exec(options);
-                if (code != 0) {
-                    throw new Error(`"Build failed with error code: '${code}'."`);
+                if (code !== 0) {
+                    throw new Error(`"CMake failed with error code: '${code}'."`);
                 }
                 if (this.doBuild) {
                     yield cmakerunner.CMakeRunner.build(this.tl, evaledConf.buildDir, 
                     // CMakeSettings.json contains in buildCommandArgs the arguments to the make program
                     //only. They need to be put after '--', otherwise would be passed to directly to cmake.
-                    ` ${evaledConf.getGeneratorBuildArgs()} ${evaledConf.cmakeArgs} ${this.appendedCMakeArgs} -- ${evaledConf.makeArgs}`, options);
+                    ` ${evaledConf.getGeneratorBuildArgs()} -- ${evaledConf.makeArgs}`, options);
                 }
+                // Restore the original PATH environment variable.
+                process.env.PATH = originalPath;
             }
         });
+    }
+    notEmpty(value) {
+        return value !== null && value !== undefined;
     }
     isMultiConfigGenerator(generatorName) {
         return generatorName.includes("Visual Studio") ||
@@ -10157,10 +10317,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const command_1 = __webpack_require__(431);
-const os = __webpack_require__(87);
-const path = __webpack_require__(622);
+const os = __importStar(__webpack_require__(87));
+const path = __importStar(__webpack_require__(622));
 /**
  * The code to exit an action
  */
@@ -10246,6 +10413,13 @@ exports.setFailed = setFailed;
 //-----------------------------------------------------------------------
 // Logging Commands
 //-----------------------------------------------------------------------
+/**
+ * Gets whether Actions Step Debug is on or not
+ */
+function isDebug() {
+    return process.env['RUNNER_DEBUG'] === '1';
+}
+exports.isDebug = isDebug;
 /**
  * Writes debug message to user log
  * @param message debug message
@@ -10408,7 +10582,7 @@ const path = __webpack_require__(622);
 const http = __webpack_require__(549);
 const del = __webpack_require__(245);
 const globals = __webpack_require__(358);
-// TODO starts: remove this block and createa class where the BaseLib is passed
+// TODO starts: remove this block and create a class where the BaseLib is passed
 // in ctor
 let baseLib;
 function setBaseLib(tl) {
@@ -10420,7 +10594,6 @@ function getBaseLib() {
 }
 exports.getBaseLib = getBaseLib;
 // TODO ends
-exports.CMAKE_TOOLCHAIN_FILE = "CMAKE_TOOLCHAIN_FILE";
 /**
  * Check whether the current generator selected in the command line
  * is -G Ninja.
@@ -10428,32 +10601,46 @@ exports.CMAKE_TOOLCHAIN_FILE = "CMAKE_TOOLCHAIN_FILE";
  * @param {string} commandLineString The command line as string
  * @returns {boolean}
  */
-function isNinjaGenerator(commandLineString) {
-    return /-G[\s]*(\"Ninja\"|Ninja)/.test(commandLineString);
+function isNinjaGenerator(args) {
+    for (const arg of args) {
+        if (/-G[\s]*(\"Ninja\"|Ninja)/.test(arg))
+            return true;
+    }
+    return false;
 }
 exports.isNinjaGenerator = isNinjaGenerator;
-function isMakeProgram(str) {
-    return /-DCMAKE_MAKE_PROGRAM/.test(str);
+function isMakeProgram(args) {
+    for (const arg of args) {
+        if (/-DCMAKE_MAKE_PROGRAM/.test(arg))
+            return true;
+    }
+    return false;
 }
 exports.isMakeProgram = isMakeProgram;
-function isToolchainFile(str) {
-    return /-DCMAKE_TOOLCHAIN_FILE/.test(str);
+function isToolchainFile(args) {
+    for (const arg of args) {
+        if (/-DCMAKE_TOOLCHAIN_FILE/.test(arg))
+            return true;
+    }
+    return false;
 }
 exports.isToolchainFile = isToolchainFile;
-function getToolchainFile(str) {
-    const matches = /-DCMAKE_TOOLCHAIN_FILE(?::[^\s]*)?=([^\s]*)/.exec(str);
-    let toolchainFile;
-    if (matches != null) {
-        if (matches.length > 1) {
-            toolchainFile = matches[1];
+function getToolchainFile(args) {
+    baseLib.debug(`getToolchainFile(${JSON.stringify(args)})<<`);
+    for (const arg of args) {
+        const matches = /-DCMAKE_TOOLCHAIN_FILE(?::[^\s]*)?=([^\s]*)/.exec(arg);
+        if (matches != null) {
+            if (matches.length > 1) {
+                baseLib.debug(`match found=${matches[1]}`);
+                return matches[1];
+            }
         }
     }
-    return toolchainFile;
+    return undefined;
 }
 exports.getToolchainFile = getToolchainFile;
-function removeToolchainFile(str) {
-    str = str.replace(/-DCMAKE_TOOLCHAIN_FILE(:[A-Za-z]+)?=[^\s]+/, "");
-    return str;
+function removeToolchainFile(args) {
+    return args.filter(a => !/-DCMAKE_TOOLCHAIN_FILE(:[A-Za-z]+)?=[^\s]+/.test(a));
 }
 exports.removeToolchainFile = removeToolchainFile;
 function mkdir(target, options) {
@@ -10534,8 +10721,8 @@ class Downloader {
      */
     static downloadArchive(url) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (url == null) {
-                throw new Error('downloadArchive: url is null!');
+            if (!url) {
+                throw new Error('downloadArchive: url must be provided!');
             }
             try {
                 const targetFileName = url.replace(/[\/\\:?]/g, '_');
@@ -10569,7 +10756,6 @@ function parseVcpkgEnvOutput(data) {
         param: /^\s*([^=]+?)\s*=\s*(.*?)\s*$/,
     };
     const lines = data.split(/[\r\n]+/);
-    const section = null;
     for (const line of lines) {
         if (regex.param.test(line)) {
             const match = line.match(regex.param);
@@ -10612,43 +10798,44 @@ function injectEnvVariables(vcpkgRoot, triplet) {
             env: process.env
         };
         const output = yield vcpkg.execSync(options);
-        if (output.code != 0) {
+        if (output.code !== 0) {
             throw new Error(`${output.stdout}\n\n${output.stderr}`);
         }
         const map = parseVcpkgEnvOutput(output.stdout);
         for (const key in map) {
-            if (key.toUpperCase() == "PATH") {
-                process.env[key] += ";" + map[key];
+            if (key.toUpperCase() === "PATH") {
+                process.env[key] = process.env[key] + path.delimiter + map[key];
             }
             else {
                 process.env[key] = map[key];
             }
+            baseLib.debug(`set ${key}=${process.env[key]}`);
         }
     });
 }
 exports.injectEnvVariables = injectEnvVariables;
 function injectVcpkgToolchain(args, triplet) {
     return __awaiter(this, void 0, void 0, function* () {
-        args = (args !== null && args !== void 0 ? args : "");
+        args = (args !== null && args !== void 0 ? args : []);
         const vcpkgRoot = process.env[globals.outVcpkgRootPath];
-        // if RUNVCPKG_VCPKG_ROOT is defined, and a toolchain has not been specified,
-        // use it!
+        // if RUNVCPKG_VCPKG_ROOT is defined, then use it, and put aside into
+        // VCPKG_CHAINLOAD_TOOLCHAIN_FILE the existing toolchain.
         if (vcpkgRoot && vcpkgRoot.length > 1) {
             const toolchainFile = getToolchainFile(args);
             args = removeToolchainFile(args);
             const vcpkgToolchain = path.join(vcpkgRoot, '/scripts/buildsystems/vcpkg.cmake');
-            args += ` -D${exports.CMAKE_TOOLCHAIN_FILE}="${vcpkgToolchain}"`;
+            args.push(`-DCMAKE_TOOLCHAIN_FILE=${vcpkgToolchain}`);
             if (toolchainFile) {
-                args += ` -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE="${toolchainFile}"`;
+                args.push(`-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${toolchainFile}`);
             }
             // If the triplet is provided, specify the same triplet on the cmd line and set the environment for msvc.
             if (triplet) {
-                args += ` -DVCPKG_TARGET_TRIPLET=${triplet}`;
+                args.push(`-DVCPKG_TARGET_TRIPLET=${triplet}`);
                 // For Windows build agents, inject the environment variables used
                 // for the MSVC compiler using the 'vcpkg env' command.
                 // This is not be needed for others compiler on Windows, but it should be harmless.
                 if (isWin32() && triplet) {
-                    if (triplet.indexOf("windows") != -1) {
+                    if (triplet.indexOf("windows") !== -1) {
                         process.env.CC = "cl.exe";
                         process.env.CXX = "cl.exe";
                         baseLib.setVariable("CC", "cl.exe");
@@ -10669,10 +10856,12 @@ exports.injectVcpkgToolchain = injectVcpkgToolchain;
  * @returns {(trm.ToolRunner | undefined)}
  */
 function getScriptCommand(args) {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         let tool;
         if (isWin32()) {
-            const cmdPath = yield baseLib.which('cmd.exe', true);
+            const cmdExe = (_a = process.env.COMSPEC, (_a !== null && _a !== void 0 ? _a : "cmd.exe"));
+            const cmdPath = yield baseLib.which(cmdExe, true);
             tool = baseLib.tool(cmdPath);
             tool.arg('/c');
             tool.line(args);
@@ -12605,13 +12794,14 @@ function main() {
             const runner = new cmakerunner.CMakeRunner(actionLib);
             yield runner.run();
             core.info('run-cmake action execution succeeded');
-            return 0;
+            process.exitCode = 0;
         }
         catch (err) {
-            core.debug('Error: ' + err);
-            core.error(err);
+            const errorAsString = ((err !== null && err !== void 0 ? err : "undefined error")).toString();
+            core.debug('Error: ' + errorAsString);
+            core.error(errorAsString);
             core.setFailed('run-cmake action execution failed');
-            return -1000;
+            process.exitCode = -1000;
         }
     });
 }
@@ -19071,50 +19261,6 @@ exports.createFileSystemAdapter = createFileSystemAdapter;
 
 /***/ }),
 
-/***/ 986:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const tr = __webpack_require__(9);
-/**
- * Exec a command.
- * Output will be streamed to the live console.
- * Returns promise with return code
- *
- * @param     commandLine        command to execute (can include additional args). Must be correctly escaped.
- * @param     args               optional arguments for tool. Escaping is handled by the lib.
- * @param     options            optional exec options.  See ExecOptions
- * @returns   Promise<number>    exit code
- */
-function exec(commandLine, args, options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const commandArgs = tr.argStringToArray(commandLine);
-        if (commandArgs.length === 0) {
-            throw new Error(`Parameter 'commandLine' cannot be null or empty.`);
-        }
-        // Path to tool to execute should be first arg
-        const toolPath = commandArgs[0];
-        args = commandArgs.slice(1).concat(args || []);
-        const runner = new tr.ToolRunner(toolPath, args, options);
-        return runner.exec();
-    });
-}
-exports.exec = exec;
-//# sourceMappingURL=exec.js.map
-
-/***/ }),
-
 /***/ 997:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -19176,11 +19322,13 @@ class CMakeRunner {
             throw new Error(`ctor(): invalid task mode '${mode}'.`);
         }
         this.taskMode = taskMode;
-        this.cmakeSettingsJsonPath = (_b = this.tl.getPathInput(globals.cmakeSettingsJsonPath, this.taskMode === TaskModeType.CMakeSettingsJson), (_b !== null && _b !== void 0 ? _b : ""));
-        this.cmakeListsTxtPath = (_c = this.tl.getPathInput(globals.cmakeListsTxtPath, this.taskMode === TaskModeType.CMakeListsTxtBasic), (_c !== null && _c !== void 0 ? _c : ""));
+        let required = this.taskMode === TaskModeType.CMakeSettingsJson;
+        this.cmakeSettingsJsonPath = (_b = this.tl.getPathInput(globals.cmakeSettingsJsonPath, required, required), (_b !== null && _b !== void 0 ? _b : ""));
+        required = this.taskMode !== TaskModeType.CMakeSettingsJson;
+        this.cmakeListsTxtPath = (_c = this.tl.getPathInput(globals.cmakeListsTxtPath, required, required), (_c !== null && _c !== void 0 ? _c : ""));
         this.buildDir = (_d = this.tl.getInput(globals.buildDirectory, this.taskMode === TaskModeType.CMakeListsTxtBasic), (_d !== null && _d !== void 0 ? _d : ""));
         this.appendedArgs = (_e = this.tl.getInput(globals.cmakeAppendedArgs, false), (_e !== null && _e !== void 0 ? _e : ""));
-        this.configurationFilter = (_f = this.tl.getInput(globals.configurationRegexFilter, this.taskMode === TaskModeType.CMakeSettingsJson), (_f !== null && _f !== void 0 ? _f : ""));
+        this.configurationFilter = (_f = this.tl.getInput(globals.configurationRegexFilter, false), (_f !== null && _f !== void 0 ? _f : ""));
         this.ninjaPath = '';
         if (this.tl.isFilePathSupplied(globals.ninjaPath)) {
             this.ninjaPath = (_g = tl.getInput(globals.ninjaPath, false), (_g !== null && _g !== void 0 ? _g : ""));
@@ -19194,7 +19342,7 @@ class CMakeRunner {
         this.ninjaDownloadUrl = (_k = this.tl.getInput(globals.ninjaDownloadUrl, false), (_k !== null && _k !== void 0 ? _k : ""));
         this.doBuild = (_l = this.tl.getBoolInput(globals.buildWithCMake, false), (_l !== null && _l !== void 0 ? _l : false));
         this.doBuildArgs = (_m = this.tl.getInput(globals.buildWithCMakeArgs, false), (_m !== null && _m !== void 0 ? _m : ""));
-        this.cmakeSourceDir = path.dirname((_o = this.cmakeListsTxtPath, (_o !== null && _o !== void 0 ? _o : "")));
+        this.cmakeSourceDir = path.dirname((_o = path.resolve(this.cmakeListsTxtPath), (_o !== null && _o !== void 0 ? _o : "")));
         this.useVcpkgToolchainFile = (_p = this.tl.getBoolInput(globals.useVcpkgToolchainFile, false), (_p !== null && _p !== void 0 ? _p : false));
         this.cmakeBuildType = (_q = this.tl.getInput(globals.cmakeBuildType, this.taskMode === TaskModeType.CMakeListsTxtBasic), (_q !== null && _q !== void 0 ? _q : ""));
         this.vcpkgTriplet = (_r = this.tl.getInput(globals.vcpkgTriplet, false), (_r !== null && _r !== void 0 ? _r : ""));
@@ -19219,52 +19367,57 @@ class CMakeRunner {
         });
     }
     configure() {
-        var _a, _b;
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             this.tl.debug('configure()<<');
             // Contains the '--config <CONFIG>' when using multiconfiguration generators.
             let prependedBuildArguments = "";
-            let cmakeArgs = ' ';
+            let cmakeArgs = [];
             switch (this.taskMode) {
                 case TaskModeType.CMakeListsTxtAdvanced:
                 case TaskModeType.CMakeListsTxtBasic: {
-                    // Search for CMake tool and run it
+                    // Search for CMake tool and run it.
                     let cmake;
                     if (this.sourceScript) {
                         cmake = this.tl.tool(this.sourceScript);
-                        cmakeArgs += (yield this.tl.which('cmake', true)) + " ";
+                        cmakeArgs.push(yield this.tl.which('cmake', true));
                     }
                     else {
                         cmake = this.tl.tool(yield this.tl.which('cmake', true));
                     }
-                    if (this.taskMode == TaskModeType.CMakeListsTxtAdvanced) {
-                        cmakeArgs += (_a = this.appendedArgs, (_a !== null && _a !== void 0 ? _a : ""));
+                    if (this.taskMode === TaskModeType.CMakeListsTxtAdvanced) {
                         // If Ninja is required, specify the path to it.
-                        if (utils.isNinjaGenerator(cmakeArgs)) {
-                            if (!utils.isMakeProgram(cmakeArgs)) {
+                        if (utils.isNinjaGenerator([this.appendedArgs])) {
+                            if (!utils.isMakeProgram([this.appendedArgs])) {
                                 const ninjaPath = yield ninjalib.retrieveNinjaPath(this.ninjaPath, this.ninjaDownloadUrl);
-                                cmakeArgs += ` -DCMAKE_MAKE_PROGRAM="${ninjaPath}"`;
+                                cmakeArgs.push(`-DCMAKE_MAKE_PROGRAM=${ninjaPath}`);
                             }
                         }
+                        if (this.appendedArgs) {
+                            this.tl.debug(`Parsing additional CMake args: ${this.appendedArgs}`);
+                            const addedArgs = cmake._argStringToArray(this.appendedArgs);
+                            this.tl.debug(`Appending args: ${JSON.stringify(addedArgs)}`);
+                            cmakeArgs = [...cmakeArgs, ...addedArgs];
+                        }
                     }
-                    else if (this.taskMode == TaskModeType.CMakeListsTxtBasic) {
+                    else if (this.taskMode === TaskModeType.CMakeListsTxtBasic) {
                         const generatorName = this.generator['G'];
                         const generatorArch = this.generator['A'];
-                        const generatorIsMultiConf = (_b = this.generator['MultiConfiguration'], (_b !== null && _b !== void 0 ? _b : false));
-                        cmakeArgs = ` -G "${generatorName}"`;
+                        const generatorIsMultiConf = (_a = this.generator['MultiConfiguration'], (_a !== null && _a !== void 0 ? _a : false));
+                        cmakeArgs.push(`-G${generatorName}`);
                         if (generatorArch) {
-                            cmakeArgs += ` -A ${generatorArch}`;
+                            cmakeArgs.push(`-A${generatorArch}`);
                         }
-                        if (generatorName == CMakeGenerator['Ninja']['G']) {
+                        if (generatorName === CMakeGenerator['Ninja']['G']) {
                             const ninjaPath = yield ninjalib.retrieveNinjaPath(this.ninjaPath, this.ninjaDownloadUrl);
-                            cmakeArgs += ` -DCMAKE_MAKE_PROGRAM="${ninjaPath}"`;
+                            cmakeArgs.push(`-DCMAKE_MAKE_PROGRAM=${ninjaPath}`);
                         }
                         if (this.cmakeToolchainPath) {
-                            cmakeArgs += ` -D${utils.CMAKE_TOOLCHAIN_FILE}="${this.cmakeToolchainPath}"`;
+                            cmakeArgs.push(`-DCMAKE_TOOLCHAIN_FILE=${this.cmakeToolchainPath}`);
                         }
                         // Add CMake's build type, unless a multi configuration generator is being used.
                         if (!generatorIsMultiConf) {
-                            cmakeArgs += ` -DCMAKE_BUILD_TYPE=${this.cmakeBuildType}`;
+                            cmakeArgs.push(`-DCMAKE_BUILD_TYPE=${this.cmakeBuildType}`);
                         }
                         prependedBuildArguments = this.prependBuildConfigIfNeeded(this.doBuildArgs, generatorIsMultiConf, this.cmakeBuildType);
                     }
@@ -19273,11 +19426,13 @@ class CMakeRunner {
                         cmakeArgs = yield utils.injectVcpkgToolchain(cmakeArgs, this.vcpkgTriplet);
                     }
                     // The source directory is required for any mode.
-                    cmakeArgs += ` ${this.cmakeSourceDir}`;
+                    cmakeArgs.push(this.cmakeSourceDir);
                     this.tl.debug(`CMake arguments: ${cmakeArgs}`);
+                    for (const arg of cmakeArgs) {
+                        cmake.arg(arg);
+                    }
                     // Ensure the build directory is existing.
                     yield this.tl.mkdirP(this.buildDir);
-                    cmake.line(cmakeArgs);
                     const options = {
                         cwd: this.buildDir,
                         failOnStdErr: false,
@@ -19290,8 +19445,8 @@ class CMakeRunner {
                     };
                     this.tl.debug(`Generating project files with CMake in build directory '${options.cwd}' ...`);
                     const code = yield cmake.exec(options);
-                    if (code != 0) {
-                        throw new Error(`"CMake failed with error: '${code}'.`);
+                    if (code !== 0) {
+                        throw new Error(`"CMake failed with error code: '${code}'.`);
                     }
                     if (this.doBuild) {
                         yield CMakeRunner.build(this.tl, this.buildDir, prependedBuildArguments + this.doBuildArgs, options);
@@ -19325,16 +19480,18 @@ class CMakeRunner {
    * @returns {Promise<void>}
    */
     static build(baseLib, buildDir, buildArgs, options) {
-        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             // Run CMake with the given arguments
             const cmake = baseLib.tool(yield baseLib.which('cmake', true));
-            cmake.line((_a = "--build . " + buildArgs, (_a !== null && _a !== void 0 ? _a : "")));
+            cmake.arg("--build");
+            cmake.arg(".");
+            if (buildArgs)
+                cmake.line(buildArgs);
             // Run the command in the build directory
             options.cwd = buildDir;
             console.log(`Building with CMake in build directory '${options.cwd}' ...`);
             const code = yield cmake.exec(options);
-            if (code != 0) {
+            if (code !== 0) {
                 throw new Error(`"Build failed with error code: '${code}'."`);
             }
         });

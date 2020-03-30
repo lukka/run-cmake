@@ -1,4 +1,4 @@
-// Copyright (c) 2019 Luca Cappa
+// Copyright (c) 2019-2020 Luca Cappa
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 
@@ -33,7 +33,7 @@ var copyLib = function () {
 
 var eslinter = function () {
   // lint only the files of the action, e.g. not of the /libs/
-  return gulp.src(['src/**/*.ts'])
+  return gulp.src(['**/*.ts'])
     // eslint() attaches the lint output to the "eslint" property
     // of the file object so it can be used by other modules.
     .pipe(eslint())

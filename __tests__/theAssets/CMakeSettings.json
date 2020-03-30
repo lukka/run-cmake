@@ -48,6 +48,18 @@
         "ctestCommandArgs": ""
       },
       {
+        "name": "x64-Release-VS",
+        "generator": "Visual Studio 16 2019 Win64",
+        "configurationType": "Release",
+        "inheritEnvironments": [
+            "msvc_x64"
+        ],
+        "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+        "cmakeCommandArgs": "--verbose",
+        "buildCommandArgs": "-ds",
+        "ctestCommandArgs": ""
+    },
+      {
         "name": "Linux-Debug",
         "generator": "Unix Makefiles",
         "remoteMachineName": "::1",
@@ -117,7 +129,7 @@
         "remoteCopySources": true,
         "remoteCopySourcesOutputVerbosity": "Normal",
         "remoteCopySourcesMethod": "rsync",
-        "cmakeCommandArgs": "-DUSE_WASM=1 -DCMAKE_TOOLCHAIN_FILE=$EMSCRIPTEN/cmake/Modules/Platform/Emscripten.cmake -DCMAKE_BUILD_TYPE=${CONF}",
+        "cmakeCommandArgs": "-DUSE_WASM=1 -DCMAKE_BUILD_TYPE=${CONF}",
         "buildCommandArgs": "VERBOSE=1",
         "ctestCommandArgs": "",
         "inheritEnvironments": [ "linux_x64" ]
@@ -145,6 +157,9 @@
           {
             "namespace": "",
             "CONFIGURATION": "Release"
+          },
+          {
+            "EMSCRIPTEN": "${projectDir}"
           }
         ],
         "name": "Emscripten Linux Release",
@@ -159,7 +174,7 @@
         "remoteCopySources": true,
         "remoteCopySourcesOutputVerbosity": "Normal",
         "remoteCopySourcesMethod": "rsync",
-        "cmakeCommandArgs": "-DCMAKE_TOOLCHAIN_FILE=$EMSCRIPTEN/cmake/Modules/Platform/Emscripten.cmake -DCMAKE_BUILD_TYPE=${CONFIGURATION}",
+        "cmakeCommandArgs": "-DCMAKE_TOOLCHAIN_FILE=${env.EMSCRIPTEN}/toolchain.cmake -DCMAKE_BUILD_TYPE=${CONFIGURATION}",
         "buildCommandArgs": "VERBOSE=1",
         "ctestCommandArgs": "",
         "inheritEnvironments": [ "linux_x64" ]
