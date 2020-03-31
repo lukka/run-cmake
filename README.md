@@ -37,7 +37,7 @@ It is __highly recommended__ to [use vcpkg as a submodule](https://github.com/lu
         key: ${{ hashFiles( env.vcpkgResponseFile ) }}-${{ hashFiles('.git/modules/vcpkg/HEAD') }}-${{ runner.os }}
 
     - name: Run vcpkg
-      uses: lukka/run-vcpkg@v0
+      uses: lukka/run-vcpkg@v1
       with:
        # Response file stored in source control, it provides the list of ports and triplet(s).
         vcpkgArguments: '@${{ env.vcpkgResponseFile }}'
@@ -45,7 +45,7 @@ It is __highly recommended__ to [use vcpkg as a submodule](https://github.com/lu
         vcpkgDirectory: '${{ github.workspace }}/vcpkg'
 
     - name: 'Run CMake with Ninja'
-      uses: lukka/run-cmake@v0
+      uses: lukka/run-cmake@v1
       with:
         cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
         cmakeListsTxtPath: '${{ github.workspace }}/cmakesettings.json/CMakeLists.txt'
@@ -67,7 +67,7 @@ The documentation of the **'run-cmake"** action is identical to the [**'run-cmak
 
 ### <a id='reference'>Action reference: all input/output parameters</a>
 
-[action.yml](https://github.com/lukka/run-cmake/blob/v0/action.yml)
+[action.yml](https://github.com/lukka/run-cmake/blob/v1/action.yml)
 
 ## <a id="samples">Samples</a>
 
