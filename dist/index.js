@@ -10594,6 +10594,11 @@ function getBaseLib() {
 }
 exports.getBaseLib = getBaseLib;
 // TODO ends
+function isVariableStrippingPath(variableName) {
+    // Avoid that the PATH is minimized by MSBuild props:
+    // https://github.com/lukka/run-cmake/issues/8#issuecomment-606956604
+    return (variableName.toUpperCase() === "__VSCMD_PREINIT_PATH");
+}
 /**
  * Check whether the current generator selected in the command line
  * is -G Ninja.
@@ -10803,6 +10808,8 @@ function injectEnvVariables(vcpkgRoot, triplet) {
         }
         const map = parseVcpkgEnvOutput(output.stdout);
         for (const key in map) {
+            if (isVariableStrippingPath(key))
+                continue;
             if (key.toUpperCase() === "PATH") {
                 process.env[key] = process.env[key] + path.delimiter + map[key];
             }
