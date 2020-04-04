@@ -68,6 +68,21 @@ describe('run-cmake tests', () => {
         console.log(cp.execSync(`node ${testScript}`, options)?.toString());
     });
 
+    test('basic test for CMakeListsTxtBasic with Ninja Multi-Config', () => {
+        process.env.INPUT_CMAKELISTSORSETTINGSJSON = 'CMakeListsTxtBasic';
+        process.env.INPUT_BUILDDIRECTORY = buildDirectory;
+        process.env.INPUT_CMAKEGENERATOR = 'NinjaMulti';
+        process.env.INPUT_CMAKEBUILDTYPE = 'Release';
+        process.env.INPUT_CMAKELISTSTXTPATH = path.join(assetDirectory, 'CMakeLists.txt');
+        process.env.INPUT_BUILDWITHCMAKE = 'true';
+        process.env.INPUT_USESHELL = 'true';
+        const options: cp.ExecSyncOptions = {
+            env: process.env,
+            stdio: "inherit"
+        };
+        console.log(cp.execSync(`node ${testScript}`, options)?.toString());
+    });
+
     test('basic test for CMakeListsTxtAdvanced', () => {
         process.env.INPUT_CMAKELISTSORSETTINGSJSON = 'CMakeListsTxtAdvanced';
         process.env.INPUT_BUILDDIRECTORY = buildDirectory;
