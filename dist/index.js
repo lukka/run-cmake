@@ -19479,7 +19479,7 @@ class CMakeRunner {
     prependBuildConfigIfNeeded(buildArgs, multiConfi, buildType) {
         let prependArgs = "";
         if (multiConfi && !buildArgs.includes("--config")) {
-            prependArgs = ` --config ${buildType} ${buildArgs}`;
+            prependArgs = ` --config ${buildType} `;
         }
         return prependArgs;
     }
