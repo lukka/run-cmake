@@ -4,7 +4,7 @@
 
 Build C++ software with the multi-platform **run-cmake** action by running [CMake](https://cmake.org) on GitHub workflows. [Samples](#samples) provided use [GitHub hosted runners](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/virtual-environments-for-github-hosted-runners) and [Caching](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/caching-dependencies-to-speed-up-workflows).
 
-A good companion is the [run-vcpkg](https://github.com/marketplace/actions/run-vcpkg) action.
+Good companions are the [run-vcpkg](https://github.com/marketplace/actions/run-vcpkg) action and the [get-cmake](https://github.com/marketplace/actions/get-cmake) action.
 
  ## User Manual
  * [Quickstart](#quickstart)
@@ -29,15 +29,8 @@ It is __highly recommended__ to [use vcpkg as a submodule](https://github.com/lu
   # Sample when vcpkg is a submodule of your repository (highly recommended!)
 
     # Cache/Restore the vcpkg's build artifacts.
-    - name: Cache vcpkg's artifacts
-      uses: actions/cache@v1
-      with:
-        path: ${{ github.workspace }}/vcpkg/
-        # The key will be different each time a different version of vcpkg is used, or different ports are installed.
-        key: ${{ hashFiles( env.vcpkgResponseFile ) }}-${{ hashFiles('.git/modules/vcpkg/HEAD') }}-${{ runner.os }}
-
     - name: Run vcpkg
-      uses: lukka/run-vcpkg@v1
+      uses: lukka/run-vcpkg@v2
       with:
        # Response file stored in source control, it provides the list of ports and triplet(s).
         vcpkgArguments: '@${{ env.vcpkgResponseFile }}'
@@ -45,7 +38,7 @@ It is __highly recommended__ to [use vcpkg as a submodule](https://github.com/lu
         vcpkgDirectory: '${{ github.workspace }}/vcpkg'
 
     - name: 'Run CMake with Ninja'
-      uses: lukka/run-cmake@v1
+      uses: lukka/run-cmake@v2
       with:
         cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
         cmakeListsTxtPath: '${{ github.workspace }}/cmakesettings.json/CMakeLists.txt'
