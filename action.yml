@@ -16,11 +16,11 @@ inputs:
       CMakeSettingsJson: Run CMake using a CMakeSettings.json of Visual Studio."
   cmakeListsTxtPath:
     default: "${{ github.workspace }}/CMakeLists.txt"
-    required: false,
+    required: false
     description: "Path to CMakeLists.txt. Used for both CMakeListsTxtBasic and CMakeListsTxtAdvanced modes."
   cmakeSettingsJsonPath:
     default: "${{ github.workspace }}//CMakeSettings.json"
-    required: false,
+    required: false
     description: "Path to CMakeSettings.json. Used for CMakeSettingsJson mode."
   cmakeToolchainPath:
     default: ""
@@ -64,7 +64,7 @@ inputs:
     description: "Provides a mean to provide all the CMake arguments. This is required when using CMakeLists.txt in Advanced mode. For CMakeSettings.json, the arguments are already inferred, but you can append your arguments providing them here.  Used by CMakeListsTxtAdvanced and CMakeSettingsJson modes."
   configurationRegexFilter:
     default: ".*"
-    required: true,
+    required: true
     description: "The regular expression selects which CMakeSettings.json's configuration(s) to build, one or more. Used by CMakeSettingsJson mode."
   ninjaPath:
     default: ""
