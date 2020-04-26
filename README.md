@@ -94,6 +94,11 @@ project: [iovw/Notepad--](https://github.com/iovw/Notepad--/) | |
 |----------|-------|
 [Windows](https://github.com/iovw/Notepad--/blob/master/.github/workflows/ccpp.yml) | [![CI](https://github.com/iovw/Notepad--/workflows/C/C++%20CI/badge.svg)](https://github.com/iovw/Notepad--/actions)
 
+project: [Mudlet/Mudlet](https://github.com/Mudlet/Mudlet) | | 
+|----------|-------|
+[Linux/macOS](https://github.com/Mudlet/Mudlet/blob/development/.github/workflows/build-mudlet.yml) | [![Build Mudlet](https://github.com/Mudlet/Mudlet/workflows/Build%20Mudlet/badge.svg)](https://github.com/Mudlet/Mudlet/actions)
+
+
 # Developers information
 
 ## Prerequisites
