@@ -1464,6 +1464,12 @@ class ActionLib {
     endOperation() {
         core.endGroup();
     }
+    addMatcher(file) {
+        console.log(`::add-matcher::${file}`);
+    }
+    removeMatcher(file) {
+        console.log(`::remove-matcher::${file}`);
+    }
 }
 exports.ActionLib = ActionLib;
 
@@ -9373,6 +9379,7 @@ const stripJsonComments = __webpack_require__(159);
 const ninjalib = __webpack_require__(141);
 const globals = __webpack_require__(358);
 const cmakerunner = __webpack_require__(997);
+const using_statement_1 = __webpack_require__(443);
 class CMakeGenerators {
 }
 CMakeGenerators.ARM64 = ["ARM64", "ARM64"];
@@ -9880,15 +9887,22 @@ class CMakeSettingsJsonRunner {
                         env: process.env
                     };
                     this.tl.debug(`Generating project files with CMake in build directory '${options.cwd}' ...`);
-                    const code = yield utils.wrapOp("Generate project files with CMake", () => cmake.exec(options));
+                    let code = -1;
+                    yield using_statement_1.using(utils.createMatcher('cmake', this.cmakeSettingsJson), (matcher) => __awaiter(this, void 0, void 0, function* () {
+                        code = yield utils.wrapOp("Generate project files with CMake", () => cmake.exec(options));
+                    }));
                     if (code !== 0) {
                         throw new Error(`"CMake failed with error code: '${code}'."`);
                     }
                     if (this.doBuild) {
-                        yield utils.wrapOp("Build with CMake", () => cmakerunner.CMakeRunner.build(this.tl, evaledConf.buildDir, 
-                        // CMakeSettings.json contains in buildCommandArgs the arguments to the make program
-                        //only. They need to be put after '--', otherwise would be passed to directly to cmake.
-                        ` ${evaledConf.getGeneratorBuildArgs()} -- ${evaledConf.makeArgs}`, options));
+                        yield using_statement_1.using(utils.createMatcher(cmakerunner.CMakeRunner.getBuildMatcher(this.buildDir, this.tl)), (matcher) => __awaiter(this, void 0, void 0, function* () {
+                            yield utils.wrapOp("Build with CMake", () => __awaiter(this, void 0, void 0, function* () {
+                                return yield cmakerunner.CMakeRunner.build(this.tl, evaledConf.buildDir, 
+                                // CMakeSettings.json contains in buildCommandArgs the arguments to the make program
+                                //only. They need to be put after '--', otherwise would be passed to directly to cmake.
+                                ` ${evaledConf.getGeneratorBuildArgs()} -- ${evaledConf.makeArgs}`, options);
+                            }));
+                        }));
                     }
                     // Restore the original PATH environment variable.
                     process.env.PATH = originalPath;
@@ -10137,6 +10151,20 @@ const expand = (ast, options = {}) => {
 };
 
 module.exports = expand;
+
+
+/***/ }),
+
+/***/ 443:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+__export(__webpack_require__(666));
 
 
 /***/ }),
@@ -10935,6 +10963,39 @@ function wrapOpSync(name, fn) {
     return result;
 }
 exports.wrapOpSync = wrapOpSync;
+class Matcher {
+    constructor(name, fromPath) {
+        this.name = name;
+        this.fromPath = fromPath;
+        const matcherFilePath = path.join(__dirname, `${name}.json`);
+        fromPath;
+        /* //?? TODO This code should be removed.
+        if (fromPath) {
+          try {
+            const content = fs.readFileSync(matcherFilePath);
+            const json: any = JSON.parse(content.toString());
+            json.problemMatcher[0].pattern[0].fromPath = fromPath;
+            fs.writeFileSync(matcherFilePath, JSON.stringify(json),
+              {
+                encoding: "utf8",
+                flag: "w+"
+              });
+            baseLib.debug(fs.readFileSync(matcherFilePath).toString());
+          } catch (err) {
+            baseLib.debug(`Failure in Matcher: ${err}`);
+          }
+        }*/
+        baseLib.addMatcher(matcherFilePath);
+    }
+    dispose() {
+        baseLib.removeMatcher(path.join(__dirname, `${this.name}.json`));
+    }
+}
+exports.Matcher = Matcher;
+function createMatcher(name, fromPath) {
+    return new Matcher(name, fromPath);
+}
+exports.createMatcher = createMatcher;
 
 //# sourceMappingURL=utils.js.map
 
@@ -12844,8 +12905,7 @@ function main() {
         catch (err) {
             const errorAsString = ((err !== null && err !== void 0 ? err : "undefined error")).toString();
             core.debug('Error: ' + errorAsString);
-            core.error(errorAsString);
-            core.setFailed('run-cmake action execution failed');
+            core.setFailed(`run-cmake action execution failed: '${errorAsString}'`);
             process.exitCode = -1000;
         }
     });
@@ -15135,6 +15195,85 @@ function getSettings(settingsOrOptions = {}) {
         return settingsOrOptions;
     }
     return new settings_1.default(settingsOrOptions);
+}
+
+
+/***/ }),
+
+/***/ 666:
+/***/ (function(__unusedmodule, exports) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+function using(resource, func) {
+    let shouldDispose = true;
+    let result = undefined;
+    try {
+        result = func(resource);
+        // dispose it asynchronously if it returns a promise
+        if (isPromise(result)) {
+            const capturedResult = result;
+            shouldDispose = false;
+            return result.finally(() => dispose(resource)).then(() => capturedResult);
+        }
+        else if (isIterator(result)) {
+            shouldDispose = false;
+            const originalNext = result.next;
+            result.next = function () {
+                let shouldDispose = false;
+                try {
+                    const args = Array.from(arguments);
+                    const iterationResult = originalNext.apply(this, args);
+                    if (iterationResult.done)
+                        shouldDispose = true;
+                    return iterationResult;
+                }
+                catch (err) {
+                    shouldDispose = true;
+                    throw err;
+                }
+                finally {
+                    if (shouldDispose)
+                        dispose(resource);
+                }
+            };
+        }
+    }
+    finally {
+        if (shouldDispose) {
+            const disposeResult = dispose(resource);
+            if (isPromise(disposeResult)) {
+                let finalPromise = result == null ? undefined : Promise.resolve(result);
+                if (finalPromise == null)
+                    result = disposeResult;
+                else
+                    result = disposeResult.then(() => finalPromise);
+            }
+        }
+    }
+    return result;
+}
+exports.using = using;
+const funcNames = ["dispose", "close", "unsubscribe"];
+function dispose(obj) {
+    if (obj == null)
+        return;
+    for (const funcName of funcNames) {
+        if (typeof obj[funcName] === "function") {
+            return obj[funcName]();
+        }
+    }
+    throw new Error("Object provided to using did not have a dispose method.");
+}
+function isPromise(obj) {
+    return obj != null
+        && typeof obj.then === "function"
+        && typeof obj.finally === "function";
+}
+function isIterator(obj) {
+    return obj != null
+        && typeof obj.next === "function";
 }
 
 
@@ -19325,10 +19464,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = __webpack_require__(622);
+const fs = __webpack_require__(747);
 const cmakesettings_runner_1 = __webpack_require__(432);
 const globals = __webpack_require__(358);
 const ninjalib = __webpack_require__(141);
 const utils = __webpack_require__(477);
+const using_statement_1 = __webpack_require__(443);
 var TaskModeType;
 (function (TaskModeType) {
     TaskModeType[TaskModeType["CMakeListsTxtBasic"] = 1] = "CMakeListsTxtBasic";
@@ -19491,18 +19632,23 @@ class CMakeRunner {
                         env: process.env
                     };
                     this.tl.debug(`Generating project files with CMake in build directory '${options.cwd}' ...`);
-                    const code = yield utils.wrapOp("Generate project files with CMake", () => cmake.exec(options));
+                    let code = -1;
+                    yield using_statement_1.using(utils.createMatcher('cmake', this.cmakeSourceDir), (matcher) => __awaiter(this, void 0, void 0, function* () {
+                        code = yield utils.wrapOp("Generate project files with CMake", () => __awaiter(this, void 0, void 0, function* () { return yield cmake.exec(options); }));
+                    }));
                     if (code !== 0) {
                         throw new Error(`"CMake failed with error code: '${code}'.`);
                     }
                     if (this.doBuild) {
-                        yield utils.wrapOp("Build with CMake", () => CMakeRunner.build(this.tl, this.buildDir, prependedBuildArguments + this.doBuildArgs, options));
+                        yield using_statement_1.using(utils.createMatcher(CMakeRunner.getBuildMatcher(this.buildDir, this.tl)), (matcher) => __awaiter(this, void 0, void 0, function* () {
+                            yield utils.wrapOp("Build with CMake", () => __awaiter(this, void 0, void 0, function* () { return yield CMakeRunner.build(this.tl, this.buildDir, prependedBuildArguments + this.doBuildArgs, options); }));
+                        }));
                     }
                     break;
                 }
                 case TaskModeType.CMakeSettingsJson: {
                     const cmakeJson = new cmakesettings_runner_1.CMakeSettingsJsonRunner(this.cmakeSettingsJsonPath, this.configurationFilter, this.appendedArgs, this.tl.getSrcDir(), this.vcpkgTriplet, this.useVcpkgToolchainFile, this.doBuild, this.ninjaPath, this.ninjaDownloadUrl, this.sourceScript, this.buildDir, this.tl);
-                    yield utils.wrapOp("Run CMake with CMakeSettings.json", () => cmakeJson.run());
+                    yield utils.wrapOp("Run CMake with CMakeSettings.json", () => __awaiter(this, void 0, void 0, function* () { return yield cmakeJson.run(); }));
                     break;
                 }
             }
@@ -19547,6 +19693,57 @@ class CMakeRunner {
             }
         });
     }
+    static getDefaultMatcher() {
+        const plat = process.platform;
+        return plat === "win32" ? CMakeRunner.msvcMatcher :
+            plat === "darwin" ? CMakeRunner.clangMatcher : CMakeRunner.gccMatcher;
+    }
+    static getCompilerMatcher(line) {
+        let matcherName = undefined;
+        if (line.includes('g++') || line.includes('gcc') || line.includes('c++'))
+            matcherName = CMakeRunner.gccMatcher;
+        else if (line.includes('cl.exe'))
+            matcherName = CMakeRunner.msvcMatcher;
+        else if (line.includes('clang'))
+            matcherName = CMakeRunner.clangMatcher;
+        return matcherName;
+    }
+    static getBuildMatcher(buildDir, tl) {
+        var _a;
+        let cxxMatcher;
+        let ccMatcher;
+        try {
+            const cmakeCacheTxtPath = path.join(buildDir, "CMakeCache.txt");
+            const cache = fs.readFileSync(cmakeCacheTxtPath);
+            tl.debug(`Loaded fileCMakeCache.txt at path='${cmakeCacheTxtPath}'`);
+            if (cache) {
+                const cacheContent = cache.toString();
+                for (const line of cacheContent.split('\n')) {
+                    tl.debug(`text=${line}`);
+                    if (line.includes("CMAKE_CXX_COMPILER:")) {
+                        tl.debug(`Found CXX compiler: '${line}'.`);
+                        cxxMatcher = CMakeRunner.getCompilerMatcher(line);
+                        tl.debug(`Matcher selected for CXX: ${cxxMatcher}`);
+                        break;
+                    }
+                    if (line.includes("CMAKE_C_COMPILER:")) {
+                        tl.debug(`Found C compiler: '${line}'.`);
+                        ccMatcher = CMakeRunner.getCompilerMatcher(line);
+                        tl.debug(`Matcher selected for CC: ${ccMatcher}`);
+                        break;
+                    }
+                }
+            }
+        }
+        catch (error) {
+            tl.debug(error.toString());
+        }
+        const defaultMatcher = CMakeRunner.getDefaultMatcher();
+        tl.debug(`Default matcher according to platform is: ${defaultMatcher}`);
+        const selectedMatcher = (_a = (cxxMatcher !== null && cxxMatcher !== void 0 ? cxxMatcher : ccMatcher), (_a !== null && _a !== void 0 ? _a : defaultMatcher));
+        tl.debug(`Selected matcher: ${selectedMatcher}`);
+        return selectedMatcher;
+    }
 }
 exports.CMakeRunner = CMakeRunner;
 CMakeRunner.modePerInput = {
@@ -19562,6 +19759,9 @@ CMakeRunner.modePerInput = {
     [globals.configurationRegexFilter]: [TaskModeType.CMakeSettingsJson],
     [globals.buildWithCMakeArgs]: [TaskModeType.CMakeListsTxtAdvanced, TaskModeType.CMakeListsTxtBasic]
 };
+CMakeRunner.gccMatcher = 'gcc';
+CMakeRunner.clangMatcher = 'clang';
+CMakeRunner.msvcMatcher = 'msvc';
 
 //# sourceMappingURL=cmake-runner.js.map
 

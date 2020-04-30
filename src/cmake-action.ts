@@ -18,8 +18,7 @@ async function main(): Promise<void> {
   } catch (err) {
     const errorAsString = (err ?? "undefined error").toString();
     core.debug('Error: ' + errorAsString);
-    core.error(errorAsString);
-    core.setFailed('run-cmake action execution failed');
+    core.setFailed(`run-cmake action execution failed: '${errorAsString}'`);
     process.exitCode = -1000;
   }
 }
