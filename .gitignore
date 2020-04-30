@@ -9,6 +9,5 @@ token.txt
 .vscode
 *.tgz
 build
-dist
 __tests__/build Directory
 __tests__/b

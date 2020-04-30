@@ -53,6 +53,13 @@ var copyBaseLib = function () {
     .pipe(gulp.dest('./build/src/'));
 }
 
+// Copy matchers to consumers.
+var copyMatchersJson = function () {
+  return gulp.src(
+    ['./libs/run-cmake-lib/src/matchers/*.json'])
+    .pipe(gulp.dest('./dist/'));
+}
+
 var test = function () {
   return gulp.src('__tests__').pipe(jest({
     "preprocessorIgnorePatterns": [
@@ -66,7 +73,8 @@ gulp.task('test', test);
 gulp.task('eslint', eslinter);
 gulp.task('copyLib', copyLib);
 gulp.task('copyBaseLib', copyBaseLib);
+gulp.task('copyMatchersJson', copyMatchersJson);
 gulp.task('build', build);
 gulp.task('installPackages', installPackages);
-gulp.task('default', gulp.series('installPackages', 'eslint', 'build', 'copyLib', 'copyBaseLib'));
+gulp.task('default', gulp.series('installPackages', 'eslint', 'build', 'copyLib', 'copyBaseLib', 'copyMatchersJson'));
 
