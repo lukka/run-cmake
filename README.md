@@ -129,6 +129,20 @@ project: [sony/nmos-cpp](https://github.com/sony/nmos-cpp) | |
 [Linux/macOS/Windows](https://github.com/sony/nmos-cpp/blob/master/.github/workflows/build-test.yml) | [![build-test](https://github.com/sony/nmos-cpp/workflows/build-test/badge.svg)](https://github.com/sony/nmos-cpp/actions)
 
 
+project: [RaftLib/RaftLib](https://github.com/RaftLib/RaftLib) | | 
+|----------|-------|
+[Linux/macOS/Windows](https://github.com/RaftLib/RaftLib/blob/master/.github/workflows/main.yml) | [![CI](https://github.com/RaftLib/RaftLib/workflows/CI/badge.svg)](https://github.com/RaftLib/RaftLib/actions)
+
+project: [zealdocs/zeal](https://github.com/zealdocs/zeal) | | 
+|----------|-------|
+[Linux/Windows](https://github.com/zealdocs/zeal/blob/master/.github/workflows/build-check.yml) | [![Build Check](https://github.com/zealdocs/zeal/workflows/Build%20Check/badge.svg)](https://github.com/zealdocs/zeal/actions)
+
+project: [edubart/otclient](https://github.com/edubart/otclient) | | 
+|----------|-------|
+[Linux/macOS/Windows](https://github.com/edubart/otclient/blob/master/.github/workflows/build-vcpkg.yml) | [![Build with vcpkg](https://github.com/edubart/otclient/workflows/Build%20with%20vcpkg/badge.svg)](https://github.com/edubart/otclient/actions)
+
+
+
 # Developers information
 
 ## Prerequisites
