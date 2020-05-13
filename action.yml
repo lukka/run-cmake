@@ -47,8 +47,8 @@ inputs:
         VS16Arm64: Visual Studio 2019 ARM64,
         VS16Arm: Visual Studio 2019 ARM,
         VS16Win32: Visual Studio 2019 Win32,
-        VS15Arm64: Visual Studio 2017 x64,
-        VS15Win64: Visual Studio 2017 ARM64,
+        VS15Win64: Visual Studio 2017 x64,
+        VS15Arm64: Visual Studio 2017 ARM64,
         VS15Arm: Visual Studio 2017 ARM,
         VS15Win32: Visual Studio 2017 Win32. 
         Used by CMakeListsTxtBasic mode."
