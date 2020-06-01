@@ -24,13 +24,6 @@ var build = function () {
     .pipe(gulp.dest(path.join('build')))
 }
 
-// Copy action's library to its deployment directory.
-var copyLib = function () {
-  return gulp.src(
-    ['./build/libs/run-cmake-lib/src/**/*.js'])
-    .pipe(gulp.dest('./build/src/'))
-}
-
 var eslinter = function () {
   // lint only the files of the action, e.g. not of the /libs/
   return gulp.src(['**/*.ts'])
@@ -43,14 +36,6 @@ var eslinter = function () {
     // To have the process exit with an error code (1) on
     // lint error, return the stream and pipe to failAfterError last.
     .pipe(eslint.failAfterError());
-}
-
-// Copy shared library files to consumers.
-var copyBaseLib = function () {
-  return gulp.src(
-    ['./build/libs/action-base-lib/src/*.js',
-      './build/libs/base-lib/src/*.js'])
-    .pipe(gulp.dest('./build/src/'));
 }
 
 // Copy matchers to consumers.
@@ -71,10 +56,8 @@ var test = function () {
 
 gulp.task('test', test);
 gulp.task('eslint', eslinter);
-gulp.task('copyLib', copyLib);
-gulp.task('copyBaseLib', copyBaseLib);
 gulp.task('copyMatchersJson', copyMatchersJson);
 gulp.task('build', build);
 gulp.task('installPackages', installPackages);
-gulp.task('default', gulp.series('installPackages', 'eslint', 'build', 'copyLib', 'copyBaseLib', 'copyMatchersJson'));
+gulp.task('default', gulp.series('installPackages', 'eslint', 'build', 'copyMatchersJson'));
 
