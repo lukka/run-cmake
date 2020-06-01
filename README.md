@@ -31,7 +31,7 @@ It is __highly recommended__ to [use vcpkg as a submodule](https://github.com/lu
 
     # Cache/Restore the vcpkg's build artifacts.
     - name: Run vcpkg
-      uses: lukka/run-vcpkg@v2
+      uses: lukka/run-vcpkg@v4
       with:
        # Response file stored in source control, it provides the list of ports and triplet(s).
         vcpkgArguments: '@${{ env.vcpkgResponseFile }}'
@@ -39,7 +39,7 @@ It is __highly recommended__ to [use vcpkg as a submodule](https://github.com/lu
         vcpkgDirectory: '${{ github.workspace }}/vcpkg'
 
     - name: 'Run CMake with Ninja'
-      uses: lukka/run-cmake@v2
+      uses: lukka/run-cmake@v3
       with:
         cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
         cmakeListsTxtPath: '${{ github.workspace }}/cmakesettings.json/CMakeLists.txt'
@@ -53,7 +53,7 @@ It is __highly recommended__ to [use vcpkg as a submodule](https://github.com/lu
 ```
 ### <a id='flowchart'>Flowchart</a>
 
-![run-cmake flowchart](https://raw.githubusercontent.com/lukka/run-cmake-vcpkg-action-libs/master/run-cmake-lib/docs/task-cmake.png
+![run-cmake flowchart](https://raw.githubusercontent.com/lukka/run-cmake-vcpkg-action-libs/main/packages/run-cmake-lib/docs/task-cmake.png
 )
 
 ## <a id='run-cmake'>The ***run-cmake*** action</a>
@@ -70,7 +70,7 @@ Features available only in the GitHub version of **'run-cmake'**:
 
 ## <a id='reference'>Action reference: all input/output parameters</a>
 
-[action.yml](https://github.com/lukka/run-cmake/blob/v1/action.yml)
+[action.yml](https://github.com/lukka/run-cmake/blob/main/action.yml)
 
 ## <a id="samples">Samples</a>
 
@@ -87,61 +87,19 @@ Features available only in the GitHub version of **'run-cmake'**:
 [Linux/macOS/Windows, hosted runner, with cache and vcpkg as submodule](https://github.com/lukka/CppBuildTasks-Validation/blob/master/.github/workflows/hosted-cmakesettingsjson-cache-submod_vcpkg.yml)| [![Actions Status](https://github.com/lukka/CppBuildTasks-Validation/workflows/hosted-cmakesettingsjson-cache-submod_vcpkg/badge.svg)](https://github.com/lukka/CppBuildTasks-Validation/actions)
 
 ## <a id='projects'>Real world project samples</a>
-
-project: [CppOpenGLWebAssemblyCMake](https://github.com/lukka/CppOpenGLWebAssemblyCMake) | |
-|----------|-------|
-[WASM/Linux/macOS](https://github.com/lukka/CppOpenGLWebAssemblyCMake/blob/master/.github/workflows/build.yml) | [![Actions Status](https://github.com/lukka/CppOpenGLWebAssemblyCMake/workflows/hosted-wasm-macos-linux/badge.svg)](https://github.com/lukka/CppOpenGLWebAssemblyCMake/actions)
-
-project: [quiniouben/vban](https://github.com/quiniouben/vban/) | | 
-|----------|-------|
-[Windows/Linux](https://github.com/quiniouben/vban/blob/master/.github/workflows/main.yml) | [![CI](https://github.com/quiniouben/vban/workflows/CI/badge.svg)](https://github.com/quiniouben/vban/actions)
-
-project: [OPM/ResInsight](https://github.com/OPM/ResInsight/) | | 
-|----------|-------|
-[Windows/Linux](https://github.com/OPM/ResInsight/blob/dev/.github/workflows/main.yml) | [![CI](https://github.com/OPM/ResInsight/workflows/ResInsight%20Build/badge.svg)](https://github.com/OPM/ResInsight/actions)
-
-project: [iovw/Notepad--](https://github.com/iovw/Notepad--/) | | 
-|----------|-------|
-[Windows](https://github.com/iovw/Notepad--/blob/master/.github/workflows/ccpp.yml) | [![CI](https://github.com/iovw/Notepad--/workflows/C/C++%20CI/badge.svg)](https://github.com/iovw/Notepad--/actions)
-
-project: [Mudlet/Mudlet](https://github.com/Mudlet/Mudlet) | | 
-|----------|-------|
-[Linux/macOS](https://github.com/Mudlet/Mudlet/blob/development/.github/workflows/build-mudlet.yml) | [![Build Mudlet](https://github.com/Mudlet/Mudlet/workflows/Build%20Mudlet/badge.svg)](https://github.com/Mudlet/Mudlet/actions)
-
-project: [otland/forgottenserver](https://github.com/otland/forgottenserver) | | 
-|----------|-------|
-[Linux/macOS/Windows](https://github.com/otland/forgottenserver/blob/master/.github/workflows/build-vcpkg.yml) | [![Build with vcpkg](https://github.com/otland/forgottenserver/workflows/Build%20with%20vcpkg/badge.svg)](https://github.com/otland/forgottenserver/actions)
-
-project: [DPriceDev/Hestia-Game-Engine](https://github.com/DPriceDev/Hestia-Game-Engine) | | 
-|----------|-------|
-[Linux/macOS/Windows](https://github.com/DPriceDev/Hestia-Game-Engine/blob/80667cce04a1b1619c4180e5b1ef9fbf0c32eaf1/.github/workflows/ccpp.yml) | [![C/C++ CI](https://github.com/DPriceDev/Hestia-Game-Engine/workflows/C/C++%20CI/badge.svg)](https://github.com/DPriceDev/Hestia-Game-Engine/actions)
-
-project: [Element-0/ElementZero](https://github.com/Element-0/ElementZero) | | 
-|----------|-------|
-[Windows](https://github.com/Element-0/ElementZero/blob/master/.github/workflows/ci.yml) | [![CI](https://github.com/Element-0/ElementZero/workflows/CI/badge.svg)](https://github.com/Element-0/ElementZero/actions)
-
-project: [assimp/assimp](https://github.com/assimp/assimp) | | 
-|----------|-------|
-[Linux/macOS/Windows](https://github.com/assimp/assimp/blob/master/.github/workflows/ccpp.yml) | [![C/C++ CI](https://github.com/assimp/assimp/workflows/C/C++%20CI/badge.svg)](https://github.com/assimp/assimp/actions)
-
-project: [sony/nmos-cpp](https://github.com/sony/nmos-cpp) | | 
-|----------|-------|
-[Linux/macOS/Windows](https://github.com/sony/nmos-cpp/blob/master/.github/workflows/build-test.yml) | [![build-test](https://github.com/sony/nmos-cpp/workflows/build-test/badge.svg)](https://github.com/sony/nmos-cpp/actions)
-
-
-project: [RaftLib/RaftLib](https://github.com/RaftLib/RaftLib) | | 
-|----------|-------|
-[Linux/macOS/Windows](https://github.com/RaftLib/RaftLib/blob/master/.github/workflows/main.yml) | [![CI](https://github.com/RaftLib/RaftLib/workflows/CI/badge.svg)](https://github.com/RaftLib/RaftLib/actions)
-
-project: [zealdocs/zeal](https://github.com/zealdocs/zeal) | | 
-|----------|-------|
-[Linux/Windows](https://github.com/zealdocs/zeal/blob/master/.github/workflows/build-check.yml) | [![Build Check](https://github.com/zealdocs/zeal/workflows/Build%20Check/badge.svg)](https://github.com/zealdocs/zeal/actions)
-
-project: [edubart/otclient](https://github.com/edubart/otclient) | | 
-|----------|-------|
-[Linux/macOS/Windows](https://github.com/edubart/otclient/blob/master/.github/workflows/build-vcpkg.yml) | [![Build with vcpkg](https://github.com/edubart/otclient/workflows/Build%20with%20vcpkg/badge.svg)](https://github.com/edubart/otclient/actions)
-
-
+|Project|Platform(s)| |
+|----------|-------|-|
+|[CppOpenGLWebAssemblyCMake](https://github.com/lukka/CppOpenGLWebAssemblyCMake) |[WASM/Linux/macOS](https://github.com/lukka/CppOpenGLWebAssemblyCMake/blob/master/.github/workflows/build.yml) | [![Actions Status](https://github.com/lukka/CppOpenGLWebAssemblyCMake/workflows/hosted-wasm-macos-linux/badge.svg)](https://github.com/lukka/CppOpenGLWebAssemblyCMake/actions)
+|[quiniouben/vban](https://github.com/quiniouben/vban/) | [Windows/Linux](https://github.com/quiniouben/vban/blob/master/.github/workflows/main.yml) | [![CI](https://github.com/quiniouben/vban/workflows/CI/badge.svg)](https://github.com/quiniouben/vban/actions)
+|[OPM/ResInsight](https://github.com/OPM/ResInsight/) | [Windows/Linux](https://github.com/OPM/ResInsight/blob/dev/.github/workflows/main.yml) | [![CI](https://github.com/OPM/ResInsight/workflows/ResInsight%20Build/badge.svg)](https://github.com/OPM/ResInsight/actions)
+|[iovw/Notepad--](https://github.com/iovw/Notepad--/) | [Windows](https://github.com/iovw/Notepad--/blob/master/.github/workflows/ccpp.yml) | [![CI](https://github.com/iovw/Notepad--/workflows/C/C++%20CI/badge.svg)](https://github.com/iovw/Notepad--/actions)
+|[Mudlet/Mudlet](https://github.com/Mudlet/Mudlet) | [Linux/macOS](https://github.com/Mudlet/Mudlet/blob/development/.github/workflows/build-mudlet.yml) | [![Build Mudlet](https://github.com/Mudlet/Mudlet/workflows/Build%20Mudlet/badge.svg)](https://github.com/Mudlet/Mudlet/actions) 
+|[otland/forgottenserver](https://github.com/otland/forgottenserver) | [Linux/macOS/Windows](https://github.com/otland/forgottenserver/blob/master/.github/workflows/build-vcpkg.yml) | [![Build with vcpkg](https://github.com/otland/forgottenserver/workflows/Build%20with%20vcpkg/badge.svg)](https://github.com/otland/forgottenserver/actions)
+|[Element-0/ElementZero](https://github.com/Element-0/ElementZero) | [Windows](https://github.com/Element-0/ElementZero/blob/master/.github/workflows/ci.yml) | [![CI](https://github.com/Element-0/ElementZero/workflows/CI/badge.svg)](https://github.com/Element-0/ElementZero/actions)
+|[assimp/assimp](https://github.com/assimp/assimp) |[Linux/macOS/Windows](https://github.com/assimp/assimp/blob/master/.github/workflows/ccpp.yml) | [![C/C++ CI](https://github.com/assimp/assimp/workflows/C/C++%20CI/badge.svg)](https://github.com/assimp/assimp/actions)
+|[sony/nmos-cpp](https://github.com/sony/nmos-cpp) | [Linux/macOS/Windows](https://github.com/sony/nmos-cpp/blob/master/.github/workflows/build-test.yml) | [![build-test](https://github.com/sony/nmos-cpp/workflows/build-test/badge.svg)](https://github.com/sony/nmos-cpp/actions)
+|[RaftLib/RaftLib](https://github.com/RaftLib/RaftLib) | [Linux/macOS/Windows](https://github.com/RaftLib/RaftLib/blob/master/.github/workflows/main.yml) | [![CI](https://github.com/RaftLib/RaftLib/workflows/CI/badge.svg)](https://github.com/RaftLib/RaftLib/actions)
+|[zealdocs/zeal](https://github.com/zealdocs/zeal) | [Linux/Windows](https://github.com/zealdocs/zeal/blob/master/.github/workflows/build-check.yml) | [![Build Check](https://github.com/zealdocs/zeal/workflows/Build%20Check/badge.svg)](https://github.com/zealdocs/zeal/actions)
 
 # Developers information
 
@@ -171,12 +129,6 @@ To build, pack and test:
  To run test directly:
  
  > jest
-
-[Smoke tests](https://en.wikipedia.org/wiki/Smoke_testing_(software)) are implemented in this repository, which run the action on all platforms.
-
-Rigorous tests are executed in the builds of [CppBuildTasks](https://github.com/lukka/CppBuildTasks/) repository that shares the same engine in the [run-cmake-vcpkg-action-libs](https://github.com/lukka/run-cmake-vcpkg-action-libs) submodule.
-
-It would be desirable to have extensive tests implemented in this repository as well.
 
 Validation tests on various scenarios are run using the workflows of the [Samples](#samples).
 

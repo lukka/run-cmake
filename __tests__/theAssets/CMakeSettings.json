@@ -48,7 +48,7 @@
         "ctestCommandArgs": ""
       },
       {
-        "name": "x64-Release-VS",
+        "name": "x64VS-Release",
         "generator": "Visual Studio 16 2019 Win64",
         "configurationType": "Release",
         "inheritEnvironments": [

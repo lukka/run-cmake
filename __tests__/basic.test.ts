@@ -86,6 +86,7 @@ describe('run-cmake tests', () => {
     test('basic test for CMakeListsTxtAdvanced', () => {
         process.env.INPUT_CMAKELISTSORSETTINGSJSON = 'CMakeListsTxtAdvanced';
         process.env.INPUT_BUILDDIRECTORY = buildDirectory;
+        process.env.INPUT_CMAKEAPPENDEDARGS = "-GNinja"
         process.env.INPUT_CMAKELISTSTXTPATH = path.join(assetDirectory, 'CMakeLists.txt');
         process.env.INPUT_BUILDWITHCMAKE = 'true';
         process.env.INPUT_USESHELL = 'true';
@@ -99,8 +100,9 @@ describe('run-cmake tests', () => {
     test('basic test for CMakeSettingsJson', () => {
         process.env.INPUT_CMAKELISTSORSETTINGSJSON = 'CMakeSettingsJson';
         process.env.INPUT_BUILDDIRECTORY = buildDirectory;
+        // Avoid executing tests with VS generators because of: https://github.com/lukka/run-cmake/issues/26
         process.platform === "win32" ? 
-            process.env.INPUT_CONFIGURATIONREGEXFILTER = 'x64.*':
+            process.env.INPUT_CONFIGURATIONREGEXFILTER = 'x64-.*':
             process.env.INPUT_CONFIGURATIONREGEXFILTER = '.*inux.*';
         process.env.INPUT_CMAKESETTINGSJSONPATH = path.join(assetDirectory, 'CMakeSettings.json');
         process.env.INPUT_BUILDWITHCMAKE = 'true';
