@@ -31,7 +31,7 @@ It is __highly recommended__ to [use vcpkg as a submodule](https://github.com/lu
 
     # Cache/Restore the vcpkg's build artifacts.
     - name: Run vcpkg
-      uses: lukka/run-vcpkg@v2
+      uses: lukka/run-vcpkg@v4
       with:
        # Response file stored in source control, it provides the list of ports and triplet(s).
         vcpkgArguments: '@${{ env.vcpkgResponseFile }}'
@@ -39,7 +39,7 @@ It is __highly recommended__ to [use vcpkg as a submodule](https://github.com/lu
         vcpkgDirectory: '${{ github.workspace }}/vcpkg'
 
     - name: 'Run CMake with Ninja'
-      uses: lukka/run-cmake@v2
+      uses: lukka/run-cmake@v3
       with:
         cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
         cmakeListsTxtPath: '${{ github.workspace }}/cmakesettings.json/CMakeLists.txt'

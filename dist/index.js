@@ -1030,480 +1030,26 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
-/***/ 35:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-// Copyright (c) 2019-2020 Luca Cappa
-// Released under the term specified in file LICENSE.txt
-// SPDX short identifier: MIT
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const baselib = __webpack_require__(42);
-const core = __webpack_require__(470);
-const toolrunner = __webpack_require__(9);
-const ioutil = __webpack_require__(672);
-const io = __webpack_require__(1);
-const fs = __webpack_require__(747);
-const path = __webpack_require__(622);
-const cp = __webpack_require__(129);
-function escapeCmdCommand(command) {
-    command = command.trim();
-    if (!/^\".*\"$/.test(command))
-        command = `\"${command}\"`;
-    return command;
-}
-function escapeShArgument(argument) {
-    // escape all blanks: blank -> \blank
-    return argument.replace(/ /g, '\\ ');
-}
-function escapeCmdExeArgument(argument) {
-    // \" -> \\"
-    argument = argument.replace(/(\\*)"/g, '$1$1\\"');
-    // \$ -> \\$
-    argument = argument.replace(/(\\*)$/g, '$1$1');
-    // All other backslashes occur literally.
-    // Quote the whole thing:
-    argument = `"${argument}"`;
-    // Prefix with caret ^ any character to be escaped, as in:
-    // http://www.robvanderwoude.com/escapechars.php
-    // Do not escape %, let variable be passed in as is.
-    const metaCharsRegExp = /([()\][!^"`<>&|;, *?])/g;
-    argument = argument.replace(metaCharsRegExp, '^$1');
-    return argument;
-}
-/**
- * Run a command with arguments in a shell.
- * Note: -G Ninja or -GNinja? The former works witha shell, the second does not work without a shell.
- * e.spawnSync('cmake', ['-GNinja', '.'], {shell:false, stdio:'inherit', cwd:'/Users/git_repos/cmake-task-tests/'}) -> Configuring done.
- * e.spawnSync('cmake', ['-G Ninja', '.'], {shell:false, stdio:'inherit', cwd:'/Users/git_repos/cmake-task-tests/'}) -> CMake Error: Could not create named generator  Ninja
- * e.spawnSync('cmake', ['-G Ninja', '.'], {shell:true, stdio:'inherit', cwd:'/Users/git_repos/cmake-task-tests/'}) -> -- Configuring done
- * e.spawnSync('cmake', ['-GNinja', '.'], {shell:true, stdio:'inherit', cwd:'/Users/git_repos/cmake-task-tests/'}) -> -- Configuring done
- * Hence the caller of this function is always using no spaces in between arguments.
- * Exception is arbitrary text coming from the user, which will hit this problem when not useing a shell.
- *
- * Other corner cases:
- * e.spawnSync('cmake', ['-GUnix Makefiles', '.'], {shell:true, stdio:'inherit', cwd:'/Users/git_repos/cmake-task-tests/'}) -> CMake Error: Could not create named generator Unix
- * e.spawnSync('cmake', ['-GUnix\ Makefiles', '.'], {shell:false, stdio:'inherit', cwd:'/Users/git_repos/cmake-task-tests/'}) -> -- Configuring done
- > e.spawnSync('cmake', ['-GUnix Makefiles', '.'], {shell:false, stdio:'inherit', cwd:'/Users/git_repos/cmake-task-tests/'}) -> -- Configuring done
- e.spawnSync('cmake', ['-G Unix Makefiles', '.'], {shell:false, stdio:'inherit', cwd:'/Users/git_repos/cmake-task-tests/'}) -> CMake Error: Could not create named generator  Unix Makefiles
- * @static
- * @param {string} commandPath
- * @param {string[]} args
- * @param {baselib.ExecOptions} [execOptions]
- * @returns {Promise<number>}
- * @memberof ActionLib
- */
-function exec(commandPath, args, execOptions) {
-    var _a, _b, _c, _d, _e, _f, _g;
-    return __awaiter(this, void 0, void 0, function* () {
-        core.debug(`exec(${commandPath}, ${JSON.stringify(args)}, {${(_a = execOptions) === null || _a === void 0 ? void 0 : _a.cwd}})<<`);
-        let useShell = false;
-        if (process.env.INPUT_USESHELL === 'true')
-            useShell = true;
-        else if (process.env.INPUT_USESHELL === 'false') {
-            useShell = false;
-        }
-        else if (process.env.INPUT_USESHELL) {
-            useShell = process.env.INPUT_USESHELL;
-        }
-        const opts = {
-            shell: useShell,
-            windowsVerbatimArguments: false,
-            cwd: (_b = execOptions) === null || _b === void 0 ? void 0 : _b.cwd,
-            env: (_c = execOptions) === null || _c === void 0 ? void 0 : _c.env,
-            stdio: "pipe",
-        };
-        let args2 = args;
-        if ((typeof useShell === 'string' && useShell.includes('cmd')) ||
-            (process.platform === 'win32' && typeof useShell === 'boolean' && useShell === true)) {
-            args2 = [];
-            args.map((arg) => args2.push(escapeCmdExeArgument(arg)));
-            // When using a shell, the command must be enclosed by quotes to handle blanks correctly.
-            commandPath = escapeCmdCommand(commandPath);
-        }
-        else if (((typeof useShell === 'string' && !useShell.includes('cmd')) ||
-            (process.platform !== 'win32' && typeof useShell === 'boolean' && useShell === true))) {
-            args2 = [];
-            args.map((arg) => args2.push(escapeShArgument(arg)));
-            // When using a Unix shell, blanks needs to be escaped in the command as well.
-            commandPath = escapeShArgument(commandPath);
-        }
-        args = args2;
-        core.debug(`cp.spawn(${commandPath}, ${JSON.stringify(args)}, {cwd=${(_d = opts) === null || _d === void 0 ? void 0 : _d.cwd}, shell=${(_e = opts) === null || _e === void 0 ? void 0 : _e.shell}, path=${JSON.stringify((_g = (_f = opts) === null || _f === void 0 ? void 0 : _f.env) === null || _g === void 0 ? void 0 : _g.PATH)}})`);
-        return new Promise((resolve, reject) => {
-            const child = cp.spawn(`${commandPath}`, args, opts);
-            if (execOptions && child.stdout) {
-                child.stdout.on('data', (chunk) => {
-                    if (execOptions.listeners && execOptions.listeners.stdout) {
-                        execOptions.listeners.stdout(chunk);
-                    }
-                    process.stdout.write(chunk);
-                });
-            }
-            if (execOptions && child.stderr) {
-                child.stderr.on('data', (chunk) => {
-                    if (execOptions.listeners && execOptions.listeners.stderr) {
-                        execOptions.listeners.stderr(chunk);
-                    }
-                    process.stdout.write(chunk);
-                });
-            }
-            child.on('error', (error) => {
-                core.warning(`${error}`);
-                // Wait one second to get still some output.
-                setTimeout(() => {
-                    reject(error);
-                    child.removeAllListeners();
-                }, 1000);
-            });
-            child.on('exit', (exitCode) => {
-                core.debug(`Exit code '${exitCode}' received from command '${commandPath}'`);
-                // Do not resolve yet, wait for the close event.
-            });
-            child.on('close', (exitCode) => {
-                core.debug(`STDIO streams have closed for command '${commandPath}'`);
-                child.removeAllListeners();
-                resolve(exitCode);
-            });
-        });
-    });
-}
-class ToolRunner {
-    constructor(path) {
-        this.path = path;
-        this.arguments = [];
-    }
-    _argStringToArray(text) {
-        return this.__argStringToArray(text);
-    }
-    exec(options) {
-        return exec(this.path, this.arguments, options);
-    }
-    line(val) {
-        this.arguments = this.arguments.concat(toolrunner.argStringToArray(val));
-    }
-    arg(val) {
-        if (val instanceof Array) {
-            this.arguments = this.arguments.concat(val);
-        }
-        else if (typeof (val) === 'string') {
-            this.arguments = this.arguments.concat(val.trim());
-        }
-    }
-    execSync(options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let stdout = "";
-            let stderr = "";
-            let options2;
-            if (options) {
-                options2 = this.convertExecOptions(options);
-                options2.listeners = {
-                    stdout: (data) => {
-                        stdout += data.toString();
-                    },
-                    stderr: (data) => {
-                        stderr += data.toString();
-                    }
-                };
-            }
-            const exitCode = yield exec(this.path, this.arguments, options2);
-            const res2 = {
-                code: exitCode,
-                stdout: stdout,
-                stderr: stderr
-            };
-            return Promise.resolve(res2);
-        });
-    }
-    convertExecOptions(options) {
-        var _a, _b, _c, _d, _e, _f;
-        const result = {
-            cwd: (_a = options.cwd, (_a !== null && _a !== void 0 ? _a : process.cwd())),
-            env: (_b = options.env, (_b !== null && _b !== void 0 ? _b : process.env)),
-            silent: (_c = options.silent, (_c !== null && _c !== void 0 ? _c : false)),
-            failOnStdErr: (_d = options.failOnStdErr, (_d !== null && _d !== void 0 ? _d : false)),
-            ignoreReturnCode: (_e = options.ignoreReturnCode, (_e !== null && _e !== void 0 ? _e : false)),
-            windowsVerbatimArguments: (_f = options.windowsVerbatimArguments, (_f !== null && _f !== void 0 ? _f : false)),
-            listeners: {
-                stdout: (data) => void {
-                // Nothing to do.
-                },
-                stderr: (data) => void {
-                // Nothing to do.
-                },
-                stdline: (data) => void {
-                // Nothing to do.
-                },
-                errline: (data) => void {
-                // Nothing to do.
-                },
-                debug: (data) => void {
-                // Nothing to do.
-                },
-            }
-        };
-        result.outStream = options.outStream || process.stdout;
-        result.errStream = options.errStream || process.stderr;
-        return result;
-    }
-    __argStringToArray(argString) {
-        const args = [];
-        let inQuotes = false;
-        let escaped = false;
-        let lastCharWasSpace = true;
-        let arg = '';
-        const append = function (c) {
-            // we only escape double quotes.
-            if (escaped && c !== '"') {
-                arg += '\\';
-            }
-            arg += c;
-            escaped = false;
-        };
-        for (let i = 0; i < argString.length; i++) {
-            const c = argString.charAt(i);
-            if (c === ' ' && !inQuotes) {
-                if (!lastCharWasSpace) {
-                    args.push(arg);
-                    arg = '';
-                }
-                lastCharWasSpace = true;
-                continue;
-            }
-            else {
-                lastCharWasSpace = false;
-            }
-            if (c === '"') {
-                if (!escaped) {
-                    inQuotes = !inQuotes;
-                }
-                else {
-                    append(c);
-                }
-                continue;
-            }
-            if (c === "\\" && escaped) {
-                append(c);
-                continue;
-            }
-            if (c === "\\" && inQuotes) {
-                escaped = true;
-                continue;
-            }
-            append(c);
-            lastCharWasSpace = false;
-        }
-        if (!lastCharWasSpace) {
-            args.push(arg.trim());
-        }
-        return args;
-    }
-    ;
-}
-exports.ToolRunner = ToolRunner;
-class ActionLib {
-    getInput(name, isRequired) {
-        const value = core.getInput(name, { required: isRequired });
-        this.debug(`getInput(${name}, ${isRequired}) -> '${value}'`);
-        return value;
-    }
-    getBoolInput(name, isRequired) {
-        var _a;
-        const value = (_a = core.getInput(name, { required: isRequired }), (_a !== null && _a !== void 0 ? _a : "")).toUpperCase() === "TRUE";
-        this.debug(`getBoolInput(${name}, ${isRequired}) -> '${value}'`);
-        return value;
-    }
-    getPathInput(name, isRequired, checkExists) {
-        const value = path.resolve(core.getInput(name, { required: isRequired }));
-        this.debug(`getPathInput(${name}) -> '${value}'`);
-        if (checkExists) {
-            if (!fs.existsSync(value))
-                throw new Error(`input path '${value}' for '${name}' does not exist.`);
-        }
-        return value;
-    }
-    isFilePathSupplied(name) {
-        var _a, _b;
-        // normalize paths
-        const pathValue = this.resolve((_a = this.getPathInput(name, false, false), (_a !== null && _a !== void 0 ? _a : '')));
-        const repoRoot = this.resolve((_b = process.env.GITHUB_WORKSPACE, (_b !== null && _b !== void 0 ? _b : '')));
-        const isSupplied = pathValue !== repoRoot;
-        this.debug(`isFilePathSupplied(s file path=('${name}') -> '${isSupplied}'`);
-        return isSupplied;
-    }
-    getDelimitedInput(name, delim, required) {
-        const input = core.getInput(name, { required: required });
-        const inputs = input.split(delim);
-        this.debug(`getDelimitedInput(${name}, ${delim}, ${required}) -> '${inputs}'`);
-        return inputs;
-    }
-    // Set an environment variable, re-usable in subsequent actions.
-    setVariable(name, value) {
-        core.exportVariable(name, value);
-    }
-    // Set the output of the action.
-    setOutput(name, value) {
-        core.setOutput(name, value);
-    }
-    getVariable(name) {
-        var _a;
-        //?? Is it really fine to return an empty string in case of undefined variable?
-        return _a = process.env[name], (_a !== null && _a !== void 0 ? _a : "");
-    }
-    debug(message) {
-        core.debug(message);
-    }
-    error(message) {
-        core.error(message);
-    }
-    warning(message) {
-        core.warning(message);
-    }
-    tool(name) {
-        return new ToolRunner(name);
-    }
-    exec(path, args, options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield exec(path, args, options);
-        });
-    }
-    execSync(path, args, options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const exitCode = yield exec(`"${path}"`, args, options);
-            const res2 = {
-                code: exitCode,
-                stdout: "",
-                stderr: ""
-            };
-            return Promise.resolve(res2);
-        });
-    }
-    which(name, required) {
-        return __awaiter(this, void 0, void 0, function* () {
-            core.debug(`"which(${name})<<`);
-            const filePath = yield io.which(name, required);
-            console.log(`tool: ${filePath}`);
-            core.debug(`"which(${name}) >> ${filePath}`);
-            return filePath;
-        });
-    }
-    rmRF(path) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield io.rmRF(path);
-        });
-    }
-    mkdirP(path) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield io.mkdirP(path);
-        });
-    }
-    cd(path) {
-        process.chdir(path);
-    }
-    writeFile(path, content) {
-        fs.writeFileSync(path, content);
-    }
-    resolve(apath) {
-        core.debug(`"resolve(${apath})<<`);
-        const resolvedPath = path.resolve(apath);
-        core.debug(`"resolve(${apath})>> '${resolvedPath})'`);
-        return resolvedPath;
-    }
-    stats(path) {
-        return fs.statSync(path);
-    }
-    exist(path) {
-        return ioutil.exists(path);
-    }
-    getBinDir() {
-        if (!process.env.GITHUB_WORKSPACE) {
-            throw new Error("GITHUB_WORKSPACE is not set.");
-        }
-        const binPath = baselib.normalizePath(path.resolve(path.join(process.env.GITHUB_WORKSPACE, "../b/")));
-        if (!fs.existsSync(binPath)) {
-            core.debug(`BinDir '${binPath}' does not exists, creating it...`);
-            fs.mkdirSync(binPath);
-        }
-        return binPath;
-    }
-    getSrcDir() {
-        if (!process.env.GITHUB_WORKSPACE) {
-            throw new Error("GITHUB_WORKSPACE env var is not set.");
-        }
-        const srcPath = baselib.normalizePath(path.resolve(process.env.GITHUB_WORKSPACE));
-        if (!fs.existsSync(srcPath)) {
-            throw new Error(`SourceDir '${srcPath}' does not exists.`);
-        }
-        return srcPath;
-    }
-    getArtifactsDir() {
-        if (!process.env.GITHUB_WORKSPACE) {
-            throw new Error("GITHUB_WORKSPACE is not set.");
-        }
-        //?? HACK. How to get the value of '{{ runner.temp }}' in JS's action?
-        const artifactsPath = baselib.normalizePath(path.resolve(path.join(process.env.GITHUB_WORKSPACE, "../../_temp")));
-        if (!fs.existsSync(artifactsPath)) {
-            core.debug(`ArtifactsDir '${artifactsPath}' does not exists, creating it...`);
-            fs.mkdirSync(artifactsPath);
-        }
-        return artifactsPath;
-    }
-    beginOperation(message) {
-        core.startGroup(message);
-    }
-    endOperation() {
-        core.endGroup();
-    }
-    addMatcher(file) {
-        console.log(`::add-matcher::${file}`);
-    }
-    removeMatcher(file) {
-        console.log(`::remove-matcher::${file}`);
-    }
-}
-exports.ActionLib = ActionLib;
-
-//# sourceMappingURL=action-lib.js.map
-
-
-/***/ }),
-
 /***/ 42:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
-// Copyright (c) 2019-2020 Luca Cappa
-// Released under the term specified in file LICENSE.txt
-// SPDX short identifier: MIT
 Object.defineProperty(exports, "__esModule", { value: true });
-const path = __webpack_require__(622);
-/**
- * Normalize a filesystem path with path.normalize(), then remove any trailing space.
- *
- * @export
- * @param {string} aPath The string representing a filesystem path.
- * @returns {string} The normalizeed path without trailing slash.
- */
-function normalizePath(aPath) {
-    aPath = path.normalize(aPath);
-    if (/[\\\/]$/.test(aPath))
-        aPath = aPath.slice(0, -1);
-    return aPath;
+const merge2 = __webpack_require__(538);
+function merge(streams) {
+    const mergedStream = merge2(streams);
+    streams.forEach((stream) => {
+        stream.once('error', (error) => mergedStream.emit('error', error));
+    });
+    mergedStream.once('close', () => propagateCloseEventToSources(streams));
+    mergedStream.once('end', () => propagateCloseEventToSources(streams));
+    return mergedStream;
 }
-exports.normalizePath = normalizePath;
-
-//# sourceMappingURL=base-lib.js.map
+exports.merge = merge;
+function propagateCloseEventToSources(streams) {
+    streams.forEach((stream) => stream.emit('close'));
+}
 
 
 /***/ }),
@@ -1580,6 +1126,118 @@ function onceStrict (fn) {
   return f
 }
 
+
+/***/ }),
+
+/***/ 72:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+// Copyright (c) 2019-2020 Luca Cappa
+// Released under the term specified in file LICENSE.txt
+// SPDX short identifier: MIT
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.NinjaProvider = void 0;
+const path = __importStar(__webpack_require__(622));
+const baselibutils = __importStar(__webpack_require__(758));
+class NinjaProvider {
+    constructor(baseLib) {
+        this.baseLib = baseLib;
+        this.baseUtils = new baselibutils.BaseLibUtils(baseLib);
+    }
+    download(url) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!url) {
+                if (this.baseUtils.isLinux()) {
+                    url = `${NinjaProvider.baseUrl}/ninja-linux.zip`;
+                }
+                else if (this.baseUtils.isDarwin()) {
+                    url = `${NinjaProvider.baseUrl}/ninja-mac.zip`;
+                }
+                else if (this.baseUtils.isWin32()) {
+                    url = `${NinjaProvider.baseUrl}/ninja-win.zip`;
+                }
+            }
+            // Create the name of the executable, i.e. ninja or ninja.exe .
+            let ninjaExeName = 'ninja';
+            if (this.baseUtils.isWin32()) {
+                ninjaExeName += ".exe";
+            }
+            const ninjaPath = yield this.baseUtils.downloadArchive(url);
+            const ninjaFullPath = path.join(ninjaPath, ninjaExeName);
+            if (this.baseUtils.isLinux() || this.baseUtils.isDarwin()) {
+                yield this.baseLib.exec('chmod', ['+x', ninjaFullPath]);
+            }
+            return ninjaFullPath;
+        });
+    }
+    findNinjaTool() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const ninjaPath = yield this.baseLib.which('ninja', false);
+            return ninjaPath;
+        });
+    }
+    ;
+    /**
+     * Retrieve the path to 'ninja' executable. If the provided path to ninja is no existent
+     * it will download the ninja archive from the provided one, if the latter not provided from
+     * the default URL for ths host platform.
+     * @param {(string | undefined)} ninjaPath Optional path to ninja executable.
+     * @param {string} ninjaDownloadUrl Optional URL to download ninja from.
+     * @returns {Promise<string>} The full path to the ninja executable.
+     * @memberof NinjaDownloader
+     */
+    retrieveNinjaPath(ninjaPath, ninjaDownloadUrl) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!ninjaPath) {
+                this.baseLib.debug("Path to ninja executable has not been explicitly specified on the task. Searching for it now...");
+                ninjaPath = yield this.findNinjaTool();
+                if (!ninjaPath) {
+                    this.baseLib.debug("Cannot find Ninja in PATH environment variable.");
+                    ninjaPath =
+                        yield this.download(ninjaDownloadUrl);
+                    if (!ninjaPath) {
+                        throw new Error("Cannot find nor download Ninja.");
+                    }
+                }
+            }
+            this.baseLib.debug(`Returning ninja at: ${ninjaPath}`);
+            return ninjaPath;
+        });
+    }
+}
+exports.NinjaProvider = NinjaProvider;
+NinjaProvider.baseUrl = 'https://github.com/ninja-build/ninja/releases/download/v1.10.0';
+//# sourceMappingURL=ninja.js.map
 
 /***/ }),
 
@@ -3575,91 +3233,6 @@ module.exports = require("child_process");
 
 /***/ }),
 
-/***/ 141:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-// Copyright (c) 2019-2020 Luca Cappa
-// Released under the term specified in file LICENSE.txt
-// SPDX short identifier: MIT
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const path = __webpack_require__(622);
-const utils = __webpack_require__(477);
-function findNinjaTool() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const ninjaPath = yield utils.getBaseLib().which('ninja', false);
-        return ninjaPath;
-    });
-}
-exports.findNinjaTool = findNinjaTool;
-;
-class NinjaDownloader {
-    static download(url) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let ninjaPath = '';
-            if (!url) {
-                if (utils.isLinux()) {
-                    url = `${NinjaDownloader.baseUrl}/ninja-linux.zip`;
-                }
-                else if (utils.isDarwin()) {
-                    url = `${NinjaDownloader.baseUrl}/ninja-mac.zip`;
-                }
-                else if (utils.isWin32()) {
-                    url = `${NinjaDownloader.baseUrl}/ninja-win.zip`;
-                }
-            }
-            // Create the name of the executable, i.e. ninja or ninja.exe .
-            let ninjaExeName = 'ninja';
-            if (utils.isWin32()) {
-                ninjaExeName += ".exe";
-            }
-            ninjaPath = yield utils.Downloader.downloadArchive(url);
-            ninjaPath = path.join(ninjaPath, ninjaExeName);
-            if (utils.isLinux() || utils.isDarwin()) {
-                yield utils.getBaseLib().exec('chmod', ['+x', ninjaPath]);
-            }
-            return `${ninjaPath}`;
-        });
-    }
-}
-exports.NinjaDownloader = NinjaDownloader;
-NinjaDownloader.baseUrl = 'https://github.com/ninja-build/ninja/releases/download/v1.10.0';
-function retrieveNinjaPath(ninjaPath, ninjaDownloadUrl) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const baseLib = utils.getBaseLib();
-        if (!ninjaPath) {
-            baseLib.debug("Path to ninja executable has not been explicitly specified on the task. Searching for it now...");
-            ninjaPath = yield findNinjaTool();
-            if (!ninjaPath) {
-                baseLib.debug("Cannot find Ninja in PATH environment variable.");
-                ninjaPath =
-                    yield NinjaDownloader.download(ninjaDownloadUrl);
-                if (!ninjaPath) {
-                    throw new Error("Cannot find nor download Ninja.");
-                }
-            }
-        }
-        baseLib.debug(`Returning ninja at: ${ninjaPath}`);
-        return ninjaPath;
-    });
-}
-exports.retrieveNinjaPath = retrieveNinjaPath;
-
-//# sourceMappingURL=ninja.js.map
-
-
-/***/ }),
-
 /***/ 143:
 /***/ (function(module) {
 
@@ -3735,87 +3308,6 @@ function readdir(directory, settings) {
     });
 }
 exports.readdir = readdir;
-
-
-/***/ }),
-
-/***/ 159:
-/***/ (function(module) {
-
-"use strict";
-
-const singleComment = Symbol('singleComment');
-const multiComment = Symbol('multiComment');
-const stripWithoutWhitespace = () => '';
-const stripWithWhitespace = (string, start, end) => string.slice(start, end).replace(/\S/g, ' ');
-
-const isEscaped = (jsonString, quotePosition) => {
-	let index = quotePosition - 1;
-	let backslashCount = 0;
-
-	while (jsonString[index] === '\\') {
-		index -= 1;
-		backslashCount += 1;
-	}
-
-	return Boolean(backslashCount % 2);
-};
-
-module.exports = (jsonString, options = {}) => {
-	const strip = options.whitespace === false ? stripWithoutWhitespace : stripWithWhitespace;
-
-	let insideString = false;
-	let insideComment = false;
-	let offset = 0;
-	let result = '';
-
-	for (let i = 0; i < jsonString.length; i++) {
-		const currentCharacter = jsonString[i];
-		const nextCharacter = jsonString[i + 1];
-
-		if (!insideComment && currentCharacter === '"') {
-			const escaped = isEscaped(jsonString, i);
-			if (!escaped) {
-				insideString = !insideString;
-			}
-		}
-
-		if (insideString) {
-			continue;
-		}
-
-		if (!insideComment && currentCharacter + nextCharacter === '//') {
-			result += jsonString.slice(offset, i);
-			offset = i;
-			insideComment = singleComment;
-			i++;
-		} else if (insideComment === singleComment && currentCharacter + nextCharacter === '\r\n') {
-			i++;
-			insideComment = false;
-			result += strip(jsonString, offset, i);
-			offset = i;
-			continue;
-		} else if (insideComment === singleComment && currentCharacter === '\n') {
-			insideComment = false;
-			result += strip(jsonString, offset, i);
-			offset = i;
-		} else if (!insideComment && currentCharacter + nextCharacter === '/*') {
-			result += jsonString.slice(offset, i);
-			offset = i;
-			insideComment = multiComment;
-			i++;
-			continue;
-		} else if (insideComment === multiComment && currentCharacter + nextCharacter === '*/') {
-			i++;
-			insideComment = false;
-			result += strip(jsonString, offset, i + 1);
-			offset = i + 1;
-			continue;
-		}
-	}
-
-	return result + (insideComment ? strip(jsonString.slice(offset)) : jsonString.slice(offset));
-};
 
 
 /***/ }),
@@ -4267,6 +3759,354 @@ exports.createDirentFromStats = createDirentFromStats;
 /***/ (function(module) {
 
 module.exports = require("https");
+
+/***/ }),
+
+/***/ 214:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+// Copyright (c) 2019-2020 Luca Cappa
+// Released under the term specified in file LICENSE.txt
+// SPDX short identifier: MIT
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CMakeRunner = void 0;
+const baseutillib = __importStar(__webpack_require__(758));
+const path = __importStar(__webpack_require__(622));
+const cmakesettings_runner_1 = __webpack_require__(454);
+const cmakeglobals = __importStar(__webpack_require__(330));
+const ninjalib = __importStar(__webpack_require__(72));
+const using_statement_1 = __webpack_require__(443);
+const cmakelib = __importStar(__webpack_require__(233));
+var RunCMakeModeType;
+(function (RunCMakeModeType) {
+    RunCMakeModeType[RunCMakeModeType["CMakeListsTxtBasic"] = 1] = "CMakeListsTxtBasic";
+    RunCMakeModeType[RunCMakeModeType["CMakeListsTxtAdvanced"] = 2] = "CMakeListsTxtAdvanced";
+    RunCMakeModeType[RunCMakeModeType["CMakeSettingsJson"] = 3] = "CMakeSettingsJson";
+})(RunCMakeModeType || (RunCMakeModeType = {}));
+function getTargetType(typeString) {
+    return RunCMakeModeType[typeString];
+}
+const CMakeGenerator = {
+    'Unknown': {},
+    'VS16Arm': { 'G': 'Visual Studio 16 2019', 'A': 'ARM', 'MultiConfiguration': true },
+    'VS16Win32': { 'G': 'Visual Studio 16 2019', 'A': 'Win32', 'MultiConfiguration': true },
+    'VS16Win64': { 'G': 'Visual Studio 16 2019', 'A': 'x64', 'MultiConfiguration': true },
+    'VS16Arm64': { 'G': 'Visual Studio 16 2019', 'A': 'ARM64', 'MultiConfiguration': true },
+    'VS15Arm': { 'G': 'Visual Studio 15 2017', 'A': 'ARM', 'MultiConfiguration': true },
+    'VS15Win32': { 'G': 'Visual Studio 15 2017', 'A': 'Win32', 'MultiConfiguration': true },
+    'VS15Win64': { 'G': 'Visual Studio 15 2017', 'A': 'x64', 'MultiConfiguration': true },
+    'VS15Arm64': { 'G': 'Visual Studio 15 2017', 'A': 'ARM64', 'MultiConfiguration': true },
+    'Ninja': { 'G': 'Ninja', 'A': '', 'MultiConfiguration': false },
+    'NinjaMulti': { 'G': 'Ninja Multi-Config', 'A': '', 'MultiConfiguration': true },
+    'UnixMakefiles': { 'G': 'Unix Makefiles', 'A': '', 'MultiConfiguration': false }
+};
+function getGenerator(generatorString) {
+    const generatorName = CMakeGenerator[generatorString];
+    return generatorName;
+}
+class CMakeRunner {
+    /*
+      // Unfortunately there is not a way to discriminate between a value provided by the user
+      // from a default value (not provided by the user), hence it is not possible to identify
+      // what the user provided.
+      private static warnIfUnused(inputName: string, taskMode: TaskModeType): void {
+        if (inputName in CMakeRunner.modePerInput) {
+          const usedInMode: TaskModeType[] = CMakeRunner.modePerInput[name];
+          if (usedInMode) {
+            if (usedInMode.indexOf(taskMode) < 0) { }
+    
+            //??this.tl.warning(`The input '${inputName}' is ignored in mode '${taskMode}'`);
+          }
+        }
+      }
+    */
+    constructor(tl) {
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s;
+        this.tl = tl;
+        this.buildDir = "";
+        this.generator = {};
+        this.baseUtils = new baseutillib.BaseLibUtils(this.tl);
+        this.cmakeUtils = new cmakelib.CMakeUtils(this.baseUtils);
+        this.ninjaLib = new ninjalib.NinjaProvider(this.tl);
+        const mode = (_a = this.tl.getInput(cmakeglobals.cmakeListsOrSettingsJson, true)) !== null && _a !== void 0 ? _a : "";
+        const runMode = getTargetType(mode);
+        if (!runMode) {
+            throw new Error(`ctor(): invalid mode '${mode}'.`);
+        }
+        this.runMode = runMode;
+        let required = this.runMode === RunCMakeModeType.CMakeSettingsJson;
+        this.cmakeSettingsJsonPath = (_b = this.tl.getPathInput(cmakeglobals.cmakeSettingsJsonPath, required, required)) !== null && _b !== void 0 ? _b : "";
+        required = this.runMode !== RunCMakeModeType.CMakeSettingsJson;
+        this.cmakeListsTxtPath = (_c = this.tl.getPathInput(cmakeglobals.cmakeListsTxtPath, required, required)) !== null && _c !== void 0 ? _c : "";
+        this.buildDir = (_d = this.tl.getInput(cmakeglobals.buildDirectory, this.runMode === RunCMakeModeType.CMakeListsTxtBasic)) !== null && _d !== void 0 ? _d : "";
+        this.appendedArgs = (_e = this.tl.getInput(cmakeglobals.cmakeAppendedArgs, false)) !== null && _e !== void 0 ? _e : "";
+        this.configurationFilter = (_f = this.tl.getInput(cmakeglobals.configurationRegexFilter, false)) !== null && _f !== void 0 ? _f : "";
+        this.ninjaPath = '';
+        if (this.tl.isFilePathSupplied(cmakeglobals.ninjaPath)) {
+            this.ninjaPath = (_g = tl.getInput(cmakeglobals.ninjaPath, false)) !== null && _g !== void 0 ? _g : "";
+        }
+        this.cmakeToolchainPath = "";
+        if (this.tl.isFilePathSupplied(cmakeglobals.cmakeToolchainPath)) {
+            this.cmakeToolchainPath = (_h = tl.getInput(cmakeglobals.cmakeToolchainPath, false)) !== null && _h !== void 0 ? _h : "";
+        }
+        const gen = (_j = this.tl.getInput(cmakeglobals.cmakeGenerator, this.runMode === RunCMakeModeType.CMakeListsTxtBasic)) !== null && _j !== void 0 ? _j : "";
+        this.generator = getGenerator(gen);
+        this.ninjaDownloadUrl = (_k = this.tl.getInput(cmakeglobals.ninjaDownloadUrl, false)) !== null && _k !== void 0 ? _k : "";
+        this.doBuild = (_l = this.tl.getBoolInput(cmakeglobals.buildWithCMake, false)) !== null && _l !== void 0 ? _l : false;
+        this.doBuildArgs = (_m = this.tl.getInput(cmakeglobals.buildWithCMakeArgs, false)) !== null && _m !== void 0 ? _m : "";
+        this.cmakeSourceDir = path.dirname((_o = baseutillib.BaseLibUtils.normalizePath(this.cmakeListsTxtPath)) !== null && _o !== void 0 ? _o : "");
+        this.useVcpkgToolchainFile = (_p = this.tl.getBoolInput(cmakeglobals.useVcpkgToolchainFile, false)) !== null && _p !== void 0 ? _p : false;
+        this.cmakeBuildType = (_q = this.tl.getInput(cmakeglobals.cmakeBuildType, this.runMode === RunCMakeModeType.CMakeListsTxtBasic)) !== null && _q !== void 0 ? _q : "";
+        this.vcpkgTriplet = (_r = (this.tl.getInput(cmakeglobals.cmakeVcpkgTriplet, false) ||
+            process.env.RUNVCPKG_VCPKG_TRIPLET)) !== null && _r !== void 0 ? _r : "";
+        this.sourceScript = (_s = this.tl.getInput(cmakeglobals.cmakeWrapperCommand, false)) !== null && _s !== void 0 ? _s : "";
+    }
+    run() {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.tl.debug('run()<<');
+            yield this.configure();
+            this.tl.debug('run()>>');
+        });
+    }
+    configure() {
+        var _a;
+        return __awaiter(this, void 0, void 0, function* () {
+            this.tl.debug('configure()<<');
+            // Contains the '--config <CONFIG>' when using multiconfiguration generators.
+            let prependedBuildArguments = "";
+            let cmakeArgs = [];
+            switch (this.runMode) {
+                case RunCMakeModeType.CMakeListsTxtAdvanced:
+                case RunCMakeModeType.CMakeListsTxtBasic: {
+                    // Search for CMake tool and run it.
+                    let cmake;
+                    if (this.sourceScript) {
+                        cmake = this.tl.tool(this.sourceScript);
+                        cmakeArgs.push(yield this.tl.which('cmake', true));
+                    }
+                    else {
+                        cmake = this.tl.tool(yield this.tl.which('cmake', true));
+                    }
+                    if (this.runMode === RunCMakeModeType.CMakeListsTxtAdvanced) {
+                        // If Ninja is required, specify the path to it.
+                        if (this.baseUtils.isNinjaGenerator([this.appendedArgs])) {
+                            if (!this.baseUtils.isMakeProgram([this.appendedArgs])) {
+                                const ninjaPath = yield this.ninjaLib.retrieveNinjaPath(this.ninjaPath, this.ninjaDownloadUrl);
+                                cmakeArgs.push(`-DCMAKE_MAKE_PROGRAM=${ninjaPath}`);
+                            }
+                        }
+                        if (this.appendedArgs) {
+                            this.tl.debug(`Parsing additional CMake args: ${this.appendedArgs}`);
+                            const addedArgs = cmake._argStringToArray(this.appendedArgs);
+                            this.tl.debug(`Appending args: ${JSON.stringify(addedArgs)}`);
+                            cmakeArgs = [...cmakeArgs, ...addedArgs];
+                        }
+                    }
+                    else if (this.runMode === RunCMakeModeType.CMakeListsTxtBasic) {
+                        const generatorName = this.generator['G'];
+                        const generatorArch = this.generator['A'];
+                        const generatorIsMultiConf = (_a = this.generator['MultiConfiguration']) !== null && _a !== void 0 ? _a : false;
+                        cmakeArgs.push(`-G${generatorName}`);
+                        if (generatorArch) {
+                            cmakeArgs.push(`-A${generatorArch}`);
+                        }
+                        if (CMakeRunner.isNinjaGenerator(generatorName)) {
+                            const ninjaPath = yield this.ninjaLib.retrieveNinjaPath(this.ninjaPath, this.ninjaDownloadUrl);
+                            cmakeArgs.push(`-DCMAKE_MAKE_PROGRAM=${ninjaPath}`);
+                        }
+                        if (this.cmakeToolchainPath) {
+                            cmakeArgs.push(`-DCMAKE_TOOLCHAIN_FILE=${this.cmakeToolchainPath}`);
+                        }
+                        // Add CMake's build type, unless a multi configuration generator is being used.
+                        if (!generatorIsMultiConf) {
+                            cmakeArgs.push(`-DCMAKE_BUILD_TYPE=${this.cmakeBuildType}`);
+                        }
+                        prependedBuildArguments = this.prependBuildConfigIfNeeded(this.doBuildArgs, generatorIsMultiConf, this.cmakeBuildType);
+                    }
+                    // Use vcpkg toolchain if requested.
+                    if (this.useVcpkgToolchainFile === true) {
+                        cmakeArgs = yield this.cmakeUtils.injectVcpkgToolchain(cmakeArgs, this.vcpkgTriplet, this.tl);
+                    }
+                    // The source directory is required for any mode.
+                    cmakeArgs.push(this.cmakeSourceDir);
+                    this.tl.debug(`CMake arguments: ${cmakeArgs}`);
+                    for (const arg of cmakeArgs) {
+                        cmake.arg(arg);
+                    }
+                    // Ensure the build directory is existing.
+                    yield this.tl.mkdirP(this.buildDir);
+                    const options = {
+                        cwd: this.buildDir,
+                        failOnStdErr: false,
+                        errStream: process.stdout,
+                        outStream: process.stdout,
+                        ignoreReturnCode: true,
+                        silent: false,
+                        windowsVerbatimArguments: false,
+                        env: process.env
+                    };
+                    this.tl.debug(`Generating project files with CMake in build directory '${options.cwd}' ...`);
+                    let code = -1;
+                    yield using_statement_1.using(baseutillib.Matcher.createMatcher('cmake', this.tl, this.cmakeSourceDir), (matcher) => __awaiter(this, void 0, void 0, function* () {
+                        code = yield this.baseUtils.wrapOp("Generate project files with CMake", () => __awaiter(this, void 0, void 0, function* () { return yield cmake.exec(options); }));
+                    }));
+                    if (code !== 0) {
+                        throw new Error(`"CMake failed with error code: '${code}'.`);
+                    }
+                    if (this.doBuild) {
+                        yield using_statement_1.using(baseutillib.Matcher.createMatcher(CMakeRunner.getBuildMatcher(this.buildDir, this.tl), this.tl), (matcher) => __awaiter(this, void 0, void 0, function* () {
+                            yield this.baseUtils.wrapOp("Build with CMake", () => __awaiter(this, void 0, void 0, function* () { return yield CMakeRunner.build(this.tl, this.buildDir, prependedBuildArguments + this.doBuildArgs, options); }));
+                        }));
+                    }
+                    break;
+                }
+                case RunCMakeModeType.CMakeSettingsJson: {
+                    const cmakeJson = new cmakesettings_runner_1.CMakeSettingsJsonRunner(this.tl, this.cmakeSettingsJsonPath, this.configurationFilter, this.appendedArgs, this.tl.getSrcDir(), this.vcpkgTriplet, this.useVcpkgToolchainFile, this.doBuild, this.ninjaPath, this.ninjaDownloadUrl, this.sourceScript, this.buildDir);
+                    yield this.baseUtils.wrapOp("Run CMake with CMakeSettings.json", () => __awaiter(this, void 0, void 0, function* () { return yield cmakeJson.run(); }));
+                    break;
+                }
+            }
+        });
+    }
+    static isNinjaGenerator(generatorName) {
+        return generatorName === CMakeGenerator['Ninja']['G'] ||
+            generatorName === CMakeGenerator['NinjaMulti']['G'];
+    }
+    /// If not already provided, creates the '--config <CONFIG>' argument to pass when building.
+    /// Return a string of arguments to prepend the build arguments.
+    prependBuildConfigIfNeeded(buildArgs, multiConfi, buildType) {
+        let prependArgs = "";
+        if (multiConfi && !buildArgs.includes("--config")) {
+            prependArgs = ` --config ${buildType} `;
+        }
+        return prependArgs;
+    }
+    /**
+     * Build with CMake.
+     * @export
+     * @param {string} buildDir
+     * @param {string} buildArgs
+     * @param {trm.IExecOptions} options
+     * @param {string} sourceScript
+     * @returns {Promise<void>}
+    */
+    static build(baseLib, buildDir, buildArgs, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // Run CMake with the given arguments
+            const cmake = baseLib.tool(yield baseLib.which('cmake', true));
+            cmake.arg("--build");
+            cmake.arg(".");
+            if (buildArgs)
+                cmake.line(buildArgs);
+            // Run the command in the build directory
+            options.cwd = buildDir;
+            console.log(`Building with CMake in build directory '${options.cwd}' ...`);
+            const code = yield cmake.exec(options);
+            if (code !== 0) {
+                throw new Error(`"Build failed with error code: '${code}'."`);
+            }
+        });
+    }
+    static getDefaultMatcher() {
+        const plat = process.platform;
+        return plat === "win32" ? CMakeRunner.msvcMatcher :
+            plat === "darwin" ? CMakeRunner.clangMatcher : CMakeRunner.gccMatcher;
+    }
+    static getCompilerMatcher(line) {
+        let matcherName = undefined;
+        if (line.includes('g++') || line.includes('gcc') || line.includes('c++'))
+            matcherName = CMakeRunner.gccMatcher;
+        else if (line.includes('cl.exe'))
+            matcherName = CMakeRunner.msvcMatcher;
+        else if (line.includes('clang'))
+            matcherName = CMakeRunner.clangMatcher;
+        return matcherName;
+    }
+    static getBuildMatcher(buildDir, tl) {
+        var _a;
+        let cxxMatcher;
+        let ccMatcher;
+        const utils = new baseutillib.BaseLibUtils(tl);
+        try {
+            const cmakeCacheTxtPath = path.join(buildDir, "CMakeCache.txt");
+            const [ok, cacheContent] = utils.readFile(cmakeCacheTxtPath);
+            tl.debug(`Loaded fileCMakeCache.txt at path='${cmakeCacheTxtPath}'`);
+            if (ok) {
+                for (const line of cacheContent.split('\n')) {
+                    tl.debug(`text=${line}`);
+                    if (line.includes("CMAKE_CXX_COMPILER:")) {
+                        tl.debug(`Found CXX compiler: '${line}'.`);
+                        cxxMatcher = CMakeRunner.getCompilerMatcher(line);
+                        tl.debug(`Matcher selected for CXX: ${cxxMatcher}`);
+                        break;
+                    }
+                    if (line.includes("CMAKE_C_COMPILER:")) {
+                        tl.debug(`Found C compiler: '${line}'.`);
+                        ccMatcher = CMakeRunner.getCompilerMatcher(line);
+                        tl.debug(`Matcher selected for CC: ${ccMatcher}`);
+                        break;
+                    }
+                }
+            }
+        }
+        catch (error) {
+            tl.debug(error.toString());
+        }
+        const defaultMatcher = CMakeRunner.getDefaultMatcher();
+        tl.debug(`Default matcher according to platform is: ${defaultMatcher}`);
+        const selectedMatcher = (_a = cxxMatcher !== null && cxxMatcher !== void 0 ? cxxMatcher : ccMatcher) !== null && _a !== void 0 ? _a : defaultMatcher;
+        tl.debug(`Selected matcher: ${selectedMatcher}`);
+        return selectedMatcher;
+    }
+}
+exports.CMakeRunner = CMakeRunner;
+CMakeRunner.modePerInput = {
+    [cmakeglobals.cmakeListsTxtPath]: [RunCMakeModeType.CMakeListsTxtBasic, RunCMakeModeType.CMakeListsTxtAdvanced],
+    [cmakeglobals.cmakeSettingsJsonPath]: [RunCMakeModeType.CMakeSettingsJson],
+    [cmakeglobals.cmakeToolchainPath]: [RunCMakeModeType.CMakeListsTxtBasic],
+    /*[globals.useVcpkgToolchainFile]: all */
+    /*[globals.vcpkgTriplet]: all */
+    [cmakeglobals.cmakeBuildType]: [RunCMakeModeType.CMakeListsTxtBasic],
+    [cmakeglobals.cmakeGenerator]: [RunCMakeModeType.CMakeListsTxtBasic],
+    /*[globals.buildDirectory]: all */
+    [cmakeglobals.cmakeAppendedArgs]: [RunCMakeModeType.CMakeListsTxtAdvanced, RunCMakeModeType.CMakeSettingsJson],
+    [cmakeglobals.configurationRegexFilter]: [RunCMakeModeType.CMakeSettingsJson],
+    [cmakeglobals.buildWithCMakeArgs]: [RunCMakeModeType.CMakeListsTxtAdvanced, RunCMakeModeType.CMakeListsTxtBasic]
+};
+CMakeRunner.gccMatcher = 'gcc';
+CMakeRunner.clangMatcher = 'clang';
+CMakeRunner.msvcMatcher = 'msvc';
+//# sourceMappingURL=cmake-runner.js.map
 
 /***/ }),
 
@@ -4760,6 +4600,139 @@ function getSettings(settingsOrOptions = {}) {
     return new settings_1.default(settingsOrOptions);
 }
 
+
+/***/ }),
+
+/***/ 233:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+// Copyright (c) 2019-2020 Luca Cappa
+// Released under the term specified in file LICENSE.txt
+// SPDX short identifier: MIT
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CMakeUtils = void 0;
+const path = __importStar(__webpack_require__(622));
+const vcpkgGlobals = __importStar(__webpack_require__(946));
+class CMakeUtils {
+    constructor(baseUtils) {
+        this.baseUtils = baseUtils;
+    }
+    injectEnvVariables(vcpkgRoot, triplet, baseLib) {
+        var _a;
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!vcpkgRoot) {
+                vcpkgRoot = (_a = process.env[vcpkgGlobals.outVcpkgRootPath]) !== null && _a !== void 0 ? _a : "";
+                if (!vcpkgRoot) {
+                    throw new Error(`${vcpkgGlobals.outVcpkgRootPath} environment variable is not set.`);
+                }
+            }
+            // Search for vcpkg tool and run it
+            let vcpkgPath = path.join(vcpkgRoot, 'vcpkg');
+            if (this.baseUtils.isWin32()) {
+                vcpkgPath += '.exe';
+            }
+            const vcpkg = baseLib.tool(vcpkgPath);
+            vcpkg.arg("env");
+            vcpkg.arg("--bin");
+            vcpkg.arg("--include");
+            vcpkg.arg("--tools");
+            vcpkg.arg("--python");
+            vcpkg.line(`--triplet ${triplet} set`);
+            const options = {
+                cwd: vcpkgRoot,
+                failOnStdErr: false,
+                errStream: process.stdout,
+                outStream: process.stdout,
+                ignoreReturnCode: true,
+                silent: false,
+                windowsVerbatimArguments: false,
+                env: process.env
+            };
+            const output = yield vcpkg.execSync(options);
+            if (output.code !== 0) {
+                throw new Error(`${output.stdout}\n\n${output.stderr}`);
+            }
+            const map = this.baseUtils.parseVcpkgEnvOutput(output.stdout);
+            for (const key in map) {
+                if (this.baseUtils.isVariableStrippingPath(key))
+                    continue;
+                if (key.toUpperCase() === "PATH") {
+                    process.env[key] = process.env[key] + path.delimiter + map[key];
+                }
+                else {
+                    process.env[key] = map[key];
+                }
+                baseLib.debug(`set ${key}=${process.env[key]}`);
+            }
+        });
+    }
+    injectVcpkgToolchain(args, triplet, baseLib) {
+        return __awaiter(this, void 0, void 0, function* () {
+            args = args !== null && args !== void 0 ? args : [];
+            const vcpkgRoot = process.env[vcpkgGlobals.outVcpkgRootPath];
+            // if RUNVCPKG_VCPKG_ROOT is defined, then use it, and put aside into
+            // VCPKG_CHAINLOAD_TOOLCHAIN_FILE the existing toolchain.
+            if (vcpkgRoot && vcpkgRoot.length > 1) {
+                const toolchainFile = this.baseUtils.getToolchainFile(args);
+                args = this.baseUtils.removeToolchainFile(args);
+                const vcpkgToolchain = path.join(vcpkgRoot, '/scripts/buildsystems/vcpkg.cmake');
+                args.push(`-DCMAKE_TOOLCHAIN_FILE=${vcpkgToolchain}`);
+                if (toolchainFile) {
+                    args.push(`-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${toolchainFile}`);
+                }
+                // If the triplet is provided, specify the same triplet on the cmd line and set the environment for msvc.
+                if (triplet) {
+                    args.push(`-DVCPKG_TARGET_TRIPLET=${triplet}`);
+                    // For Windows build agents, inject the environment variables used
+                    // for the MSVC compiler using the 'vcpkg env' command.
+                    // This is not be needed for others compiler on Windows, but it should be harmless.
+                    if (this.baseUtils.isWin32() && triplet) {
+                        if (triplet.indexOf("windows") !== -1) {
+                            process.env.CC = "cl.exe";
+                            process.env.CXX = "cl.exe";
+                            baseLib.setVariable("CC", "cl.exe");
+                            baseLib.setVariable("CXX", "cl.exe");
+                        }
+                        yield this.injectEnvVariables(vcpkgRoot, triplet, baseLib);
+                    }
+                }
+            }
+            return args;
+        });
+    }
+}
+exports.CMakeUtils = CMakeUtils;
+//# sourceMappingURL=utils.js.map
 
 /***/ }),
 
@@ -6422,6 +6395,36 @@ function plural(ms, msAbs, n, name) {
 
 /***/ }),
 
+/***/ 330:
+/***/ (function(__unusedmodule, exports) {
+
+"use strict";
+
+// Copyright (c) 2019-2020 Luca Cappa
+// Released under the term specified in file LICENSE.txt
+// SPDX short identifier: MIT
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.useVcpkgToolchainFile = exports.cmakeWrapperCommand = exports.cmakeVcpkgTriplet = exports.cmakeBuildType = exports.buildWithCMakeArgs = exports.buildWithCMake = exports.cmakeToolchainPath = exports.cmakeGenerator = exports.cmakeListsOrSettingsJson = exports.ninjaDownloadUrl = exports.ninjaPath = exports.configurationRegexFilter = exports.cmakeAppendedArgs = exports.buildDirectory = exports.cmakeListsTxtPath = exports.cmakeSettingsJsonPath = void 0;
+exports.cmakeSettingsJsonPath = 'cmakeSettingsJsonPath';
+exports.cmakeListsTxtPath = 'cmakeListsTxtPath';
+exports.buildDirectory = 'buildDirectory';
+exports.cmakeAppendedArgs = 'cmakeAppendedArgs';
+exports.configurationRegexFilter = 'configurationRegexFilter';
+exports.ninjaPath = 'ninjaPath';
+exports.ninjaDownloadUrl = 'ninjaDownloadUrl';
+exports.cmakeListsOrSettingsJson = 'cmakeListsOrSettingsJson';
+exports.cmakeGenerator = 'cmakeGenerator';
+exports.cmakeToolchainPath = 'cmakeToolchainPath';
+exports.buildWithCMake = 'buildWithCMake';
+exports.buildWithCMakeArgs = 'buildWithCMakeArgs';
+exports.cmakeBuildType = 'cmakeBuildType';
+exports.cmakeVcpkgTriplet = 'vcpkgTriplet';
+exports.cmakeWrapperCommand = 'cmakeWrapperCommand';
+exports.useVcpkgToolchainFile = 'useVcpkgToolchainFile';
+//# sourceMappingURL=cmake-globals.js.map
+
+/***/ }),
+
 /***/ 332:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -6806,39 +6809,6 @@ module.exports = function (/*Buffer*/input) {
 /***/ (function(module) {
 
 module.exports = require("assert");
-
-/***/ }),
-
-/***/ 358:
-/***/ (function(__unusedmodule, exports) {
-
-"use strict";
-
-// Copyright (c) 2019-2020 Luca Cappa
-// Released under the term specified in file LICENSE.txt
-// SPDX short identifier: MIT
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.cmakeSettingsJsonPath = 'cmakeSettingsJsonPath';
-exports.cmakeListsTxtPath = 'cmakeListsTxtPath';
-exports.buildDirectory = 'buildDirectory';
-exports.cmakeAppendedArgs = 'cmakeAppendedArgs';
-exports.configurationRegexFilter = 'configurationRegexFilter';
-exports.ninjaPath = 'ninjaPath';
-exports.ninjaDownloadUrl = 'ninjaDownloadUrl';
-exports.cmakeListsOrSettingsJson = 'cmakeListsOrSettingsJson';
-exports.cmakeGenerator = 'cmakeGenerator';
-exports.cmakeToolchainPath = 'cmakeToolchainPath';
-exports.buildWithCMake = 'buildWithCMake';
-exports.buildWithCMakeArgs = 'buildWithCMakeArgs';
-exports.cmakeBuildType = 'cmakeBuildType';
-exports.vcpkgTriplet = 'vcpkgTriplet';
-exports.cmakeWrapperCommand = 'cmakeWrapperCommand';
-exports.useVcpkgToolchainFile = 'useVcpkgToolchainFile';
-exports.outVcpkgRootPath = "RUNVCPKG_VCPKG_ROOT";
-exports.outVcpkgTriplet = "RUNVCPKG_VCPKG_TRIPLET";
-
-//# sourceMappingURL=cmake-globals.js.map
-
 
 /***/ }),
 
@@ -9227,6 +9197,475 @@ module.exports = FastGlob;
 
 /***/ }),
 
+/***/ 411:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+// Copyright (c) 2019-2020 Luca Cappa
+// Released under the term specified in file LICENSE.txt
+// SPDX short identifier: MIT
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ActionLib = exports.ActionToolRunner = void 0;
+const utils = __importStar(__webpack_require__(758));
+const core = __importStar(__webpack_require__(470));
+const toolrunner = __importStar(__webpack_require__(9));
+const ioutil = __importStar(__webpack_require__(672));
+const io = __importStar(__webpack_require__(1));
+const fs = __importStar(__webpack_require__(747));
+const path = __importStar(__webpack_require__(622));
+const cp = __importStar(__webpack_require__(129));
+function escapeCmdCommand(command) {
+    command = command.trim();
+    if (!/^\".*\"$/.test(command))
+        command = `\"${command}\"`;
+    return command;
+}
+function escapeShArgument(argument) {
+    // escape all blanks: blank -> \blank
+    return argument.replace(/ /g, '\\ ');
+}
+function escapeCmdExeArgument(argument) {
+    // \" -> \\"
+    argument = argument.replace(/(\\*)"/g, '$1$1\\"');
+    // \$ -> \\$
+    argument = argument.replace(/(\\*)$/g, '$1$1');
+    // All other backslashes occur literally.
+    // Quote the whole thing:
+    argument = `"${argument}"`;
+    // Prefix with caret ^ any character to be escaped, as in:
+    // http://www.robvanderwoude.com/escapechars.php
+    // Do not escape %, let variable be passed in as is.
+    const metaCharsRegExp = /([()\][!^"`<>&|;, *?])/g;
+    argument = argument.replace(metaCharsRegExp, '^$1');
+    return argument;
+}
+/**
+ * Run a command with arguments in a shell.
+ * Note: -G Ninja or -GNinja? The former works witha shell, the second does not work without a shell.
+ * e.spawnSync('cmake', ['-GNinja', '.'], {shell:false, stdio:'inherit', cwd:'/Users/git_repos/cmake-task-tests/'}) -> Configuring done.
+ * e.spawnSync('cmake', ['-G Ninja', '.'], {shell:false, stdio:'inherit', cwd:'/Users/git_repos/cmake-task-tests/'}) -> CMake Error: Could not create named generator  Ninja
+ * e.spawnSync('cmake', ['-G Ninja', '.'], {shell:true, stdio:'inherit', cwd:'/Users/git_repos/cmake-task-tests/'}) -> -- Configuring done
+ * e.spawnSync('cmake', ['-GNinja', '.'], {shell:true, stdio:'inherit', cwd:'/Users/git_repos/cmake-task-tests/'}) -> -- Configuring done
+ * Hence the caller of this function is always using no spaces in between arguments.
+ * Exception is arbitrary text coming from the user, which will hit this problem when not useing a shell.
+ *
+ * Other corner cases:
+ * e.spawnSync('cmake', ['-GUnix Makefiles', '.'], {shell:true, stdio:'inherit', cwd:'/Users/git_repos/cmake-task-tests/'}) -> CMake Error: Could not create named generator Unix
+ * e.spawnSync('cmake', ['-GUnix\ Makefiles', '.'], {shell:false, stdio:'inherit', cwd:'/Users/git_repos/cmake-task-tests/'}) -> -- Configuring done
+ > e.spawnSync('cmake', ['-GUnix Makefiles', '.'], {shell:false, stdio:'inherit', cwd:'/Users/git_repos/cmake-task-tests/'}) -> -- Configuring done
+ e.spawnSync('cmake', ['-G Unix Makefiles', '.'], {shell:false, stdio:'inherit', cwd:'/Users/git_repos/cmake-task-tests/'}) -> CMake Error: Could not create named generator  Unix Makefiles
+ * @static
+ * @param {string} commandPath
+ * @param {string[]} args
+ * @param {baselib.ExecOptions} [execOptions]
+ * @returns {Promise<number>}
+ * @memberof ActionLib
+ */
+function exec(commandPath, args, execOptions) {
+    var _a;
+    return __awaiter(this, void 0, void 0, function* () {
+        core.debug(`exec(${commandPath}, ${JSON.stringify(args)}, {${execOptions === null || execOptions === void 0 ? void 0 : execOptions.cwd}})<<`);
+        let useShell = false;
+        if (process.env.INPUT_USESHELL === 'true')
+            useShell = true;
+        else if (process.env.INPUT_USESHELL === 'false') {
+            useShell = false;
+        }
+        else if (process.env.INPUT_USESHELL) {
+            useShell = process.env.INPUT_USESHELL;
+        }
+        const opts = {
+            shell: useShell,
+            windowsVerbatimArguments: false,
+            cwd: execOptions === null || execOptions === void 0 ? void 0 : execOptions.cwd,
+            env: execOptions === null || execOptions === void 0 ? void 0 : execOptions.env,
+            stdio: "pipe",
+        };
+        let args2 = args;
+        if ((typeof useShell === 'string' && useShell.includes('cmd')) ||
+            (process.platform === 'win32' && typeof useShell === 'boolean' && useShell === true)) {
+            args2 = [];
+            args.map((arg) => args2.push(escapeCmdExeArgument(arg)));
+            // When using a shell, the command must be enclosed by quotes to handle blanks correctly.
+            commandPath = escapeCmdCommand(commandPath);
+        }
+        else if (((typeof useShell === 'string' && !useShell.includes('cmd')) ||
+            (process.platform !== 'win32' && typeof useShell === 'boolean' && useShell === true))) {
+            args2 = [];
+            args.map((arg) => args2.push(escapeShArgument(arg)));
+            // When using a Unix shell, blanks needs to be escaped in the command as well.
+            commandPath = escapeShArgument(commandPath);
+        }
+        args = args2;
+        core.debug(`cp.spawn(${commandPath}, ${JSON.stringify(args)}, {cwd=${opts === null || opts === void 0 ? void 0 : opts.cwd}, shell=${opts === null || opts === void 0 ? void 0 : opts.shell}, path=${JSON.stringify((_a = opts === null || opts === void 0 ? void 0 : opts.env) === null || _a === void 0 ? void 0 : _a.PATH)}})`);
+        return new Promise((resolve, reject) => {
+            const child = cp.spawn(`${commandPath}`, args, opts);
+            if (execOptions && child.stdout) {
+                child.stdout.on('data', (chunk) => {
+                    if (execOptions.listeners && execOptions.listeners.stdout) {
+                        execOptions.listeners.stdout(chunk);
+                    }
+                    process.stdout.write(chunk);
+                });
+            }
+            if (execOptions && child.stderr) {
+                child.stderr.on('data', (chunk) => {
+                    if (execOptions.listeners && execOptions.listeners.stderr) {
+                        execOptions.listeners.stderr(chunk);
+                    }
+                    process.stdout.write(chunk);
+                });
+            }
+            child.on('error', (error) => {
+                core.warning(`${error}`);
+                // Wait one second to get still some output.
+                setTimeout(() => {
+                    reject(error);
+                    child.removeAllListeners();
+                }, 1000);
+            });
+            child.on('exit', (exitCode) => {
+                core.debug(`Exit code '${exitCode}' received from command '${commandPath}'`);
+                // Do not resolve yet, wait for the close event.
+            });
+            child.on('close', (exitCode) => {
+                core.debug(`STDIO streams have closed for command '${commandPath}'`);
+                child.removeAllListeners();
+                resolve(exitCode);
+            });
+        });
+    });
+}
+class ActionToolRunner {
+    constructor(path) {
+        this.path = path;
+        this.arguments = [];
+    }
+    _argStringToArray(text) {
+        return this.__argStringToArray(text);
+    }
+    exec(options) {
+        return exec(this.path, this.arguments, options);
+    }
+    line(val) {
+        this.arguments = this.arguments.concat(toolrunner.argStringToArray(val));
+    }
+    arg(val) {
+        if (val instanceof Array) {
+            this.arguments = this.arguments.concat(val);
+        }
+        else if (typeof (val) === 'string') {
+            this.arguments = this.arguments.concat(val.trim());
+        }
+    }
+    execSync(options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let stdout = "";
+            let stderr = "";
+            let options2;
+            if (options) {
+                options2 = this.convertExecOptions(options);
+                options2.listeners = {
+                    stdout: (data) => {
+                        stdout += data.toString();
+                    },
+                    stderr: (data) => {
+                        stderr += data.toString();
+                    }
+                };
+            }
+            const exitCode = yield exec(this.path, this.arguments, options2);
+            const res2 = {
+                code: exitCode,
+                stdout: stdout,
+                stderr: stderr
+            };
+            return Promise.resolve(res2);
+        });
+    }
+    convertExecOptions(options) {
+        var _a, _b, _c, _d, _e, _f;
+        const result = {
+            cwd: (_a = options.cwd) !== null && _a !== void 0 ? _a : process.cwd(),
+            env: (_b = options.env) !== null && _b !== void 0 ? _b : process.env,
+            silent: (_c = options.silent) !== null && _c !== void 0 ? _c : false,
+            failOnStdErr: (_d = options.failOnStdErr) !== null && _d !== void 0 ? _d : false,
+            ignoreReturnCode: (_e = options.ignoreReturnCode) !== null && _e !== void 0 ? _e : false,
+            windowsVerbatimArguments: (_f = options.windowsVerbatimArguments) !== null && _f !== void 0 ? _f : false,
+            listeners: {
+                stdout: (data) => void {
+                // Nothing to do.
+                },
+                stderr: (data) => void {
+                // Nothing to do.
+                },
+                stdline: (data) => void {
+                // Nothing to do.
+                },
+                errline: (data) => void {
+                // Nothing to do.
+                },
+                debug: (data) => void {
+                // Nothing to do.
+                },
+            }
+        };
+        result.outStream = options.outStream || process.stdout;
+        result.errStream = options.errStream || process.stderr;
+        return result;
+    }
+    __argStringToArray(argString) {
+        const args = [];
+        let inQuotes = false;
+        let escaped = false;
+        let lastCharWasSpace = true;
+        let arg = '';
+        const append = function (c) {
+            // we only escape double quotes.
+            if (escaped && c !== '"') {
+                arg += '\\';
+            }
+            arg += c;
+            escaped = false;
+        };
+        for (let i = 0; i < argString.length; i++) {
+            const c = argString.charAt(i);
+            if (c === ' ' && !inQuotes) {
+                if (!lastCharWasSpace) {
+                    args.push(arg);
+                    arg = '';
+                }
+                lastCharWasSpace = true;
+                continue;
+            }
+            else {
+                lastCharWasSpace = false;
+            }
+            if (c === '"') {
+                if (!escaped) {
+                    inQuotes = !inQuotes;
+                }
+                else {
+                    append(c);
+                }
+                continue;
+            }
+            if (c === "\\" && escaped) {
+                append(c);
+                continue;
+            }
+            if (c === "\\" && inQuotes) {
+                escaped = true;
+                continue;
+            }
+            append(c);
+            lastCharWasSpace = false;
+        }
+        if (!lastCharWasSpace) {
+            args.push(arg.trim());
+        }
+        return args;
+    }
+    ;
+}
+exports.ActionToolRunner = ActionToolRunner;
+class ActionLib {
+    getInput(name, isRequired) {
+        const value = core.getInput(name, { required: isRequired });
+        this.debug(`getInput(${name}, ${isRequired}) -> '${value}'`);
+        return value;
+    }
+    getBoolInput(name, isRequired) {
+        var _a;
+        const value = ((_a = core.getInput(name, { required: isRequired })) !== null && _a !== void 0 ? _a : "").toUpperCase() === "TRUE";
+        this.debug(`getBoolInput(${name}, ${isRequired}) -> '${value}'`);
+        return value;
+    }
+    getPathInput(name, isRequired, checkExists) {
+        const value = path.resolve(core.getInput(name, { required: isRequired }));
+        this.debug(`getPathInput(${name}) -> '${value}'`);
+        if (checkExists) {
+            if (!fs.existsSync(value))
+                throw new Error(`input path '${value}' for '${name}' does not exist.`);
+        }
+        return value;
+    }
+    isFilePathSupplied(name) {
+        var _a, _b;
+        // normalize paths
+        const pathValue = this.resolve((_a = this.getPathInput(name, false, false)) !== null && _a !== void 0 ? _a : '');
+        const repoRoot = this.resolve((_b = process.env.GITHUB_WORKSPACE) !== null && _b !== void 0 ? _b : '');
+        const isSupplied = pathValue !== repoRoot;
+        this.debug(`isFilePathSupplied(s file path=('${name}') -> '${isSupplied}'`);
+        return isSupplied;
+    }
+    getDelimitedInput(name, delim, required) {
+        const input = core.getInput(name, { required: required });
+        const inputs = input.split(delim);
+        this.debug(`getDelimitedInput(${name}, ${delim}, ${required}) -> '${inputs}'`);
+        return inputs;
+    }
+    // Set an environment variable, re-usable in subsequent actions.
+    setVariable(name, value) {
+        core.exportVariable(name, value);
+    }
+    // Set the output of the action.
+    setOutput(name, value) {
+        core.setOutput(name, value);
+    }
+    getVariable(name) {
+        var _a;
+        //?? Is it really fine to return an empty string in case of undefined variable?
+        return (_a = process.env[name]) !== null && _a !== void 0 ? _a : "";
+    }
+    debug(message) {
+        core.debug(message);
+    }
+    error(message) {
+        core.error(message);
+    }
+    warning(message) {
+        core.warning(message);
+    }
+    info(message) {
+        core.info(message);
+    }
+    tool(name) {
+        return new ActionToolRunner(name);
+    }
+    exec(path, args, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield exec(path, args, options);
+        });
+    }
+    execSync(path, args, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const exitCode = yield exec(`"${path}"`, args, options);
+            const res2 = {
+                code: exitCode,
+                stdout: "",
+                stderr: ""
+            };
+            return Promise.resolve(res2);
+        });
+    }
+    which(name, required) {
+        return __awaiter(this, void 0, void 0, function* () {
+            core.debug(`"which(${name})<<`);
+            const filePath = yield io.which(name, required);
+            console.log(`tool: ${filePath}`);
+            core.debug(`"which(${name}) >> ${filePath}`);
+            return filePath;
+        });
+    }
+    rmRF(path) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield io.rmRF(path);
+        });
+    }
+    mkdirP(path) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield io.mkdirP(path);
+        });
+    }
+    cd(path) {
+        process.chdir(path);
+    }
+    writeFile(path, content) {
+        fs.writeFileSync(path, content);
+    }
+    resolve(apath) {
+        core.debug(`"resolve(${apath})<<`);
+        const resolvedPath = path.resolve(apath);
+        core.debug(`"resolve(${apath})>> '${resolvedPath})'`);
+        return resolvedPath;
+    }
+    stats(path) {
+        return fs.statSync(path);
+    }
+    exist(path) {
+        return ioutil.exists(path);
+    }
+    getBinDir() {
+        if (!process.env.GITHUB_WORKSPACE) {
+            throw new Error("GITHUB_WORKSPACE is not set.");
+        }
+        const binPath = utils.BaseLibUtils.normalizePath(path.join(process.env.GITHUB_WORKSPACE, "../b/"));
+        if (!fs.existsSync(binPath)) {
+            core.debug(`BinDir '${binPath}' does not exists, creating it...`);
+            fs.mkdirSync(binPath);
+        }
+        return binPath;
+    }
+    getSrcDir() {
+        if (!process.env.GITHUB_WORKSPACE) {
+            throw new Error("GITHUB_WORKSPACE env var is not set.");
+        }
+        const srcPath = utils.BaseLibUtils.normalizePath(process.env.GITHUB_WORKSPACE);
+        if (!fs.existsSync(srcPath)) {
+            throw new Error(`SourceDir '${srcPath}' does not exists.`);
+        }
+        return srcPath;
+    }
+    getArtifactsDir() {
+        if (!process.env.GITHUB_WORKSPACE) {
+            throw new Error("GITHUB_WORKSPACE is not set.");
+        }
+        //?? HACK. How to get the value of '{{ runner.temp }}' in JS's action?
+        const artifactsPath = utils.BaseLibUtils.normalizePath(path.join(process.env.GITHUB_WORKSPACE, "../../_temp"));
+        if (!fs.existsSync(artifactsPath)) {
+            core.debug(`ArtifactsDir '${artifactsPath}' does not exists, creating it...`);
+            fs.mkdirSync(artifactsPath);
+        }
+        return artifactsPath;
+    }
+    beginOperation(message) {
+        core.startGroup(message);
+    }
+    endOperation() {
+        core.endGroup();
+    }
+    addMatcher(file) {
+        console.log(`::add-matcher::${file}`);
+    }
+    removeMatcher(file) {
+        console.log(`::remove-matcher::${file}`);
+    }
+}
+exports.ActionLib = ActionLib;
+//# sourceMappingURL=action-lib.js.map
+
+/***/ }),
+
 /***/ 413:
 /***/ (function(module) {
 
@@ -9350,581 +9789,6 @@ function escapeProperty(s) {
         .replace(/,/g, '%2C');
 }
 //# sourceMappingURL=command.js.map
-
-/***/ }),
-
-/***/ 432:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-// Copyright (c) 2019-2020 Luca Cappa
-// Released under the term specified in file LICENSE.txt
-// SPDX short identifier: MIT
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const crypto = __webpack_require__(417);
-const fs = __webpack_require__(747);
-const path = __webpack_require__(622);
-const utils = __webpack_require__(477);
-const stripJsonComments = __webpack_require__(159);
-const ninjalib = __webpack_require__(141);
-const globals = __webpack_require__(358);
-const cmakerunner = __webpack_require__(997);
-const using_statement_1 = __webpack_require__(443);
-class CMakeGenerators {
-}
-CMakeGenerators.ARM64 = ["ARM64", "ARM64"];
-CMakeGenerators.ARM = ["ARM", "ARM"];
-CMakeGenerators.X64 = ["x64", "x64"];
-CMakeGenerators.WIN64 = ["Win64", "x64"];
-CMakeGenerators.WIN32 = ["Win32", "Win32"];
-class CMakeVariable {
-    constructor(name, value, type) {
-        this.name = name;
-        this.value = value;
-        this.type = type;
-        if (!type) {
-            this.type = 'string';
-        }
-        console.log(`Defining CMake variable: [name:'${name}', value='${value}', type='${type}'].`);
-    }
-    toString() {
-        return `-D${this.name}:${this.type}=${this.value}`;
-    }
-}
-class Variable {
-    constructor(name, value) {
-        this.name = name;
-        this.value = value;
-        // Nothing to do here.
-    }
-    toString() {
-        return `{var: '${this.name}'='${this.value}'}`;
-    }
-    addToEnvironment() {
-        process.env[this.stripNamespace(this.name)] = this.value;
-    }
-    stripNamespace(varName) {
-        return varName.substring(varName.indexOf('.') + 1);
-    }
-}
-class Environment {
-    constructor(name, theVariables) {
-        this.name = name;
-        this.theVariables = theVariables;
-        // Nothing to do.
-    }
-    addVariable(variable) {
-        this.theVariables.push(variable);
-    }
-    get variables() {
-        return this.theVariables;
-    }
-    toString() {
-        let varsString = "";
-        for (const variable of this.theVariables) {
-            varsString += String(variable) + ", ";
-        }
-        return `{env: '${this.name}', variables=${varsString}}`;
-    }
-}
-exports.Environment = Environment;
-class Configuration {
-    constructor(name, environments, buildDir, cmakeArgs, makeArgs, generator, type, workspaceRoot, cmakeSettingsJsonPath, cmakeToolchain, variables, inheritEnvironments) {
-        this.name = name;
-        this.environments = environments;
-        this.buildDir = buildDir;
-        this.cmakeArgs = cmakeArgs;
-        this.makeArgs = makeArgs;
-        this.generator = generator;
-        this.type = type;
-        this.workspaceRoot = workspaceRoot;
-        this.cmakeSettingsJsonPath = cmakeSettingsJsonPath;
-        this.cmakeToolchain = cmakeToolchain;
-        this.variables = variables;
-        this.inheritEnvironments = inheritEnvironments;
-    }
-    /**
-     * Add to current process the environment variables defined in this configuration.
-     *
-     * @param {EnvironmentMap} globalEnvs The global environments (not defined in this configuration)
-     * @memberof Configuration
-     */
-    setEnvironment(globalEnvs) {
-        // Set all 'env' and unnamed environments and inherited environments.
-        for (const envName in globalEnvs) {
-            const environment = globalEnvs[envName];
-            const nameLowerCased = environment.name.toLowerCase();
-            // Unnamed environments (i.e. with no 'environment' property specified),
-            // empty string named (e.g. {"environment": "", ...} ), or ones called 'env' 
-            // are being set in the environment automatically. All others needs to be 
-            // explicitly inherited.
-            if (!nameLowerCased || "env" === nameLowerCased ||
-                Configuration.unnamedEnvironmentName === nameLowerCased) {
-                for (const variable of environment.variables) {
-                    variable.addToEnvironment();
-                }
-            }
-        }
-        // Set all inherited environments.
-        for (const envName of this.inheritEnvironments) {
-            const environment = globalEnvs[envName];
-            if (environment) {
-                for (const variable of environment.variables) {
-                    variable.addToEnvironment();
-                }
-            }
-        }
-        // Set all 'env' and unnamed environments.
-        for (const env in this.environments) {
-            for (const variable of this.environments[env].variables) {
-                variable.addToEnvironment();
-            }
-        }
-    }
-    evaluate(evaluator) {
-        const evaledVars = [];
-        for (const variable of this.variables) {
-            evaledVars.push(new CMakeVariable(variable.name, evaluator.evaluateExpression(variable.value), variable.type));
-        }
-        const conf = new Configuration(this.name, this.environments, evaluator.evaluateExpression(this.buildDir), evaluator.evaluateExpression(this.cmakeArgs), evaluator.evaluateExpression(this.makeArgs), evaluator.evaluateExpression(this.generator), evaluator.evaluateExpression(this.type), this.workspaceRoot, this.cmakeSettingsJsonPath, evaluator.evaluateExpression(this.cmakeToolchain), evaledVars, this.inheritEnvironments);
-        return conf;
-    }
-    getGeneratorBuildArgs() {
-        let generatorBuildArgs = "";
-        if (this.generator.includes("Visual Studio")) {
-            generatorBuildArgs = `--config ${this.type}`;
-        }
-        else if (this.generator.includes("Ninja Multi-Config")) {
-            generatorBuildArgs = `--config ${this.type}`;
-        }
-        return generatorBuildArgs;
-    }
-    getGeneratorArgs() {
-        let gen = this.generator;
-        let arch;
-        if (gen.includes("Visual Studio")) {
-            // for VS generators, add the -A value
-            let architectureParam = undefined;
-            const architectures = [
-                CMakeGenerators.X64,
-                CMakeGenerators.WIN32,
-                CMakeGenerators.WIN64,
-                CMakeGenerators.ARM64,
-                CMakeGenerators.ARM
-            ];
-            // Remove the platform
-            for (const architecture of architectures) {
-                if (gen.includes(architecture[0])) {
-                    gen = gen.replace(architecture[0], "");
-                    architectureParam = architecture[1];
-                }
-            }
-            gen = `-G${gen.trim()}`;
-            if (architectureParam) {
-                arch = `-A${architectureParam.trim()}`;
-            }
-        }
-        else {
-            // All non-VS generators are passed as is.
-            gen = `-G${gen.trim()}`;
-        }
-        return [gen, arch];
-    }
-    toString() {
-        return `{conf: ${this.name}:${this.type}}`;
-    }
-}
-exports.Configuration = Configuration;
-// Internal placeholder name for environment without a name
-Configuration.unnamedEnvironmentName = 'unnamed';
-class PropertyEvaluator {
-    constructor(config, globalEnvs, tl) {
-        this.config = config;
-        this.globalEnvs = globalEnvs;
-        this.tl = tl;
-        // Matches the variable name in "${variable.name}".
-        this.varExp = new RegExp("\\$\{([^\{\}]+)\}", "g");
-        this.localEnv = new Environment("", []);
-        this.createLocalVars();
-    }
-    addToLocalEnv(name, value) {
-        this.localEnv.addVariable(new Variable(name, value));
-    }
-    createLocalVars() {
-        const settingsPath = this.config.cmakeSettingsJsonPath;
-        this.addToLocalEnv('name', this.config.name);
-        this.addToLocalEnv('generator', this.config.generator);
-        this.addToLocalEnv('workspaceRoot', this.config.workspaceRoot);
-        this.addToLocalEnv('thisFile', settingsPath);
-        this.addToLocalEnv('projectFile', path.join(path.dirname(settingsPath), 'CMakeLists.txt'));
-        this.addToLocalEnv('projectDir', path.dirname(settingsPath));
-        this.addToLocalEnv('projectDirName', path.basename(path.dirname(settingsPath)));
-        this.addToLocalEnv('workspaceHash', crypto.createHash('md5')
-            .update(this.config.cmakeSettingsJsonPath)
-            .digest('hex'));
-    }
-    searchVariable(variable, env) {
-        var _a;
-        if (env != null) {
-            for (const v of env.variables) {
-                if (v.name === variable) {
-                    return _a = v.value, (_a !== null && _a !== void 0 ? _a : "");
-                }
-            }
-        }
-        return null;
-    }
-    evaluateVariable(variable) {
-        this.tl.debug(`Searching ${variable.name} in environment ${this.localEnv} ...`);
-        let res = this.searchVariable(variable.name, this.localEnv);
-        if (res !== null) {
-            return res;
-        }
-        for (const localName of this.config.inheritEnvironments) {
-            const env = this.config.environments[localName];
-            res = this.searchVariable(variable.name, env);
-            if (res !== null) {
-                return res;
-            }
-        }
-        let env = this.config.environments[Configuration.unnamedEnvironmentName];
-        res = this.searchVariable(variable.name, env);
-        if (res !== null) {
-            return res;
-        }
-        for (const localName of this.config.inheritEnvironments) {
-            const env = this.globalEnvs[localName];
-            res = this.searchVariable(variable.name, env);
-            if (res !== null)
-                return res;
-        }
-        env = this.globalEnvs[Configuration.unnamedEnvironmentName];
-        res = this.searchVariable(variable.name, env);
-        if (res !== null)
-            return res;
-        // Try to match an environment variable.
-        if (variable.name.startsWith("env.")) {
-            const envVarName = variable.name.substring(4);
-            const value = process.env[envVarName];
-            if (value) {
-                return value;
-            }
-        }
-        return null;
-    }
-    extractVariables(str) {
-        const variables = [];
-        while (true) {
-            const match = this.varExp.exec(str);
-            if (match === null)
-                break;
-            if (match.length > 1) {
-                const varname = match[1];
-                const variable = new Variable(varname, '');
-                variables.push(variable);
-            }
-        }
-        return variables;
-    }
-    evaluateExpression(expr) {
-        this.tl.debug(`evaluating expression: '${expr}' ...`);
-        let res = expr;
-        while (true) {
-            const variables = this.extractVariables(res);
-            if (variables !== null) {
-                let resolved;
-                resolved = false;
-                for (const variable of variables) {
-                    const resv = this.evaluateVariable(variable);
-                    if (resv !== null) {
-                        res = res.replace('${' + variable.name + '}', resv);
-                        this.tl.debug(`evaluated \$\{${variable.name}\} to '${resv}'`);
-                        resolved = true;
-                    }
-                    else {
-                        this.tl.debug(`Warning: could not evaluate '${variable.toString()}'`);
-                    }
-                }
-                if (resolved === false) {
-                    break;
-                }
-            }
-        }
-        this.tl.debug(`evalutated to: '${String(res)}'.`);
-        return (res !== null && res !== void 0 ? res : '');
-    }
-}
-exports.PropertyEvaluator = PropertyEvaluator;
-function parseEnvironments(envsJson) {
-    const environments = {};
-    for (const env of envsJson) {
-        let namespace = 'env';
-        let name = Configuration.unnamedEnvironmentName;
-        const variables = [];
-        for (const envi in env) {
-            if (envi === 'environment') {
-                name = env[envi];
-            }
-            else if (envi === 'namespace') {
-                namespace = env[envi];
-            }
-            else {
-                let variableName = envi;
-                const variableValue = env[envi];
-                if (!variableName.includes('.')) {
-                    if (namespace && namespace.length > 0) {
-                        variableName = namespace + '.' + variableName;
-                    }
-                }
-                variables.push(new Variable(variableName, variableValue));
-            }
-        }
-        if (name in environments) {
-            // Append entries to existing environments' variables.
-            for (const variable of variables) {
-                environments[name].addVariable(variable);
-            }
-        }
-        else {
-            // Create a new environment.
-            const env = new Environment(name, variables);
-            environments[name] = env;
-        }
-    }
-    return environments;
-}
-exports.parseEnvironments = parseEnvironments;
-function parseConfigurations(configurationsJson, cmakeSettingsJson, sourceDir) {
-    // Parse all configurations.
-    const configurations = [];
-    for (const configuration of configurationsJson) {
-        // Parse variables.
-        const vars = [];
-        if (configuration.variables) {
-            for (const variable of configuration.variables) {
-                const data = new CMakeVariable(variable.name, variable.value, variable.type);
-                vars.push(data);
-            }
-            ;
-        }
-        // Parse inherited environments.
-        const inheritedEnvs = [];
-        if (configuration.inheritEnvironments) {
-            for (const env of configuration.inheritEnvironments) {
-                inheritedEnvs.push(env);
-            }
-        }
-        // Parse local environments.
-        let localEnvs = {};
-        if (configuration.environments) {
-            localEnvs = parseEnvironments(configuration.environments);
-        }
-        const newConfiguration = new Configuration(configuration.name, localEnvs, configuration.remoteMachineName ? configuration.remoteBuildRoot : configuration.buildRoot, configuration.cmakeCommandArgs, configuration.buildCommandArgs, configuration.generator, configuration.configurationType, 
-        // Set the workspace with the provided source directory.
-        sourceDir, 
-        // Set the Configuration.cmakeSettingsJsonPath field value with the one passed in.
-        cmakeSettingsJson, configuration.cmakeToolchain, vars, inheritedEnvs);
-        configurations.push(newConfiguration);
-    } //for
-    return configurations;
-}
-exports.parseConfigurations = parseConfigurations;
-class CMakeSettingsJsonRunner {
-    constructor(cmakeSettingsJson, configurationFilter, appendedCMakeArgs, workspaceRoot, vcpkgTriplet, useVcpkgToolchain, doBuild, ninjaPath, ninjaDownloadUrl, sourceScript, buildDir, tl) {
-        this.cmakeSettingsJson = cmakeSettingsJson;
-        this.configurationFilter = configurationFilter;
-        this.appendedCMakeArgs = appendedCMakeArgs;
-        this.workspaceRoot = workspaceRoot;
-        this.vcpkgTriplet = vcpkgTriplet;
-        this.useVcpkgToolchain = useVcpkgToolchain;
-        this.doBuild = doBuild;
-        this.ninjaPath = ninjaPath;
-        this.ninjaDownloadUrl = ninjaDownloadUrl;
-        this.sourceScript = sourceScript;
-        this.buildDir = buildDir;
-        this.tl = tl;
-        this.configurationFilter = configurationFilter;
-        this.buildDir = path.normalize(path.resolve(this.buildDir));
-        if (!fs.existsSync(cmakeSettingsJson)) {
-            throw new Error(`File '${cmakeSettingsJson}' does not exist.`);
-        }
-    }
-    parseConfigurations(json) {
-        let configurations = [];
-        if (json.configurations) {
-            configurations = parseConfigurations(json.configurations, this.cmakeSettingsJson, this.tl.getSrcDir());
-        }
-        this.tl.debug(`CMakeSettings.json parsed configurations: '${String(configurations)}'.`);
-        return configurations;
-    }
-    static parseEnvironments(envsJson) {
-        return parseEnvironments(envsJson);
-    }
-    parseGlobalEnvironments(json) {
-        // Parse global environments
-        let globalEnvs = {};
-        if (json.environments != null) {
-            globalEnvs = CMakeSettingsJsonRunner.parseEnvironments(json.environments);
-        }
-        this.tl.debug("CMakeSettings.json parsed global environments.");
-        for (const envName in globalEnvs) {
-            this.tl.debug(`'${envName}'=${String(globalEnvs[envName])}`);
-        }
-        return globalEnvs;
-    }
-    run() {
-        return __awaiter(this, void 0, void 0, function* () {
-            let content = fs.readFileSync(this.cmakeSettingsJson);
-            // Remove any potential BOM at the beginning.
-            content = content.toString().trimLeft();
-            this.tl.debug(`Content of file CMakeSettings.json: '${content}'.`);
-            // Strip any comment out of the JSON content.
-            const cmakeSettingsJson = JSON.parse(stripJsonComments(content));
-            const configurations = this.parseConfigurations(cmakeSettingsJson);
-            const globalEnvs = this.parseGlobalEnvironments(cmakeSettingsJson);
-            const regex = new RegExp(this.configurationFilter);
-            const filteredConfigurations = configurations.filter(configuration => {
-                return regex.test(configuration.name);
-            });
-            this.tl.debug(`CMakeSettings.json filtered configurations: '${String(filteredConfigurations)}'."`);
-            if (filteredConfigurations.length === 0) {
-                throw new Error(`No matching configuration for filter: '${this.configurationFilter}'.`);
-            }
-            // Store and restore the PATH env var for each configuration, to prevent side effects among configurations.
-            const originalPath = process.env.PATH;
-            for (const configuration of filteredConfigurations) {
-                const msg = `Process configuration: '${configuration.name}'.`;
-                try {
-                    this.tl.beginOperation(msg);
-                    console.log(msg);
-                    let cmakeArgs = [];
-                    // Search for CMake tool and run it
-                    let cmake;
-                    if (this.sourceScript) {
-                        cmake = this.tl.tool(this.sourceScript);
-                        cmakeArgs.push(yield this.tl.which('cmake', true));
-                    }
-                    else {
-                        cmake = this.tl.tool(yield this.tl.which('cmake', true));
-                    }
-                    // Evaluate all variables in the configuration.
-                    const evaluator = new PropertyEvaluator(configuration, globalEnvs, this.tl);
-                    const evaledConf = configuration.evaluate(evaluator);
-                    // Set all variable in the configuration in the process environment.
-                    evaledConf.setEnvironment(globalEnvs);
-                    // The build directory value specified in CMakeSettings.json is ignored.
-                    // This is because:
-                    // 1. you want to build targeting an empty binary directory;
-                    // 2. the default location in CMakeSettings.json is under the source tree, whose content is not deleted upon each build run.
-                    // Instead if users did not provided a specific path, let's force it to
-                    // "$(Build.ArtifactStagingDirectory)/{name}" which should be empty.
-                    console.log(`Note: the run-cmake task always ignore the 'buildRoot' value specified in the CMakeSettings.json (buildRoot=${configuration.buildDir}). User can override the default value by setting the '${globals.buildDirectory}' input.`);
-                    const artifactsDir = yield this.tl.getArtifactsDir();
-                    if (utils.normalizePath(this.buildDir) === utils.normalizePath(artifactsDir)) {
-                        // The build directory goes into the artifact directory in a subdir
-                        // named with the configuration name.
-                        evaledConf.buildDir = path.join(artifactsDir, configuration.name);
-                    }
-                    else {
-                        // Append the configuration name to the user provided build directory. This is mandatory to have each 
-                        // build in a different directory.
-                        evaledConf.buildDir = path.join(this.buildDir, configuration.name);
-                    }
-                    console.log(`Overriding build directory to: '${evaledConf.buildDir}'`);
-                    cmakeArgs = cmakeArgs.concat(evaledConf.getGeneratorArgs().filter(this.notEmpty));
-                    if (utils.isNinjaGenerator(cmakeArgs)) {
-                        const ninjaPath = yield ninjalib.retrieveNinjaPath(this.ninjaPath, this.ninjaDownloadUrl);
-                        cmakeArgs.push(`-DCMAKE_MAKE_PROGRAM=${ninjaPath}`);
-                    }
-                    if (!this.isMultiConfigGenerator(evaledConf.generator)) {
-                        cmakeArgs.push(`-DCMAKE_BUILD_TYPE=${evaledConf.type}`);
-                    }
-                    for (const variable of evaledConf.variables) {
-                        cmakeArgs.push(variable.toString());
-                    }
-                    if (evaledConf.cmakeToolchain) {
-                        cmakeArgs.push(`-DCMAKE_TOOLCHAIN_FILE=${evaledConf.cmakeToolchain}`);
-                    }
-                    // Use vcpkg toolchain if requested.
-                    if (this.useVcpkgToolchain === true) {
-                        cmakeArgs = yield utils.injectVcpkgToolchain(cmakeArgs, this.vcpkgTriplet);
-                    }
-                    // Add the current args in the tool, add
-                    // custom args, and reset the args.
-                    for (const arg of cmakeArgs) {
-                        cmake.arg(arg);
-                    }
-                    cmakeArgs = [];
-                    // Add CMake args from CMakeSettings.json file.
-                    cmake.line(evaledConf.cmakeArgs);
-                    // Set the source directory.
-                    cmake.arg(path.dirname(this.cmakeSettingsJson));
-                    // Run CNake with the given arguments.
-                    if (!evaledConf.buildDir) {
-                        throw new Error("Build directory is not specified.");
-                    }
-                    // Append user provided CMake arguments.
-                    cmake.line(this.appendedCMakeArgs);
-                    yield this.tl.mkdirP(evaledConf.buildDir);
-                    const options = {
-                        cwd: evaledConf.buildDir,
-                        failOnStdErr: false,
-                        errStream: process.stdout,
-                        outStream: process.stdout,
-                        ignoreReturnCode: true,
-                        silent: false,
-                        windowsVerbatimArguments: false,
-                        env: process.env
-                    };
-                    this.tl.debug(`Generating project files with CMake in build directory '${options.cwd}' ...`);
-                    let code = -1;
-                    yield using_statement_1.using(utils.createMatcher('cmake', this.cmakeSettingsJson), (matcher) => __awaiter(this, void 0, void 0, function* () {
-                        code = yield utils.wrapOp("Generate project files with CMake", () => cmake.exec(options));
-                    }));
-                    if (code !== 0) {
-                        throw new Error(`"CMake failed with error code: '${code}'."`);
-                    }
-                    if (this.doBuild) {
-                        yield using_statement_1.using(utils.createMatcher(cmakerunner.CMakeRunner.getBuildMatcher(this.buildDir, this.tl)), (matcher) => __awaiter(this, void 0, void 0, function* () {
-                            yield utils.wrapOp("Build with CMake", () => __awaiter(this, void 0, void 0, function* () {
-                                return yield cmakerunner.CMakeRunner.build(this.tl, evaledConf.buildDir, 
-                                // CMakeSettings.json contains in buildCommandArgs the arguments to the make program
-                                //only. They need to be put after '--', otherwise would be passed to directly to cmake.
-                                ` ${evaledConf.getGeneratorBuildArgs()} -- ${evaledConf.makeArgs}`, options);
-                            }));
-                        }));
-                    }
-                    // Restore the original PATH environment variable.
-                    process.env.PATH = originalPath;
-                }
-                finally {
-                    this.tl.endOperation();
-                }
-            }
-        });
-    }
-    notEmpty(value) {
-        return value !== null && value !== undefined;
-    }
-    isMultiConfigGenerator(generatorName) {
-        return generatorName.includes("Visual Studio") ||
-            generatorName.includes("Ninja Multi-Config");
-    }
-}
-exports.CMakeSettingsJsonRunner = CMakeSettingsJsonRunner;
-
-//# sourceMappingURL=cmakesettings-runner.js.map
-
 
 /***/ }),
 
@@ -10185,7 +10049,7 @@ const path = __webpack_require__(418);
 exports.path = path;
 const pattern = __webpack_require__(724);
 exports.pattern = pattern;
-const stream = __webpack_require__(913);
+const stream = __webpack_require__(42);
 exports.stream = stream;
 
 
@@ -10202,6 +10066,617 @@ function flatten(items) {
 }
 exports.flatten = flatten;
 
+
+/***/ }),
+
+/***/ 454:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+// Copyright (c) 2019-2020 Luca Cappa
+// Released under the term specified in file LICENSE.txt
+// SPDX short identifier: MIT
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CMakeSettingsJsonRunner = exports.parseConfigurations = exports.parseEnvironments = exports.PropertyEvaluator = exports.Configuration = exports.Environment = void 0;
+const baseutillib = __importStar(__webpack_require__(758));
+const crypto = __importStar(__webpack_require__(417));
+const path = __importStar(__webpack_require__(622));
+__webpack_require__(966);
+const ninjalib = __importStar(__webpack_require__(72));
+const globals = __importStar(__webpack_require__(330));
+const cmakerunner = __importStar(__webpack_require__(214));
+const cmakeutil = __importStar(__webpack_require__(233));
+const using_statement_1 = __webpack_require__(443);
+const strip_json_comments_1 = __importDefault(__webpack_require__(966));
+class CMakeGenerators {
+}
+CMakeGenerators.ARM64 = ["ARM64", "ARM64"];
+CMakeGenerators.ARM = ["ARM", "ARM"];
+CMakeGenerators.X64 = ["x64", "x64"];
+CMakeGenerators.WIN64 = ["Win64", "x64"];
+CMakeGenerators.WIN32 = ["Win32", "Win32"];
+class CMakeVariable {
+    constructor(name, value, type) {
+        this.name = name;
+        this.value = value;
+        this.type = type;
+        if (!type) {
+            this.type = 'string';
+        }
+        console.log(`Defining CMake variable: [name:'${name}', value='${value}', type='${type}'].`);
+    }
+    toString() {
+        return `-D${this.name}:${this.type}=${this.value}`;
+    }
+}
+class Variable {
+    constructor(name, value) {
+        this.name = name;
+        this.value = value;
+        // Nothing to do here.
+    }
+    toString() {
+        return `{var: '${this.name}'='${this.value}'}`;
+    }
+    addToEnvironment() {
+        process.env[this.stripNamespace(this.name)] = this.value;
+    }
+    stripNamespace(varName) {
+        return varName.substring(varName.indexOf('.') + 1);
+    }
+}
+class Environment {
+    constructor(name, theVariables) {
+        this.name = name;
+        this.theVariables = theVariables;
+        // Nothing to do.
+    }
+    addVariable(variable) {
+        this.theVariables.push(variable);
+    }
+    get variables() {
+        return this.theVariables;
+    }
+    toString() {
+        let varsString = "";
+        for (const variable of this.theVariables) {
+            varsString += String(variable) + ", ";
+        }
+        return `{env: '${this.name}', variables=${varsString}}`;
+    }
+}
+exports.Environment = Environment;
+class Configuration {
+    constructor(name, environments, buildDir, cmakeArgs, makeArgs, generator, type, workspaceRoot, cmakeSettingsJsonPath, cmakeToolchain, variables, inheritEnvironments) {
+        this.name = name;
+        this.environments = environments;
+        this.buildDir = buildDir;
+        this.cmakeArgs = cmakeArgs;
+        this.makeArgs = makeArgs;
+        this.generator = generator;
+        this.type = type;
+        this.workspaceRoot = workspaceRoot;
+        this.cmakeSettingsJsonPath = cmakeSettingsJsonPath;
+        this.cmakeToolchain = cmakeToolchain;
+        this.variables = variables;
+        this.inheritEnvironments = inheritEnvironments;
+        baseutillib.BaseLibUtils.throwIfUndefined(name, "name");
+        baseutillib.BaseLibUtils.throwIfUndefined(buildDir, "buildDir");
+        baseutillib.BaseLibUtils.throwIfUndefined(cmakeSettingsJsonPath, "cmakeSettingsJsonPath");
+        this.buildDir = path.normalize(buildDir);
+    }
+    /**
+     * Add to current process the environment variables defined in this configuration.
+     *
+     * @param {EnvironmentMap} globalEnvs The global environments (not defined in this configuration)
+     * @memberof Configuration
+     */
+    setEnvironment(globalEnvs) {
+        // Set all 'env' and unnamed environments and inherited environments.
+        for (const envName in globalEnvs) {
+            const environment = globalEnvs[envName];
+            const nameLowerCased = environment.name.toLowerCase();
+            // Unnamed environments (i.e. with no 'environment' property specified),
+            // empty string named (e.g. {"environment": "", ...} ), or ones called 'env' 
+            // are being set in the environment automatically. All others needs to be 
+            // explicitly inherited.
+            if (!nameLowerCased || "env" === nameLowerCased ||
+                Configuration.unnamedEnvironmentName === nameLowerCased) {
+                for (const variable of environment.variables) {
+                    variable.addToEnvironment();
+                }
+            }
+        }
+        // Set all inherited environments.
+        for (const envName of this.inheritEnvironments) {
+            const environment = globalEnvs[envName];
+            if (environment) {
+                for (const variable of environment.variables) {
+                    variable.addToEnvironment();
+                }
+            }
+        }
+        // Set all 'env' and unnamed environments.
+        for (const env in this.environments) {
+            for (const variable of this.environments[env].variables) {
+                variable.addToEnvironment();
+            }
+        }
+    }
+    evaluate(evaluator) {
+        const evaledVars = [];
+        for (const variable of this.variables) {
+            evaledVars.push(new CMakeVariable(variable.name, evaluator.evaluateExpression(variable.value), variable.type));
+        }
+        const conf = new Configuration(this.name, this.environments, evaluator.evaluateExpression(this.buildDir), evaluator.evaluateExpression(this.cmakeArgs), evaluator.evaluateExpression(this.makeArgs), evaluator.evaluateExpression(this.generator), evaluator.evaluateExpression(this.type), this.workspaceRoot, this.cmakeSettingsJsonPath, evaluator.evaluateExpression(this.cmakeToolchain), evaledVars, this.inheritEnvironments);
+        return conf;
+    }
+    getGeneratorBuildArgs() {
+        let generatorBuildArgs = "";
+        if (this.generator.includes("Visual Studio")) {
+            generatorBuildArgs = `--config ${this.type}`;
+        }
+        else if (this.generator.includes("Ninja Multi-Config")) {
+            generatorBuildArgs = `--config ${this.type}`;
+        }
+        return generatorBuildArgs;
+    }
+    getGeneratorArgs() {
+        let gen = this.generator;
+        let arch;
+        if (gen.includes("Visual Studio")) {
+            // for VS generators, add the -A value
+            let architectureParam = undefined;
+            const architectures = [
+                CMakeGenerators.X64,
+                CMakeGenerators.WIN32,
+                CMakeGenerators.WIN64,
+                CMakeGenerators.ARM64,
+                CMakeGenerators.ARM
+            ];
+            // Remove the platform
+            for (const architecture of architectures) {
+                if (gen.includes(architecture[0])) {
+                    gen = gen.replace(architecture[0], "");
+                    architectureParam = architecture[1];
+                }
+            }
+            gen = `-G${gen.trim()}`;
+            if (architectureParam) {
+                arch = `-A${architectureParam.trim()}`;
+            }
+        }
+        else {
+            // All non-VS generators are passed as is.
+            gen = `-G${gen.trim()}`;
+        }
+        return [gen, arch];
+    }
+    toString() {
+        return `{conf: ${this.name}:${this.type}}`;
+    }
+}
+exports.Configuration = Configuration;
+// Internal placeholder name for environment without a name
+Configuration.unnamedEnvironmentName = 'unnamed';
+class PropertyEvaluator {
+    constructor(config, globalEnvs, tl) {
+        this.config = config;
+        this.globalEnvs = globalEnvs;
+        this.tl = tl;
+        // Matches the variable name in "${variable.name}".
+        this.varExp = new RegExp("\\$\{([^\{\}]+)\}", "g");
+        this.localEnv = new Environment("", []);
+        this.createLocalVars();
+    }
+    addToLocalEnv(name, value) {
+        this.localEnv.addVariable(new Variable(name, value));
+    }
+    createLocalVars() {
+        const settingsPath = this.config.cmakeSettingsJsonPath;
+        this.addToLocalEnv('name', this.config.name);
+        this.addToLocalEnv('generator', this.config.generator);
+        this.addToLocalEnv('workspaceRoot', this.config.workspaceRoot);
+        this.addToLocalEnv('thisFile', settingsPath);
+        this.addToLocalEnv('projectFile', path.join(path.dirname(settingsPath), 'CMakeLists.txt'));
+        this.addToLocalEnv('projectDir', path.dirname(settingsPath));
+        this.addToLocalEnv('projectDirName', path.basename(path.dirname(settingsPath)));
+        this.addToLocalEnv('workspaceHash', crypto.createHash('md5')
+            .update(this.config.cmakeSettingsJsonPath)
+            .digest('hex'));
+    }
+    searchVariable(variable, env) {
+        var _a;
+        if (env != null) {
+            for (const v of env.variables) {
+                if (v.name === variable) {
+                    return (_a = v.value) !== null && _a !== void 0 ? _a : "";
+                }
+            }
+        }
+        return null;
+    }
+    evaluateVariable(variable) {
+        this.tl.debug(`Searching ${variable.name} in environment ${this.localEnv} ...`);
+        let res = this.searchVariable(variable.name, this.localEnv);
+        if (res !== null) {
+            return res;
+        }
+        for (const localName of this.config.inheritEnvironments) {
+            const env = this.config.environments[localName];
+            res = this.searchVariable(variable.name, env);
+            if (res !== null) {
+                return res;
+            }
+        }
+        let env = this.config.environments[Configuration.unnamedEnvironmentName];
+        res = this.searchVariable(variable.name, env);
+        if (res !== null) {
+            return res;
+        }
+        for (const localName of this.config.inheritEnvironments) {
+            const env = this.globalEnvs[localName];
+            res = this.searchVariable(variable.name, env);
+            if (res !== null)
+                return res;
+        }
+        env = this.globalEnvs[Configuration.unnamedEnvironmentName];
+        res = this.searchVariable(variable.name, env);
+        if (res !== null)
+            return res;
+        // Try to match an environment variable.
+        if (variable.name.startsWith("env.")) {
+            const envVarName = variable.name.substring(4);
+            const value = process.env[envVarName];
+            if (value) {
+                return value;
+            }
+        }
+        return null;
+    }
+    extractVariables(str) {
+        const variables = [];
+        while (true) {
+            const match = this.varExp.exec(str);
+            if (match === null)
+                break;
+            if (match.length > 1) {
+                const varname = match[1];
+                const variable = new Variable(varname, '');
+                variables.push(variable);
+            }
+        }
+        return variables;
+    }
+    evaluateExpression(expr) {
+        this.tl.debug(`evaluating expression: '${expr}' ...`);
+        let res = expr;
+        while (true) {
+            const variables = this.extractVariables(res);
+            if (variables !== null) {
+                let resolved;
+                resolved = false;
+                for (const variable of variables) {
+                    const resv = this.evaluateVariable(variable);
+                    if (resv !== null) {
+                        res = res.replace('${' + variable.name + '}', resv);
+                        this.tl.debug(`evaluated \$\{${variable.name}\} to '${resv}'`);
+                        resolved = true;
+                    }
+                    else {
+                        this.tl.debug(`Warning: could not evaluate '${variable.toString()}'`);
+                    }
+                }
+                if (resolved === false) {
+                    break;
+                }
+            }
+        }
+        this.tl.debug(`evalutated to: '${String(res)}'.`);
+        return res !== null && res !== void 0 ? res : '';
+    }
+}
+exports.PropertyEvaluator = PropertyEvaluator;
+function parseEnvironments(envsJson) {
+    const environments = {};
+    for (const env of envsJson) {
+        let namespace = 'env';
+        let name = Configuration.unnamedEnvironmentName;
+        const variables = [];
+        for (const envi in env) {
+            if (envi === 'environment') {
+                name = env[envi];
+            }
+            else if (envi === 'namespace') {
+                namespace = env[envi];
+            }
+            else {
+                let variableName = envi;
+                const variableValue = env[envi];
+                if (!variableName.includes('.')) {
+                    if (namespace && namespace.length > 0) {
+                        variableName = namespace + '.' + variableName;
+                    }
+                }
+                variables.push(new Variable(variableName, variableValue));
+            }
+        }
+        if (name in environments) {
+            // Append entries to existing environments' variables.
+            for (const variable of variables) {
+                environments[name].addVariable(variable);
+            }
+        }
+        else {
+            // Create a new environment.
+            const env = new Environment(name, variables);
+            environments[name] = env;
+        }
+    }
+    return environments;
+}
+exports.parseEnvironments = parseEnvironments;
+function parseConfigurations(configurationsJson, cmakeSettingsJson, sourceDir) {
+    // Parse all configurations.
+    const configurations = [];
+    for (const configuration of configurationsJson) {
+        // Parse variables.
+        const vars = [];
+        if (configuration.variables) {
+            for (const variable of configuration.variables) {
+                const data = new CMakeVariable(variable.name, variable.value, variable.type);
+                vars.push(data);
+            }
+            ;
+        }
+        // Parse inherited environments.
+        const inheritedEnvs = [];
+        if (configuration.inheritEnvironments) {
+            for (const env of configuration.inheritEnvironments) {
+                inheritedEnvs.push(env);
+            }
+        }
+        // Parse local environments.
+        let localEnvs = {};
+        if (configuration.environments) {
+            localEnvs = parseEnvironments(configuration.environments);
+        }
+        const newConfiguration = new Configuration(configuration.name, localEnvs, configuration.remoteMachineName ? configuration.remoteBuildRoot : configuration.buildRoot, configuration.cmakeCommandArgs, configuration.buildCommandArgs, configuration.generator, configuration.configurationType, 
+        // Set the workspace with the provided source directory.
+        sourceDir, 
+        // Set the Configuration.cmakeSettingsJsonPath field value with the one passed in.
+        cmakeSettingsJson, configuration.cmakeToolchain, vars, inheritedEnvs);
+        configurations.push(newConfiguration);
+    } //for
+    return configurations;
+}
+exports.parseConfigurations = parseConfigurations;
+class CMakeSettingsJsonRunner {
+    constructor(baseLib, cmakeSettingsJson, configurationFilter, appendedCMakeArgs, workspaceRoot, vcpkgTriplet, useVcpkgToolchain, doBuild, ninjaPath, ninjaDownloadUrl, sourceScript, buildDir) {
+        this.baseLib = baseLib;
+        this.cmakeSettingsJson = cmakeSettingsJson;
+        this.configurationFilter = configurationFilter;
+        this.appendedCMakeArgs = appendedCMakeArgs;
+        this.workspaceRoot = workspaceRoot;
+        this.vcpkgTriplet = vcpkgTriplet;
+        this.useVcpkgToolchain = useVcpkgToolchain;
+        this.doBuild = doBuild;
+        this.ninjaPath = ninjaPath;
+        this.ninjaDownloadUrl = ninjaDownloadUrl;
+        this.sourceScript = sourceScript;
+        this.buildDir = buildDir;
+        this.baseLib.debug(`CMakeSettingsJsonRunner()<<`);
+        this.configurationFilter = configurationFilter;
+        this.baseUtils = new baseutillib.BaseLibUtils(this.baseLib);
+        this.cmakeUtils = new cmakeutil.CMakeUtils(this.baseUtils);
+        this.ninjaLib = new ninjalib.NinjaProvider(this.baseLib);
+        this.baseLib.debug(`buildDir=${buildDir}`);
+        this.buildDir = baseutillib.BaseLibUtils.normalizePath(buildDir);
+        this.baseLib.debug(`normalized buildDir=${this.buildDir}`);
+        if (!this.baseLib.exist(cmakeSettingsJson)) {
+            throw new Error(`File '${cmakeSettingsJson}' does not exist.`);
+        }
+        this.baseLib.debug(`CMakeSettingsJsonRunner()>>`);
+    }
+    parseConfigurations(json) {
+        let configurations = [];
+        if (json.configurations) {
+            configurations = parseConfigurations(json.configurations, this.cmakeSettingsJson, this.baseLib.getSrcDir());
+        }
+        this.baseLib.debug(`CMakeSettings.json parsed configurations: '${String(configurations)}'.`);
+        return configurations;
+    }
+    static parseEnvironments(envsJson) {
+        return parseEnvironments(envsJson);
+    }
+    parseGlobalEnvironments(json) {
+        // Parse global environments
+        let globalEnvs = {};
+        if (json.environments != null) {
+            globalEnvs = CMakeSettingsJsonRunner.parseEnvironments(json.environments);
+        }
+        this.baseLib.debug("CMakeSettings.json parsed global environments.");
+        for (const envName in globalEnvs) {
+            this.baseLib.debug(`'${envName}'=${String(globalEnvs[envName])}`);
+        }
+        return globalEnvs;
+    }
+    run() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const [success, content] = this.baseUtils.readFile(this.cmakeSettingsJson);
+            if (!success) {
+                throw new Error(`Cannot read file: '${this.cmakeSettingsJson}'.`);
+            }
+            // Remove any potential BOM at the beginning.
+            const contentTrimmed = content.toString().trimLeft();
+            this.baseLib.debug(`Content of file CMakeSettings.json: '${contentTrimmed}'.`);
+            // Strip any comment out of the JSON content.
+            const cmakeSettingsJson = JSON.parse(strip_json_comments_1.default(contentTrimmed));
+            const configurations = this.parseConfigurations(cmakeSettingsJson);
+            const globalEnvs = this.parseGlobalEnvironments(cmakeSettingsJson);
+            const regex = new RegExp(this.configurationFilter);
+            const filteredConfigurations = configurations.filter(configuration => {
+                return regex.test(configuration.name);
+            });
+            this.baseLib.debug(`CMakeSettings.json filtered configurations: '${String(filteredConfigurations)}'."`);
+            if (filteredConfigurations.length === 0) {
+                throw new Error(`No matching configuration for filter: '${this.configurationFilter}'.`);
+            }
+            // Store and restore the PATH env var for each configuration, to prevent side effects among configurations.
+            const originalPath = process.env.PATH;
+            for (const configuration of filteredConfigurations) {
+                const msg = `Process configuration: '${configuration.name}'.`;
+                try {
+                    this.baseLib.beginOperation(msg);
+                    console.log(msg);
+                    let cmakeArgs = [];
+                    // Search for CMake tool and run it
+                    let cmake;
+                    if (this.sourceScript) {
+                        cmake = this.baseLib.tool(this.sourceScript);
+                        cmakeArgs.push(yield this.baseLib.which('cmake', true));
+                    }
+                    else {
+                        cmake = this.baseLib.tool(yield this.baseLib.which('cmake', true));
+                    }
+                    // Evaluate all variables in the configuration.
+                    const evaluator = new PropertyEvaluator(configuration, globalEnvs, this.baseLib);
+                    const evaledConf = configuration.evaluate(evaluator);
+                    // Set all variable in the configuration in the process environment.
+                    evaledConf.setEnvironment(globalEnvs);
+                    // The build directory value specified in CMakeSettings.json is ignored.
+                    // This is because:
+                    // 1. you want to build targeting an empty binary directory;
+                    // 2. the default location in CMakeSettings.json is under the source tree, whose content is not deleted upon each build run.
+                    // Instead if users did not provided a specific path, let's force it to
+                    // "$(Build.ArtifactStagingDirectory)/{name}" which should be empty.
+                    console.log(`Note: run-cmake always ignores the 'buildRoot' value specified in the CMakeSettings.json (buildRoot=${configuration.buildDir}). User can override the default value by setting the '${globals.buildDirectory}' input.`);
+                    const artifactsDir = yield this.baseLib.getArtifactsDir();
+                    if (baseutillib.BaseLibUtils.normalizePath(this.buildDir) === baseutillib.BaseLibUtils.normalizePath(artifactsDir)) {
+                        // The build directory goes into the artifact directory in a subdir
+                        // named with the configuration name.
+                        evaledConf.buildDir = path.join(artifactsDir, configuration.name);
+                    }
+                    else {
+                        // Append the configuration name to the user provided build directory. This is mandatory to have each 
+                        // build in a different directory.
+                        evaledConf.buildDir = path.join(this.buildDir, configuration.name);
+                    }
+                    console.log(`Overriding build directory to: '${evaledConf.buildDir}'`);
+                    cmakeArgs = cmakeArgs.concat(evaledConf.getGeneratorArgs().filter(this.notEmpty));
+                    if (this.baseUtils.isNinjaGenerator(cmakeArgs)) {
+                        const ninjaPath = yield this.ninjaLib.retrieveNinjaPath(this.ninjaPath, this.ninjaDownloadUrl);
+                        cmakeArgs.push(`-DCMAKE_MAKE_PROGRAM=${ninjaPath}`);
+                    }
+                    if (!this.isMultiConfigGenerator(evaledConf.generator)) {
+                        cmakeArgs.push(`-DCMAKE_BUILD_TYPE=${evaledConf.type}`);
+                    }
+                    for (const variable of evaledConf.variables) {
+                        cmakeArgs.push(variable.toString());
+                    }
+                    if (evaledConf.cmakeToolchain) {
+                        cmakeArgs.push(`-DCMAKE_TOOLCHAIN_FILE=${evaledConf.cmakeToolchain}`);
+                    }
+                    // Use vcpkg toolchain if requested.
+                    if (this.useVcpkgToolchain === true) {
+                        cmakeArgs = yield this.cmakeUtils.injectVcpkgToolchain(cmakeArgs, this.vcpkgTriplet, this.baseLib);
+                    }
+                    // Add the current args in the tool, add
+                    // custom args, and reset the args.
+                    for (const arg of cmakeArgs) {
+                        cmake.arg(arg);
+                    }
+                    cmakeArgs = [];
+                    // Add CMake args from CMakeSettings.json file.
+                    cmake.line(evaledConf.cmakeArgs);
+                    // Set the source directory.
+                    cmake.arg(path.dirname(this.cmakeSettingsJson));
+                    // Run CNake with the given arguments.
+                    if (!evaledConf.buildDir) {
+                        throw new Error("Build directory is not specified.");
+                    }
+                    // Append user provided CMake arguments.
+                    cmake.line(this.appendedCMakeArgs);
+                    yield this.baseLib.mkdirP(evaledConf.buildDir);
+                    const options = {
+                        cwd: evaledConf.buildDir,
+                        failOnStdErr: false,
+                        errStream: process.stdout,
+                        outStream: process.stdout,
+                        ignoreReturnCode: true,
+                        silent: false,
+                        windowsVerbatimArguments: false,
+                        env: process.env
+                    };
+                    this.baseLib.debug(`Generating project files with CMake in build directory '${options.cwd}' ...`);
+                    let code = -1;
+                    yield using_statement_1.using(baseutillib.Matcher.createMatcher('cmake', this.baseLib, this.cmakeSettingsJson), (matcher) => __awaiter(this, void 0, void 0, function* () {
+                        code = yield this.baseUtils.wrapOp("Generate project files with CMake", () => cmake.exec(options));
+                    }));
+                    if (code !== 0) {
+                        throw new Error(`"CMake failed with error code: '${code}'."`);
+                    }
+                    if (this.doBuild) {
+                        yield using_statement_1.using(baseutillib.Matcher.createMatcher(cmakerunner.CMakeRunner.getBuildMatcher(this.buildDir, this.baseLib), this.baseLib), (matcher) => __awaiter(this, void 0, void 0, function* () {
+                            yield this.baseUtils.wrapOp("Build with CMake", () => __awaiter(this, void 0, void 0, function* () {
+                                return yield cmakerunner.CMakeRunner.build(this.baseLib, evaledConf.buildDir, 
+                                // CMakeSettings.json contains in buildCommandArgs the arguments to the make program
+                                //only. They need to be put after '--', otherwise would be passed to directly to cmake.
+                                ` ${evaledConf.getGeneratorBuildArgs()} -- ${evaledConf.makeArgs}`, options);
+                            }));
+                        }));
+                    }
+                    // Restore the original PATH environment variable.
+                    process.env.PATH = originalPath;
+                }
+                finally {
+                    this.baseLib.endOperation();
+                }
+            }
+        });
+    }
+    notEmpty(value) {
+        return value !== null && value !== undefined;
+    }
+    isMultiConfigGenerator(generatorName) {
+        return generatorName.includes("Visual Studio") ||
+            generatorName.includes("Ninja Multi-Config");
+    }
+}
+exports.CMakeSettingsJsonRunner = CMakeSettingsJsonRunner;
+//# sourceMappingURL=cmakesettings-runner.js.map
 
 /***/ }),
 
@@ -10593,411 +11068,6 @@ module.exports = function (/*Buffer*/inbuf) {
     }
   }
 };
-
-
-/***/ }),
-
-/***/ 477:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-// Copyright (c) 2019-2020 Luca Cappa
-// Released under the term specified in file LICENSE.txt
-// SPDX short identifier: MIT
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const admZip = __webpack_require__(639);
-const fs = __webpack_require__(747);
-const os = __webpack_require__(87);
-const path = __webpack_require__(622);
-const http = __webpack_require__(549);
-const del = __webpack_require__(245);
-const globals = __webpack_require__(358);
-// TODO starts: remove this block and create a class where the BaseLib is passed
-// in ctor
-let baseLib;
-function setBaseLib(tl) {
-    baseLib = tl;
-}
-exports.setBaseLib = setBaseLib;
-function getBaseLib() {
-    return baseLib;
-}
-exports.getBaseLib = getBaseLib;
-// TODO ends
-function isVariableStrippingPath(variableName) {
-    // Avoid that the PATH is minimized by MSBuild props:
-    // https://github.com/lukka/run-cmake/issues/8#issuecomment-606956604
-    return (variableName.toUpperCase() === "__VSCMD_PREINIT_PATH");
-}
-/**
- * Check whether the current generator selected in the command line
- * is -G Ninja or -G Ninja Multi-Config.
- * @export
- * @param {string} commandLineString The command line as string
- * @returns {boolean}
- */
-function isNinjaGenerator(args) {
-    for (const arg of args) {
-        if (/-G[\s]*(?:\"Ninja.*\"|Ninja.*)/.test(arg))
-            return true;
-    }
-    return false;
-}
-exports.isNinjaGenerator = isNinjaGenerator;
-function isMakeProgram(args) {
-    for (const arg of args) {
-        if (/-DCMAKE_MAKE_PROGRAM/.test(arg))
-            return true;
-    }
-    return false;
-}
-exports.isMakeProgram = isMakeProgram;
-function isToolchainFile(args) {
-    for (const arg of args) {
-        if (/-DCMAKE_TOOLCHAIN_FILE/.test(arg))
-            return true;
-    }
-    return false;
-}
-exports.isToolchainFile = isToolchainFile;
-function getToolchainFile(args) {
-    baseLib.debug(`getToolchainFile(${JSON.stringify(args)})<<`);
-    for (const arg of args) {
-        const matches = /-DCMAKE_TOOLCHAIN_FILE(?::[^\s]*)?=([^\s]*)/.exec(arg);
-        if (matches != null) {
-            if (matches.length > 1) {
-                baseLib.debug(`match found=${matches[1]}`);
-                return matches[1];
-            }
-        }
-    }
-    return undefined;
-}
-exports.getToolchainFile = getToolchainFile;
-function removeToolchainFile(args) {
-    return args.filter(a => !/-DCMAKE_TOOLCHAIN_FILE(:[A-Za-z]+)?=[^\s]+/.test(a));
-}
-exports.removeToolchainFile = removeToolchainFile;
-function mkdir(target, options) {
-    fs.mkdirSync(target, options);
-}
-exports.mkdir = mkdir;
-function rm(target) {
-    del.sync(target);
-}
-exports.rm = rm;
-function test(aPath) {
-    const result = fs.existsSync(aPath);
-    return result;
-}
-exports.test = test;
-function downloadFile(url) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const downloadsDirName = "dl";
-        // validate parameters
-        if (!url) {
-            throw new Error('downloadFile: Parameter "url" must be set.');
-        }
-        const downloadsDirectory = path.join(yield baseLib.getBinDir(), downloadsDirName);
-        const scrubbedUrl = url.replace(/[/\:?]/g, '_');
-        const targetPath = path.join(downloadsDirectory, scrubbedUrl);
-        const marker = targetPath + '.completed';
-        // skip if already downloaded
-        if (test(marker)) {
-            console.log(`Found downloaded file at: ${targetPath}`);
-            return Promise.resolve(targetPath);
-        }
-        else {
-            console.log(`Downloading url '${url}' to file '${targetPath}'.`);
-            // delete any previous partial attempt
-            if (test(targetPath)) {
-                rm(targetPath);
-            }
-            // download the file
-            mkdir(downloadsDirectory, { recursive: true });
-            const file = fs.createWriteStream(targetPath, { autoClose: true });
-            return new Promise((resolve, reject) => {
-                const request = http.https.get(url, (response) => {
-                    response.pipe(file).on('finish', () => {
-                        baseLib.debug(`statusCode: ${response.statusCode}.`);
-                        baseLib.debug(`headers: ${response.headers}.`);
-                        console.log(`'${url}' downloaded to: '${targetPath}'`);
-                        fs.writeFileSync(marker, '');
-                        request.end();
-                        resolve(targetPath);
-                    }).on('error', (error) => reject(new Error(`statusCode='${response.statusCode}', error='${error.toString()}'.`)));
-                });
-            });
-        }
-    });
-}
-exports.downloadFile = downloadFile;
-function isWin32() {
-    return os.platform().toLowerCase() === 'win32';
-}
-exports.isWin32 = isWin32;
-function isLinux() {
-    return os.platform().toLowerCase() === 'linux';
-}
-exports.isLinux = isLinux;
-function isDarwin() {
-    return os.platform().toLowerCase() === 'darwin';
-}
-exports.isDarwin = isDarwin;
-class Downloader {
-    static downloadFile(url) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield downloadFile(url);
-        });
-    }
-    /**
-     * Downloads and extracts an archive file.
-     * @returns The path to the extracted content.
-     */
-    static downloadArchive(url) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!url) {
-                throw new Error('downloadArchive: url must be provided!');
-            }
-            try {
-                const targetFileName = url.replace(/[\/\\:?]/g, '_');
-                // 'x' for extracted content.
-                const targetPath = path.join(yield baseLib.getBinDir(), 'x', targetFileName);
-                const marker = targetPath + '.completed';
-                if (!test(marker)) {
-                    // download the whole archive.
-                    const archivePath = yield downloadFile(url);
-                    // extract the archive overwriting anything.
-                    console.log(`Extracting archive '${archivePath}' ...`);
-                    mkdir(targetPath, { recursive: true });
-                    const zip = new admZip(archivePath);
-                    zip.extractAllTo(targetPath, true);
-                    // write the completed file marker.
-                    fs.writeFileSync(marker, '');
-                }
-                return targetPath;
-            }
-            catch (exception) {
-                throw new Error(`Failed to download the Ninja executable: '${exception}'.`);
-            }
-        });
-    }
-}
-exports.Downloader = Downloader;
-;
-function parseVcpkgEnvOutput(data) {
-    const map = {};
-    const regex = {
-        param: /^\s*([^=]+?)\s*=\s*(.*?)\s*$/,
-    };
-    const lines = data.split(/[\r\n]+/);
-    for (const line of lines) {
-        if (regex.param.test(line)) {
-            const match = line.match(regex.param);
-            if (match) {
-                map[match[1]] = match[2];
-            }
-        }
-    }
-    return map;
-}
-function injectEnvVariables(vcpkgRoot, triplet) {
-    var _a;
-    return __awaiter(this, void 0, void 0, function* () {
-        if (!vcpkgRoot) {
-            vcpkgRoot = (_a = process.env[globals.outVcpkgRootPath], (_a !== null && _a !== void 0 ? _a : ""));
-            if (!vcpkgRoot) {
-                throw new Error(`${globals.outVcpkgRootPath} environment variable is not set.`);
-            }
-        }
-        // Search for CMake tool and run it
-        let vcpkgPath = path.join(vcpkgRoot, 'vcpkg');
-        if (isWin32()) {
-            vcpkgPath += '.exe';
-        }
-        const vcpkg = baseLib.tool(vcpkgPath);
-        vcpkg.arg("env");
-        vcpkg.arg("--bin");
-        vcpkg.arg("--include");
-        vcpkg.arg("--tools");
-        vcpkg.arg("--python");
-        vcpkg.line(`--triplet ${triplet} set`);
-        const options = {
-            cwd: vcpkgRoot,
-            failOnStdErr: false,
-            errStream: process.stdout,
-            outStream: process.stdout,
-            ignoreReturnCode: true,
-            silent: false,
-            windowsVerbatimArguments: false,
-            env: process.env
-        };
-        const output = yield vcpkg.execSync(options);
-        if (output.code !== 0) {
-            throw new Error(`${output.stdout}\n\n${output.stderr}`);
-        }
-        const map = parseVcpkgEnvOutput(output.stdout);
-        for (const key in map) {
-            if (isVariableStrippingPath(key))
-                continue;
-            if (key.toUpperCase() === "PATH") {
-                process.env[key] = process.env[key] + path.delimiter + map[key];
-            }
-            else {
-                process.env[key] = map[key];
-            }
-            baseLib.debug(`set ${key}=${process.env[key]}`);
-        }
-    });
-}
-exports.injectEnvVariables = injectEnvVariables;
-function injectVcpkgToolchain(args, triplet) {
-    return __awaiter(this, void 0, void 0, function* () {
-        args = (args !== null && args !== void 0 ? args : []);
-        const vcpkgRoot = process.env[globals.outVcpkgRootPath];
-        // if RUNVCPKG_VCPKG_ROOT is defined, then use it, and put aside into
-        // VCPKG_CHAINLOAD_TOOLCHAIN_FILE the existing toolchain.
-        if (vcpkgRoot && vcpkgRoot.length > 1) {
-            const toolchainFile = getToolchainFile(args);
-            args = removeToolchainFile(args);
-            const vcpkgToolchain = path.join(vcpkgRoot, '/scripts/buildsystems/vcpkg.cmake');
-            args.push(`-DCMAKE_TOOLCHAIN_FILE=${vcpkgToolchain}`);
-            if (toolchainFile) {
-                args.push(`-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${toolchainFile}`);
-            }
-            // If the triplet is provided, specify the same triplet on the cmd line and set the environment for msvc.
-            if (triplet) {
-                args.push(`-DVCPKG_TARGET_TRIPLET=${triplet}`);
-                // For Windows build agents, inject the environment variables used
-                // for the MSVC compiler using the 'vcpkg env' command.
-                // This is not be needed for others compiler on Windows, but it should be harmless.
-                if (isWin32() && triplet) {
-                    if (triplet.indexOf("windows") !== -1) {
-                        process.env.CC = "cl.exe";
-                        process.env.CXX = "cl.exe";
-                        baseLib.setVariable("CC", "cl.exe");
-                        baseLib.setVariable("CXX", "cl.exe");
-                    }
-                    yield injectEnvVariables(vcpkgRoot, triplet);
-                }
-            }
-        }
-        return args;
-    });
-}
-exports.injectVcpkgToolchain = injectVcpkgToolchain;
-/**
- * Get a set of commands to be run in the shell of the host OS.
- * @export
- * @param {string[]} args
- * @returns {(trm.ToolRunner | undefined)}
- */
-function getScriptCommand(args) {
-    var _a;
-    return __awaiter(this, void 0, void 0, function* () {
-        let tool;
-        if (isWin32()) {
-            const cmdExe = (_a = process.env.COMSPEC, (_a !== null && _a !== void 0 ? _a : "cmd.exe"));
-            const cmdPath = yield baseLib.which(cmdExe, true);
-            tool = baseLib.tool(cmdPath);
-            tool.arg('/c');
-            tool.line(args);
-        }
-        else {
-            const shPath = yield baseLib.which('sh', true);
-            tool = baseLib.tool(shPath);
-            tool.arg('-c');
-            tool.arg(args);
-            return tool;
-        }
-    });
-}
-exports.getScriptCommand = getScriptCommand;
-/**
- * Normalize a filesystem path with path.normalize(), then remove any trailing space.
- *
- * @export
- * @param {string} aPath The string representing a filesystem path.
- * @returns {string} The normalized path without trailing slash.
- */
-function normalizePath(aPath) {
-    aPath = path.normalize(aPath);
-    if (/[\\\/]$/.test(aPath) && aPath.length > 1)
-        aPath = aPath.slice(0, -1);
-    return aPath;
-}
-exports.normalizePath = normalizePath;
-function wrapOp(name, fn) {
-    return __awaiter(this, void 0, void 0, function* () {
-        baseLib.beginOperation(name);
-        let result;
-        try {
-            result = yield fn();
-        }
-        finally {
-            baseLib.endOperation();
-        }
-        return result;
-    });
-}
-exports.wrapOp = wrapOp;
-function wrapOpSync(name, fn) {
-    baseLib.beginOperation(name);
-    let result;
-    try {
-        result = fn();
-    }
-    finally {
-        baseLib.endOperation();
-    }
-    return result;
-}
-exports.wrapOpSync = wrapOpSync;
-class Matcher {
-    constructor(name, fromPath) {
-        this.name = name;
-        this.fromPath = fromPath;
-        const matcherFilePath = path.join(__dirname, `${name}.json`);
-        fromPath;
-        /* //?? TODO This code should be removed.
-        if (fromPath) {
-          try {
-            const content = fs.readFileSync(matcherFilePath);
-            const json: any = JSON.parse(content.toString());
-            json.problemMatcher[0].pattern[0].fromPath = fromPath;
-            fs.writeFileSync(matcherFilePath, JSON.stringify(json),
-              {
-                encoding: "utf8",
-                flag: "w+"
-              });
-            baseLib.debug(fs.readFileSync(matcherFilePath).toString());
-          } catch (err) {
-            baseLib.debug(`Failure in Matcher: ${err}`);
-          }
-        }*/
-        baseLib.addMatcher(matcherFilePath);
-    }
-    dispose() {
-        baseLib.removeMatcher(path.join(__dirname, `${this.name}.json`));
-    }
-}
-exports.Matcher = Matcher;
-function createMatcher(name, fromPath) {
-    return new Matcher(name, fromPath);
-}
-exports.createMatcher = createMatcher;
-
-//# sourceMappingURL=utils.js.map
 
 
 /***/ }),
@@ -12888,23 +12958,25 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const libaction = __webpack_require__(35);
+const libaction = __webpack_require__(778);
+const runcmakelib = __webpack_require__(832);
 const core = __webpack_require__(470);
-const cmakerunner = __webpack_require__(997);
-const utils = __webpack_require__(477);
 function main() {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const actionLib = new libaction.ActionLib();
-            utils.setBaseLib(actionLib);
-            const runner = new cmakerunner.CMakeRunner(actionLib);
+            const runner = new runcmakelib.CMakeRunner(actionLib);
             yield runner.run();
             core.info('run-cmake action execution succeeded');
             process.exitCode = 0;
         }
         catch (err) {
+            const error = err;
+            if ((_a = error) === null || _a === void 0 ? void 0 : _a.stack) {
+                core.info(error.stack);
+            }
             const errorAsString = ((err !== null && err !== void 0 ? err : "undefined error")).toString();
-            core.debug('Error: ' + errorAsString);
             core.setFailed(`run-cmake action execution failed: '${errorAsString}'`);
             process.exitCode = -1000;
         }
@@ -16115,6 +16187,27 @@ module.exports = require("fs");
 
 /***/ }),
 
+/***/ 758:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(__webpack_require__(928), exports);
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+
 /***/ 761:
 /***/ (function(module) {
 
@@ -16245,6 +16338,27 @@ class ProviderStream extends provider_1.default {
 }
 exports.default = ProviderStream;
 
+
+/***/ }),
+
+/***/ 778:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(__webpack_require__(411), exports);
+//# sourceMappingURL=index.js.map
 
 /***/ }),
 
@@ -18560,6 +18674,30 @@ module.exports = fastqueue
 
 /***/ }),
 
+/***/ 832:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(__webpack_require__(330), exports);
+__exportStar(__webpack_require__(214), exports);
+__exportStar(__webpack_require__(454), exports);
+__exportStar(__webpack_require__(72), exports);
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+
 /***/ 833:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -19236,30 +19374,6 @@ exports.default = EntryTransformer;
 
 /***/ }),
 
-/***/ 913:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const merge2 = __webpack_require__(538);
-function merge(streams) {
-    const mergedStream = merge2(streams);
-    streams.forEach((stream) => {
-        stream.once('error', (error) => mergedStream.emit('error', error));
-    });
-    mergedStream.once('close', () => propagateCloseEventToSources(streams));
-    mergedStream.once('end', () => propagateCloseEventToSources(streams));
-    return mergedStream;
-}
-exports.merge = merge;
-function propagateCloseEventToSources(streams) {
-    streams.forEach((stream) => stream.emit('close'));
-}
-
-
-/***/ }),
-
 /***/ 914:
 /***/ (function(module) {
 
@@ -19283,6 +19397,480 @@ module.exports = function(num) {
   return false;
 };
 
+
+/***/ }),
+
+/***/ 928:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+// Copyright (c) 2019-2020 Luca Cappa
+// Released under the term specified in file LICENSE.txt
+// SPDX short identifier: MIT
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Matcher = exports.BaseLibUtils = void 0;
+const fs = __importStar(__webpack_require__(747));
+const os = __importStar(__webpack_require__(87));
+const path = __importStar(__webpack_require__(622));
+const adm_zip_1 = __importDefault(__webpack_require__(639));
+const http = __importStar(__webpack_require__(549));
+const del = __importStar(__webpack_require__(245));
+class BaseLibUtils {
+    constructor(baseLib) {
+        this.baseLib = baseLib;
+    }
+    isVcpkgSubmodule(gitPath, fullVcpkgPath) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const options = {
+                    cwd: process.env.BUILD_SOURCESDIRECTORY,
+                    failOnStdErr: false,
+                    errStream: process.stdout,
+                    outStream: process.stdout,
+                    ignoreReturnCode: true,
+                    silent: false,
+                    windowsVerbatimArguments: false,
+                    env: process.env
+                };
+                const res = yield this.baseLib.execSync(gitPath, ['submodule', 'status', fullVcpkgPath], options);
+                let isSubmodule = false;
+                if (res.error !== null) {
+                    isSubmodule = res.code == 0;
+                    let msg;
+                    msg = `'git submodule ${fullVcpkgPath}': exit code='${res.code}' `;
+                    // If not null or undefined.
+                    if (res.stdout) {
+                        msg += `, stdout='${res.stdout.trim()}'`;
+                    }
+                    // If not null or undefined.
+                    if (res.stderr) {
+                        msg += `, stderr='${res.stderr.trim()}'`;
+                    }
+                    msg += '.';
+                    this.baseLib.debug(msg);
+                }
+                return isSubmodule;
+            }
+            catch (error) {
+                this.baseLib.warning(`ïsVcpkgSubmodule() failed: ${error}`);
+                return false;
+            }
+        });
+    }
+    throwIfErrorCode(errorCode) {
+        if (errorCode !== 0) {
+            const errMsg = `Last command execution failed with error code '${errorCode}'.`;
+            this.baseLib.error(errMsg);
+            throw new Error(errMsg);
+        }
+    }
+    isWin32() {
+        return os.platform().toLowerCase() === 'win32';
+    }
+    isMacos() {
+        return os.platform().toLowerCase() === 'darwin';
+    }
+    // freeBSD or openBSD
+    isBSD() {
+        return os.platform().toLowerCase().indexOf("bsd") != -1;
+    }
+    isLinux() {
+        return os.platform().toLowerCase() === 'linux';
+    }
+    isDarwin() {
+        return os.platform().toLowerCase() === 'darwin';
+    }
+    getVcpkgExePath(vcpkgRoot) {
+        const vcpkgExe = this.isWin32() ? "vcpkg.exe" : "vcpkg";
+        const vcpkgExePath = path.join(vcpkgRoot, vcpkgExe);
+        return vcpkgExePath;
+    }
+    directoryExists(path) {
+        try {
+            return this.baseLib.stats(path).isDirectory();
+        }
+        catch (error) {
+            this.baseLib.debug(`directoryExists(${path}): ${"" + error}`);
+            return false;
+        }
+    }
+    fileExists(path) {
+        try {
+            return this.baseLib.stats(path).isFile();
+        }
+        catch (error) {
+            this.baseLib.debug(`fileExists(${path}): ${"" + error}`);
+            return false;
+        }
+    }
+    readFile(path) {
+        try {
+            const readString = fs.readFileSync(path, { encoding: 'utf8', flag: 'r' });
+            this.baseLib.debug(`readFile(${path})='${readString}'.`);
+            return [true, readString];
+        }
+        catch (error) {
+            this.baseLib.debug(`readFile(${path}): ${"" + error}`);
+            return [false, error];
+        }
+    }
+    writeFile(file, content) {
+        this.baseLib.debug(`Writing to file '${file}' content '${content}'.`);
+        this.baseLib.writeFile(file, content);
+    }
+    getDefaultTriplet() {
+        const envVar = process.env["VCPKG_DEFAULT_TRIPLET"];
+        if (envVar) {
+            return envVar;
+        }
+        else {
+            if (this.isWin32()) {
+                return "x86-windows";
+            }
+            else if (this.isLinux()) {
+                return "x64-linux";
+            }
+            else if (this.isMacos()) {
+                return "x64-osx";
+            }
+            else if (this.isBSD()) {
+                return "x64-freebsd";
+            }
+        }
+        return "";
+    }
+    static extractTriplet(args, readFile) {
+        let triplet = null;
+        // Split string on any 'whitespace' character
+        const argsSplitted = args.split(/\s/).filter((a) => a.length != 0);
+        let index = 0;
+        for (; index < argsSplitted.length; index++) {
+            let arg = argsSplitted[index].trim();
+            // remove all whitespace characters (e.g. newlines, tabs, blanks)
+            arg = arg.replace(/\s/, '');
+            if (arg === "--triplet") {
+                index++;
+                if (index < argsSplitted.length) {
+                    triplet = argsSplitted[index];
+                    return triplet.trim();
+                }
+            }
+            if (arg.startsWith("@")) {
+                const [ok, content] = readFile(arg.substring(1));
+                if (ok) {
+                    const t = BaseLibUtils.extractTriplet(content, readFile);
+                    if (t) {
+                        return t.trim();
+                    }
+                }
+            }
+        }
+        return triplet;
+    }
+    resolveArguments(args, readFile) {
+        let resolvedArguments = "";
+        // Split string on any 'whitespace' character
+        const argsSplitted = args.split(/\s/).filter((a) => a.length != 0);
+        let index = 0;
+        for (; index < argsSplitted.length; index++) {
+            let arg = argsSplitted[index].trim();
+            // remove all whitespace characters (e.g. newlines, tabs, blanks)
+            arg = arg.replace(/\s/, '');
+            let isResponseFile = false;
+            if (arg.startsWith("@")) {
+                const resolvedFilePath = BaseLibUtils.normalizePath(arg);
+                if (this.baseLib.exist(resolvedFilePath)) {
+                    const [ok, content] = readFile(resolvedFilePath);
+                    if (ok && content) {
+                        isResponseFile = true;
+                        resolvedArguments += content;
+                    }
+                }
+            }
+            if (!isResponseFile) {
+                resolvedArguments += arg;
+            }
+        }
+        return resolvedArguments;
+    }
+    // Force 'name' env variable to have value of 'value'.
+    setEnvVar(name, value) {
+        // Set variable both as env var and as step variable, which might be re-used in subseqeunt steps.  
+        process.env[name] = value;
+        this.baseLib.setVariable(name, value);
+        this.baseLib.debug(`Set variable and the env variable '${name}' to value '${value}'.`);
+    }
+    trimString(value) {
+        var _a;
+        return (_a = value === null || value === void 0 ? void 0 : value.trim()) !== null && _a !== void 0 ? _a : "";
+    }
+    wrapOp(name, fn) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.baseLib.beginOperation(name);
+            let result;
+            try {
+                result = yield fn();
+            }
+            finally {
+                this.baseLib.endOperation();
+            }
+            return result;
+        });
+    }
+    wrapOpSync(name, fn) {
+        this.baseLib.beginOperation(name);
+        let result;
+        try {
+            result = fn();
+        }
+        finally {
+            this.baseLib.endOperation();
+        }
+        return result;
+    }
+    /**
+     * Check whether the current generator selected in the command line
+     * is -G Ninja or -G Ninja Multi-Config.
+     * @export
+     * @param {string} commandLineString The command line as string
+     * @returns {boolean}
+     */
+    isNinjaGenerator(args) {
+        for (const arg of args) {
+            if (/-G[\s]*(?:\"Ninja.*\"|Ninja.*)/.test(arg))
+                return true;
+        }
+        return false;
+    }
+    isMakeProgram(args) {
+        for (const arg of args) {
+            if (/-DCMAKE_MAKE_PROGRAM/.test(arg))
+                return true;
+        }
+        return false;
+    }
+    isToolchainFile(args) {
+        for (const arg of args) {
+            if (/-DCMAKE_TOOLCHAIN_FILE/.test(arg))
+                return true;
+        }
+        return false;
+    }
+    getToolchainFile(args) {
+        this.baseLib.debug(`getToolchainFile(${JSON.stringify(args)})<<`);
+        for (const arg of args) {
+            const matches = /-DCMAKE_TOOLCHAIN_FILE(?::[^\s]*)?=([^\s]*)/.exec(arg);
+            if (matches != null) {
+                if (matches.length > 1) {
+                    this.baseLib.debug(`match found=${matches[1]}`);
+                    return matches[1];
+                }
+            }
+        }
+        return undefined;
+    }
+    removeToolchainFile(args) {
+        return args.filter(a => !/-DCMAKE_TOOLCHAIN_FILE(:[A-Za-z]+)?=[^\s]+/.test(a));
+    }
+    mkdir(target, options) {
+        fs.mkdirSync(target, options);
+    }
+    rm(target) {
+        del.sync(target);
+    }
+    test(aPath) {
+        const result = fs.existsSync(aPath);
+        return result;
+    }
+    downloadFile(url) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const downloadsDirName = "dl";
+            // validate parameters
+            if (!url) {
+                throw new Error('downloadFile: Parameter "url" must be set.');
+            }
+            const downloadsDirectory = path.join(yield this.baseLib.getBinDir(), downloadsDirName);
+            const scrubbedUrl = url.replace(/[/\:?]/g, '_');
+            const targetPath = path.join(downloadsDirectory, scrubbedUrl);
+            const marker = targetPath + '.completed';
+            // skip if already downloaded
+            if (this.test(marker)) {
+                console.log(`Found downloaded file at: ${targetPath}`);
+                return Promise.resolve(targetPath);
+            }
+            else {
+                console.log(`Downloading url '${url}' to file '${targetPath}'.`);
+                // delete any previous partial attempt
+                if (this.test(targetPath)) {
+                    this.rm(targetPath);
+                }
+                // download the file
+                this.mkdir(downloadsDirectory, { recursive: true });
+                const file = fs.createWriteStream(targetPath, { autoClose: true });
+                return new Promise((resolve, reject) => {
+                    const request = http.https.get(url, (response) => {
+                        response.pipe(file).on('finish', () => {
+                            this.baseLib.debug(`statusCode: ${response.statusCode}.`);
+                            this.baseLib.debug(`headers: ${response.headers}.`);
+                            console.log(`'${url}' downloaded to: '${targetPath}'`);
+                            fs.writeFileSync(marker, '');
+                            request.end();
+                            resolve(targetPath);
+                        }).on('error', (error) => reject(new Error(`statusCode='${response.statusCode}', error='${error.toString()}'.`)));
+                    });
+                });
+            }
+        });
+    }
+    /**
+     * Downloads and extracts an archive file.
+     * @returns The path to the extracted content.
+     */
+    downloadArchive(url) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!url) {
+                throw new Error('downloadArchive: url must be provided!');
+            }
+            try {
+                const targetFileName = url.replace(/[\/\\:?]/g, '_');
+                // 'x' for extracted content.
+                const targetPath = path.join(yield this.baseLib.getBinDir(), 'x', targetFileName);
+                const marker = targetPath + '.completed';
+                if (!this.test(marker)) {
+                    // download the whole archive.
+                    const archivePath = yield this.downloadFile(url);
+                    // extract the archive overwriting anything.
+                    console.log(`Extracting archive '${archivePath}' ...`);
+                    this.mkdir(targetPath, { recursive: true });
+                    const zip = new adm_zip_1.default(archivePath);
+                    zip.extractAllTo(targetPath, true);
+                    // write the completed file marker.
+                    fs.writeFileSync(marker, '');
+                }
+                return targetPath;
+            }
+            catch (exception) {
+                throw new Error(`Failed to download the Ninja executable: '${exception}'.`);
+            }
+        });
+    }
+    /**
+     * Get a set of commands to be run in the shell of the host OS.
+     * @export
+     * @param {string[]} args
+     * @returns {(trm.ToolRunner | undefined)}
+     */
+    getScriptCommand(args) {
+        var _a;
+        return __awaiter(this, void 0, void 0, function* () {
+            let tool;
+            if (this.isWin32()) {
+                const cmdExe = (_a = process.env.COMSPEC) !== null && _a !== void 0 ? _a : "cmd.exe";
+                const cmdPath = yield this.baseLib.which(cmdExe, true);
+                tool = this.baseLib.tool(cmdPath);
+                tool.arg('/c');
+                tool.line(args);
+            }
+            else {
+                const shPath = yield this.baseLib.which('sh', true);
+                tool = this.baseLib.tool(shPath);
+                tool.arg('-c');
+                tool.arg(args);
+                return tool;
+            }
+        });
+    }
+    isVariableStrippingPath(variableName) {
+        // Avoid that the PATH is minimized by MSBuild props:
+        // https://github.com/lukka/run-cmake/issues/8#issuecomment-606956604
+        return (variableName.toUpperCase() === "__VSCMD_PREINIT_PATH");
+    }
+    parseVcpkgEnvOutput(data) {
+        const map = {};
+        const regex = {
+            param: /^\s*([^=]+?)\s*=\s*(.*?)\s*$/,
+        };
+        const lines = data.split(/[\r\n]+/);
+        for (const line of lines) {
+            if (regex.param.test(line)) {
+                const match = line.match(regex.param);
+                if (match) {
+                    map[match[1]] = match[2];
+                }
+            }
+        }
+        return map;
+    }
+    /**
+     * Normalize a filesystem path with path.normalize(), then remove any trailing space.
+     *
+     * @export
+     * @param {string} aPath The string representing a filesystem path.
+     * @returns {string} The normalized path without trailing slash.
+     */
+    static normalizePath(aPath) {
+        aPath = path.normalize(aPath);
+        if (/[\\\/]$/.test(aPath) && aPath.length > 1)
+            aPath = aPath.slice(0, -1);
+        return aPath;
+    }
+    static throwIfUndefined(obj, name) {
+        if (obj === undefined)
+            throw new Error(`Agument '${name}' is undefined`);
+    }
+}
+exports.BaseLibUtils = BaseLibUtils;
+BaseLibUtils.cachingFormatEnvName = 'AZP_CACHING_CONTENT_FORMAT';
+class Matcher {
+    constructor(name, baseLib, fromPath) {
+        this.name = name;
+        this.baseLib = baseLib;
+        this.fromPath = fromPath;
+        const matcherFilePath = path.join(__dirname, `${name}.json`);
+        fromPath;
+        this.baseLib.addMatcher(matcherFilePath);
+    }
+    dispose() {
+        this.baseLib.removeMatcher(path.join(__dirname, `${this.name}.json`));
+    }
+    static createMatcher(name, baseLib, fromPath) {
+        return new Matcher(name, baseLib, fromPath);
+    }
+}
+exports.Matcher = Matcher;
+//# sourceMappingURL=utils.js.map
 
 /***/ }),
 
@@ -19361,6 +19949,33 @@ function clone (obj) {
 
 /***/ }),
 
+/***/ 946:
+/***/ (function(__unusedmodule, exports) {
+
+"use strict";
+
+// Copyright (c) 2019-2020 Luca Cappa
+// Released under the term specified in file LICENSE.txt
+// SPDX short identifier: MIT
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.setupOnly = exports.vcpkgRoot = exports.doNotUpdateVcpkg = exports.cleanAfterBuild = exports.vcpkgLastBuiltCommitId = exports.vcpkgArtifactIgnoreEntries = exports.vcpkgDirectory = exports.vcpkgTriplet = exports.outVcpkgTriplet = exports.outVcpkgRootPath = exports.vcpkgCommitId = exports.vcpkgGitURL = exports.vcpkgArguments = void 0;
+exports.vcpkgArguments = 'vcpkgArguments';
+exports.vcpkgGitURL = 'vcpkgGitURL';
+exports.vcpkgCommitId = 'vcpkgGitCommitId';
+exports.outVcpkgRootPath = "RUNVCPKG_VCPKG_ROOT";
+exports.outVcpkgTriplet = "RUNVCPKG_VCPKG_TRIPLET";
+exports.vcpkgTriplet = "vcpkgTriplet";
+exports.vcpkgDirectory = "vcpkgDirectory";
+exports.vcpkgArtifactIgnoreEntries = "vcpkgArtifactIgnoreEntries";
+exports.vcpkgLastBuiltCommitId = 'vcpkgLastBuiltCommitId';
+exports.cleanAfterBuild = 'cleanAfterBuild';
+exports.doNotUpdateVcpkg = 'doNotUpdateVcpkg';
+exports.vcpkgRoot = 'VCPKG_ROOT';
+exports.setupOnly = 'setupOnly';
+//# sourceMappingURL=vcpkg-globals.js.map
+
+/***/ }),
+
 /***/ 949:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -19421,6 +20036,91 @@ exports.default = Reader;
 
 /***/ }),
 
+/***/ 966:
+/***/ (function(module) {
+
+"use strict";
+
+const singleComment = Symbol('singleComment');
+const multiComment = Symbol('multiComment');
+const stripWithoutWhitespace = () => '';
+const stripWithWhitespace = (string, start, end) => string.slice(start, end).replace(/\S/g, ' ');
+
+const isEscaped = (jsonString, quotePosition) => {
+	let index = quotePosition - 1;
+	let backslashCount = 0;
+
+	while (jsonString[index] === '\\') {
+		index -= 1;
+		backslashCount += 1;
+	}
+
+	return Boolean(backslashCount % 2);
+};
+
+module.exports = (jsonString, options = {}) => {
+	if (typeof jsonString !== 'string') {
+		throw new TypeError(`Expected argument \`jsonString\` to be a \`string\`, got \`${typeof jsonString}\``);
+	}
+
+	const strip = options.whitespace === false ? stripWithoutWhitespace : stripWithWhitespace;
+
+	let insideString = false;
+	let insideComment = false;
+	let offset = 0;
+	let result = '';
+
+	for (let i = 0; i < jsonString.length; i++) {
+		const currentCharacter = jsonString[i];
+		const nextCharacter = jsonString[i + 1];
+
+		if (!insideComment && currentCharacter === '"') {
+			const escaped = isEscaped(jsonString, i);
+			if (!escaped) {
+				insideString = !insideString;
+			}
+		}
+
+		if (insideString) {
+			continue;
+		}
+
+		if (!insideComment && currentCharacter + nextCharacter === '//') {
+			result += jsonString.slice(offset, i);
+			offset = i;
+			insideComment = singleComment;
+			i++;
+		} else if (insideComment === singleComment && currentCharacter + nextCharacter === '\r\n') {
+			i++;
+			insideComment = false;
+			result += strip(jsonString, offset, i);
+			offset = i;
+			continue;
+		} else if (insideComment === singleComment && currentCharacter === '\n') {
+			insideComment = false;
+			result += strip(jsonString, offset, i);
+			offset = i;
+		} else if (!insideComment && currentCharacter + nextCharacter === '/*') {
+			result += jsonString.slice(offset, i);
+			offset = i;
+			insideComment = multiComment;
+			i++;
+			continue;
+		} else if (insideComment === multiComment && currentCharacter + nextCharacter === '*/') {
+			i++;
+			insideComment = false;
+			result += strip(jsonString, offset, i + 1);
+			offset = i + 1;
+			continue;
+		}
+	}
+
+	return result + (insideComment ? strip(jsonString.slice(offset)) : jsonString.slice(offset));
+};
+
+
+/***/ }),
+
 /***/ 984:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -19441,329 +20141,6 @@ function createFileSystemAdapter(fsMethods) {
     return Object.assign(Object.assign({}, exports.FILE_SYSTEM_ADAPTER), fsMethods);
 }
 exports.createFileSystemAdapter = createFileSystemAdapter;
-
-
-/***/ }),
-
-/***/ 997:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-// Copyright (c) 2019-2020 Luca Cappa
-// Released under the term specified in file LICENSE.txt
-// SPDX short identifier: MIT
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const path = __webpack_require__(622);
-const fs = __webpack_require__(747);
-const cmakesettings_runner_1 = __webpack_require__(432);
-const globals = __webpack_require__(358);
-const ninjalib = __webpack_require__(141);
-const utils = __webpack_require__(477);
-const using_statement_1 = __webpack_require__(443);
-var TaskModeType;
-(function (TaskModeType) {
-    TaskModeType[TaskModeType["CMakeListsTxtBasic"] = 1] = "CMakeListsTxtBasic";
-    TaskModeType[TaskModeType["CMakeListsTxtAdvanced"] = 2] = "CMakeListsTxtAdvanced";
-    TaskModeType[TaskModeType["CMakeSettingsJson"] = 3] = "CMakeSettingsJson";
-})(TaskModeType || (TaskModeType = {}));
-function getTargetType(typeString) {
-    return TaskModeType[typeString];
-}
-const CMakeGenerator = {
-    'Unknown': {},
-    'VS16Arm': { 'G': 'Visual Studio 16 2019', 'A': 'ARM', 'MultiConfiguration': true },
-    'VS16Win32': { 'G': 'Visual Studio 16 2019', 'A': 'Win32', 'MultiConfiguration': true },
-    'VS16Win64': { 'G': 'Visual Studio 16 2019', 'A': 'x64', 'MultiConfiguration': true },
-    'VS16Arm64': { 'G': 'Visual Studio 16 2019', 'A': 'ARM64', 'MultiConfiguration': true },
-    'VS15Arm': { 'G': 'Visual Studio 15 2017', 'A': 'ARM', 'MultiConfiguration': true },
-    'VS15Win32': { 'G': 'Visual Studio 15 2017', 'A': 'Win32', 'MultiConfiguration': true },
-    'VS15Win64': { 'G': 'Visual Studio 15 2017', 'A': 'x64', 'MultiConfiguration': true },
-    'VS15Arm64': { 'G': 'Visual Studio 15 2017', 'A': 'ARM64', 'MultiConfiguration': true },
-    'Ninja': { 'G': 'Ninja', 'A': '', 'MultiConfiguration': false },
-    'NinjaMulti': { 'G': 'Ninja Multi-Config', 'A': '', 'MultiConfiguration': true },
-    'UnixMakefiles': { 'G': 'Unix Makefiles', 'A': '', 'MultiConfiguration': false }
-};
-function getGenerator(generatorString) {
-    const generatorName = CMakeGenerator[generatorString];
-    return generatorName;
-}
-class CMakeRunner {
-    constructor(tl) {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s;
-        this.tl = tl;
-        this.buildDir = "";
-        this.generator = {};
-        const mode = (_a = this.tl.getInput(globals.cmakeListsOrSettingsJson, true), (_a !== null && _a !== void 0 ? _a : ""));
-        const taskMode = getTargetType(mode);
-        if (!taskMode) {
-            throw new Error(`ctor(): invalid task mode '${mode}'.`);
-        }
-        this.taskMode = taskMode;
-        let required = this.taskMode === TaskModeType.CMakeSettingsJson;
-        this.cmakeSettingsJsonPath = (_b = this.tl.getPathInput(globals.cmakeSettingsJsonPath, required, required), (_b !== null && _b !== void 0 ? _b : ""));
-        required = this.taskMode !== TaskModeType.CMakeSettingsJson;
-        this.cmakeListsTxtPath = (_c = this.tl.getPathInput(globals.cmakeListsTxtPath, required, required), (_c !== null && _c !== void 0 ? _c : ""));
-        this.buildDir = (_d = this.tl.getInput(globals.buildDirectory, this.taskMode === TaskModeType.CMakeListsTxtBasic), (_d !== null && _d !== void 0 ? _d : ""));
-        this.appendedArgs = (_e = this.tl.getInput(globals.cmakeAppendedArgs, false), (_e !== null && _e !== void 0 ? _e : ""));
-        this.configurationFilter = (_f = this.tl.getInput(globals.configurationRegexFilter, false), (_f !== null && _f !== void 0 ? _f : ""));
-        this.ninjaPath = '';
-        if (this.tl.isFilePathSupplied(globals.ninjaPath)) {
-            this.ninjaPath = (_g = tl.getInput(globals.ninjaPath, false), (_g !== null && _g !== void 0 ? _g : ""));
-        }
-        this.cmakeToolchainPath = "";
-        if (this.tl.isFilePathSupplied(globals.cmakeToolchainPath)) {
-            this.cmakeToolchainPath = (_h = tl.getInput(globals.cmakeToolchainPath, false), (_h !== null && _h !== void 0 ? _h : ""));
-        }
-        const gen = (_j = this.tl.getInput(globals.cmakeGenerator, this.taskMode === TaskModeType.CMakeListsTxtBasic), (_j !== null && _j !== void 0 ? _j : ""));
-        this.generator = getGenerator(gen);
-        this.ninjaDownloadUrl = (_k = this.tl.getInput(globals.ninjaDownloadUrl, false), (_k !== null && _k !== void 0 ? _k : ""));
-        this.doBuild = (_l = this.tl.getBoolInput(globals.buildWithCMake, false), (_l !== null && _l !== void 0 ? _l : false));
-        this.doBuildArgs = (_m = this.tl.getInput(globals.buildWithCMakeArgs, false), (_m !== null && _m !== void 0 ? _m : ""));
-        this.cmakeSourceDir = path.dirname((_o = path.resolve(this.cmakeListsTxtPath), (_o !== null && _o !== void 0 ? _o : "")));
-        this.useVcpkgToolchainFile = (_p = this.tl.getBoolInput(globals.useVcpkgToolchainFile, false), (_p !== null && _p !== void 0 ? _p : false));
-        this.cmakeBuildType = (_q = this.tl.getInput(globals.cmakeBuildType, this.taskMode === TaskModeType.CMakeListsTxtBasic), (_q !== null && _q !== void 0 ? _q : ""));
-        this.vcpkgTriplet = (_r = (this.tl.getInput(globals.vcpkgTriplet, false) ||
-            process.env.RUNVCPKG_VCPKG_TRIPLET), (_r !== null && _r !== void 0 ? _r : ""));
-        this.sourceScript = (_s = this.tl.getInput(globals.cmakeWrapperCommand, false), (_s !== null && _s !== void 0 ? _s : ""));
-    }
-    static warnIfUnused(inputName, taskMode) {
-        if (inputName in CMakeRunner.modePerInput) {
-            const usedInMode = CMakeRunner.modePerInput[name];
-            if (usedInMode) {
-                if (usedInMode.indexOf(taskMode) < 0) { }
-                // Unfortunately there is not a way to discriminate between a value provided by the user
-                // from a default value (not provided by the user), hence it is not possible to identify
-                // what the user provided.
-                //??this.tl.warning(`The input '${inputName}' is ignored in mode '${taskMode}'`);
-            }
-        }
-    }
-    run() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.tl.debug('run()<<');
-            yield this.configure();
-        });
-    }
-    configure() {
-        var _a;
-        return __awaiter(this, void 0, void 0, function* () {
-            this.tl.debug('configure()<<');
-            // Contains the '--config <CONFIG>' when using multiconfiguration generators.
-            let prependedBuildArguments = "";
-            let cmakeArgs = [];
-            switch (this.taskMode) {
-                case TaskModeType.CMakeListsTxtAdvanced:
-                case TaskModeType.CMakeListsTxtBasic: {
-                    // Search for CMake tool and run it.
-                    let cmake;
-                    if (this.sourceScript) {
-                        cmake = this.tl.tool(this.sourceScript);
-                        cmakeArgs.push(yield this.tl.which('cmake', true));
-                    }
-                    else {
-                        cmake = this.tl.tool(yield this.tl.which('cmake', true));
-                    }
-                    if (this.taskMode === TaskModeType.CMakeListsTxtAdvanced) {
-                        // If Ninja is required, specify the path to it.
-                        if (utils.isNinjaGenerator([this.appendedArgs])) {
-                            if (!utils.isMakeProgram([this.appendedArgs])) {
-                                const ninjaPath = yield ninjalib.retrieveNinjaPath(this.ninjaPath, this.ninjaDownloadUrl);
-                                cmakeArgs.push(`-DCMAKE_MAKE_PROGRAM=${ninjaPath}`);
-                            }
-                        }
-                        if (this.appendedArgs) {
-                            this.tl.debug(`Parsing additional CMake args: ${this.appendedArgs}`);
-                            const addedArgs = cmake._argStringToArray(this.appendedArgs);
-                            this.tl.debug(`Appending args: ${JSON.stringify(addedArgs)}`);
-                            cmakeArgs = [...cmakeArgs, ...addedArgs];
-                        }
-                    }
-                    else if (this.taskMode === TaskModeType.CMakeListsTxtBasic) {
-                        const generatorName = this.generator['G'];
-                        const generatorArch = this.generator['A'];
-                        const generatorIsMultiConf = (_a = this.generator['MultiConfiguration'], (_a !== null && _a !== void 0 ? _a : false));
-                        cmakeArgs.push(`-G${generatorName}`);
-                        if (generatorArch) {
-                            cmakeArgs.push(`-A${generatorArch}`);
-                        }
-                        if (CMakeRunner.isNinjaGenerator(generatorName)) {
-                            const ninjaPath = yield ninjalib.retrieveNinjaPath(this.ninjaPath, this.ninjaDownloadUrl);
-                            cmakeArgs.push(`-DCMAKE_MAKE_PROGRAM=${ninjaPath}`);
-                        }
-                        if (this.cmakeToolchainPath) {
-                            cmakeArgs.push(`-DCMAKE_TOOLCHAIN_FILE=${this.cmakeToolchainPath}`);
-                        }
-                        // Add CMake's build type, unless a multi configuration generator is being used.
-                        if (!generatorIsMultiConf) {
-                            cmakeArgs.push(`-DCMAKE_BUILD_TYPE=${this.cmakeBuildType}`);
-                        }
-                        prependedBuildArguments = this.prependBuildConfigIfNeeded(this.doBuildArgs, generatorIsMultiConf, this.cmakeBuildType);
-                    }
-                    // Use vcpkg toolchain if requested.
-                    if (this.useVcpkgToolchainFile === true) {
-                        cmakeArgs = yield utils.injectVcpkgToolchain(cmakeArgs, this.vcpkgTriplet);
-                    }
-                    // The source directory is required for any mode.
-                    cmakeArgs.push(this.cmakeSourceDir);
-                    this.tl.debug(`CMake arguments: ${cmakeArgs}`);
-                    for (const arg of cmakeArgs) {
-                        cmake.arg(arg);
-                    }
-                    // Ensure the build directory is existing.
-                    yield this.tl.mkdirP(this.buildDir);
-                    const options = {
-                        cwd: this.buildDir,
-                        failOnStdErr: false,
-                        errStream: process.stdout,
-                        outStream: process.stdout,
-                        ignoreReturnCode: true,
-                        silent: false,
-                        windowsVerbatimArguments: false,
-                        env: process.env
-                    };
-                    this.tl.debug(`Generating project files with CMake in build directory '${options.cwd}' ...`);
-                    let code = -1;
-                    yield using_statement_1.using(utils.createMatcher('cmake', this.cmakeSourceDir), (matcher) => __awaiter(this, void 0, void 0, function* () {
-                        code = yield utils.wrapOp("Generate project files with CMake", () => __awaiter(this, void 0, void 0, function* () { return yield cmake.exec(options); }));
-                    }));
-                    if (code !== 0) {
-                        throw new Error(`"CMake failed with error code: '${code}'.`);
-                    }
-                    if (this.doBuild) {
-                        yield using_statement_1.using(utils.createMatcher(CMakeRunner.getBuildMatcher(this.buildDir, this.tl)), (matcher) => __awaiter(this, void 0, void 0, function* () {
-                            yield utils.wrapOp("Build with CMake", () => __awaiter(this, void 0, void 0, function* () { return yield CMakeRunner.build(this.tl, this.buildDir, prependedBuildArguments + this.doBuildArgs, options); }));
-                        }));
-                    }
-                    break;
-                }
-                case TaskModeType.CMakeSettingsJson: {
-                    const cmakeJson = new cmakesettings_runner_1.CMakeSettingsJsonRunner(this.cmakeSettingsJsonPath, this.configurationFilter, this.appendedArgs, this.tl.getSrcDir(), this.vcpkgTriplet, this.useVcpkgToolchainFile, this.doBuild, this.ninjaPath, this.ninjaDownloadUrl, this.sourceScript, this.buildDir, this.tl);
-                    yield utils.wrapOp("Run CMake with CMakeSettings.json", () => __awaiter(this, void 0, void 0, function* () { return yield cmakeJson.run(); }));
-                    break;
-                }
-            }
-        });
-    }
-    static isNinjaGenerator(generatorName) {
-        return generatorName === CMakeGenerator['Ninja']['G'] ||
-            generatorName === CMakeGenerator['NinjaMulti']['G'];
-    }
-    /// If not already provided, creates the '--config <CONFIG>' argument to pass when building.
-    /// Return a string of arguments to prepend the build arguments.
-    prependBuildConfigIfNeeded(buildArgs, multiConfi, buildType) {
-        let prependArgs = "";
-        if (multiConfi && !buildArgs.includes("--config")) {
-            prependArgs = ` --config ${buildType} `;
-        }
-        return prependArgs;
-    }
-    /**
-   * Build with CMake.
-   * @export
-   * @param {string} buildDir
-   * @param {string} buildArgs
-   * @param {trm.IExecOptions} options
-   * @param {string} sourceScript
-   * @returns {Promise<void>}
-   */
-    static build(baseLib, buildDir, buildArgs, options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            // Run CMake with the given arguments
-            const cmake = baseLib.tool(yield baseLib.which('cmake', true));
-            cmake.arg("--build");
-            cmake.arg(".");
-            if (buildArgs)
-                cmake.line(buildArgs);
-            // Run the command in the build directory
-            options.cwd = buildDir;
-            console.log(`Building with CMake in build directory '${options.cwd}' ...`);
-            const code = yield cmake.exec(options);
-            if (code !== 0) {
-                throw new Error(`"Build failed with error code: '${code}'."`);
-            }
-        });
-    }
-    static getDefaultMatcher() {
-        const plat = process.platform;
-        return plat === "win32" ? CMakeRunner.msvcMatcher :
-            plat === "darwin" ? CMakeRunner.clangMatcher : CMakeRunner.gccMatcher;
-    }
-    static getCompilerMatcher(line) {
-        let matcherName = undefined;
-        if (line.includes('g++') || line.includes('gcc') || line.includes('c++'))
-            matcherName = CMakeRunner.gccMatcher;
-        else if (line.includes('cl.exe'))
-            matcherName = CMakeRunner.msvcMatcher;
-        else if (line.includes('clang'))
-            matcherName = CMakeRunner.clangMatcher;
-        return matcherName;
-    }
-    static getBuildMatcher(buildDir, tl) {
-        var _a;
-        let cxxMatcher;
-        let ccMatcher;
-        try {
-            const cmakeCacheTxtPath = path.join(buildDir, "CMakeCache.txt");
-            const cache = fs.readFileSync(cmakeCacheTxtPath);
-            tl.debug(`Loaded fileCMakeCache.txt at path='${cmakeCacheTxtPath}'`);
-            if (cache) {
-                const cacheContent = cache.toString();
-                for (const line of cacheContent.split('\n')) {
-                    tl.debug(`text=${line}`);
-                    if (line.includes("CMAKE_CXX_COMPILER:")) {
-                        tl.debug(`Found CXX compiler: '${line}'.`);
-                        cxxMatcher = CMakeRunner.getCompilerMatcher(line);
-                        tl.debug(`Matcher selected for CXX: ${cxxMatcher}`);
-                        break;
-                    }
-                    if (line.includes("CMAKE_C_COMPILER:")) {
-                        tl.debug(`Found C compiler: '${line}'.`);
-                        ccMatcher = CMakeRunner.getCompilerMatcher(line);
-                        tl.debug(`Matcher selected for CC: ${ccMatcher}`);
-                        break;
-                    }
-                }
-            }
-        }
-        catch (error) {
-            tl.debug(error.toString());
-        }
-        const defaultMatcher = CMakeRunner.getDefaultMatcher();
-        tl.debug(`Default matcher according to platform is: ${defaultMatcher}`);
-        const selectedMatcher = (_a = (cxxMatcher !== null && cxxMatcher !== void 0 ? cxxMatcher : ccMatcher), (_a !== null && _a !== void 0 ? _a : defaultMatcher));
-        tl.debug(`Selected matcher: ${selectedMatcher}`);
-        return selectedMatcher;
-    }
-}
-exports.CMakeRunner = CMakeRunner;
-CMakeRunner.modePerInput = {
-    [globals.cmakeListsTxtPath]: [TaskModeType.CMakeListsTxtBasic, TaskModeType.CMakeListsTxtAdvanced],
-    [globals.cmakeSettingsJsonPath]: [TaskModeType.CMakeSettingsJson],
-    [globals.cmakeToolchainPath]: [TaskModeType.CMakeListsTxtBasic],
-    /*[globals.useVcpkgToolchainFile]: all */
-    /*[globals.vcpkgTriplet]: all */
-    [globals.cmakeBuildType]: [TaskModeType.CMakeListsTxtBasic],
-    [globals.cmakeGenerator]: [TaskModeType.CMakeListsTxtBasic],
-    /*[globals.buildDirectory]: all */
-    [globals.cmakeAppendedArgs]: [TaskModeType.CMakeListsTxtAdvanced, TaskModeType.CMakeSettingsJson],
-    [globals.configurationRegexFilter]: [TaskModeType.CMakeSettingsJson],
-    [globals.buildWithCMakeArgs]: [TaskModeType.CMakeListsTxtAdvanced, TaskModeType.CMakeListsTxtBasic]
-};
-CMakeRunner.gccMatcher = 'gcc';
-CMakeRunner.clangMatcher = 'clang';
-CMakeRunner.msvcMatcher = 'msvc';
-
-//# sourceMappingURL=cmake-runner.js.map
 
 
 /***/ })
