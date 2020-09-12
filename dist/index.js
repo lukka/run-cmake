@@ -12962,7 +12962,6 @@ const libaction = __webpack_require__(778);
 const runcmakelib = __webpack_require__(832);
 const core = __webpack_require__(470);
 function main() {
-    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const actionLib = new libaction.ActionLib();
@@ -12973,10 +12972,10 @@ function main() {
         }
         catch (err) {
             const error = err;
-            if ((_a = error) === null || _a === void 0 ? void 0 : _a.stack) {
+            if (error === null || error === void 0 ? void 0 : error.stack) {
                 core.info(error.stack);
             }
-            const errorAsString = ((err !== null && err !== void 0 ? err : "undefined error")).toString();
+            const errorAsString = (err !== null && err !== void 0 ? err : "undefined error").toString();
             core.setFailed(`run-cmake action execution failed: '${errorAsString}'`);
             process.exitCode = -1000;
         }

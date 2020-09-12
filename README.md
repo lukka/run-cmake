@@ -100,6 +100,8 @@ Features available only in the GitHub version of **'run-cmake'**:
 |[sony/nmos-cpp](https://github.com/sony/nmos-cpp) | [Linux/macOS/Windows](https://github.com/sony/nmos-cpp/blob/master/.github/workflows/build-test.yml) | [![build-test](https://github.com/sony/nmos-cpp/workflows/build-test/badge.svg)](https://github.com/sony/nmos-cpp/actions)
 |[RaftLib/RaftLib](https://github.com/RaftLib/RaftLib) | [Linux/macOS/Windows](https://github.com/RaftLib/RaftLib/blob/master/.github/workflows/main.yml) | [![CI](https://github.com/RaftLib/RaftLib/workflows/CI/badge.svg)](https://github.com/RaftLib/RaftLib/actions)
 |[zealdocs/zeal](https://github.com/zealdocs/zeal) | [Linux/Windows](https://github.com/zealdocs/zeal/blob/master/.github/workflows/build-check.yml) | [![Build Check](https://github.com/zealdocs/zeal/workflows/Build%20Check/badge.svg)](https://github.com/zealdocs/zeal/actions)
+|[marian-nmt/marian-dev](https://github.com/marian-nmt/marian-dev) | [Windows](https://github.com/marian-nmt/marian-dev/blob/master/.github/workflows/windows.yml)/[Linux](https://github.com/marian-nmt/marian-dev/blob/master/.github/workflows/ubuntu.yml)/[macOS](https://github.com/marian-nmt/marian-dev/blob/master/.github/workflows/macos.yml)|[![Windows](https://github.com/marian-nmt/marian-dev/workflows/Windows/badge.svg)](https://github.com/marian-nmt/marian-dev/actions/) [![Linux](https://github.com/marian-nmt/marian-dev/workflows/Ubuntu/badge.svg)](https://github.com/marian-nmt/marian-dev/actions/) [![macOS](https://github.com/marian-nmt/marian-dev/workflows/MacOS/badge.svg)](https://github.com/marian-nmt/marian-dev/actions/) 
+|[GrinPlusPlus](https://github.com/GrinPlusPlus/GrinPlusPlus) | [Linux/Windows/macOS](https://github.com/GrinPlusPlus/GrinPlusPlus/blob/master/.github/workflows/ci.yml) | [![ci](https://github.com/GrinPlusPlus/GrinPlusPlus/workflows/ci/badge.svg)](https://github.com/GrinPlusPlus/GrinPlusPlus/actions/)
 
 # Developers information
 
@@ -140,3 +142,7 @@ The software is provided as is, there is no warranty of any kind. All users are 
 All the content in this repository is licensed under the [MIT License](LICENSE.txt).
 
 Copyright (c) 2019-2020 Luca Cappa
+
+# Donating
+
+Other than submitting a pull request, [donating](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=EGNDRPRXM62G2&source=url) is another way to contribute to this project.
