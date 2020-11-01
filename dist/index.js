@@ -574,11 +574,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NinjaProvider = void 0;
 const path = __importStar(__webpack_require__(622));
-const baselibutils = __importStar(__webpack_require__(758));
+const BaseUtilLib = __importStar(__webpack_require__(758));
 class NinjaProvider {
     constructor(baseLib) {
         this.baseLib = baseLib;
-        this.baseUtils = new baselibutils.BaseLibUtils(baseLib);
+        this.baseUtils = new BaseUtilLib.BaseUtilLib(baseLib);
     }
     download(url) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -3323,7 +3323,7 @@ class CMakeRunner {
         this.tl = tl;
         this.buildDir = "";
         this.generator = {};
-        this.baseUtils = new baseutillib.BaseLibUtils(this.tl);
+        this.baseUtils = new baseutillib.BaseUtilLib(this.tl);
         this.cmakeUtils = new cmakelib.CMakeUtils(this.baseUtils);
         this.ninjaLib = new ninjalib.NinjaProvider(this.tl);
         const mode = (_a = this.tl.getInput(cmakeglobals.cmakeListsOrSettingsJson, true)) !== null && _a !== void 0 ? _a : "";
@@ -3352,7 +3352,7 @@ class CMakeRunner {
         this.ninjaDownloadUrl = (_k = this.tl.getInput(cmakeglobals.ninjaDownloadUrl, false)) !== null && _k !== void 0 ? _k : "";
         this.doBuild = (_l = this.tl.getBoolInput(cmakeglobals.buildWithCMake, false)) !== null && _l !== void 0 ? _l : false;
         this.doBuildArgs = (_m = this.tl.getInput(cmakeglobals.buildWithCMakeArgs, false)) !== null && _m !== void 0 ? _m : "";
-        this.cmakeSourceDir = path.dirname((_o = baseutillib.BaseLibUtils.normalizePath(this.cmakeListsTxtPath)) !== null && _o !== void 0 ? _o : "");
+        this.cmakeSourceDir = path.dirname((_o = baseutillib.BaseUtilLib.normalizePath(this.cmakeListsTxtPath)) !== null && _o !== void 0 ? _o : "");
         this.useVcpkgToolchainFile = (_p = this.tl.getBoolInput(cmakeglobals.useVcpkgToolchainFile, false)) !== null && _p !== void 0 ? _p : false;
         this.cmakeBuildType = (_q = this.tl.getInput(cmakeglobals.cmakeBuildType, this.runMode === RunCMakeModeType.CMakeListsTxtBasic)) !== null && _q !== void 0 ? _q : "";
         this.vcpkgTriplet = (_r = (this.tl.getInput(cmakeglobals.cmakeVcpkgTriplet, false) ||
@@ -3524,7 +3524,7 @@ class CMakeRunner {
         var _a;
         let cxxMatcher;
         let ccMatcher;
-        const utils = new baseutillib.BaseLibUtils(tl);
+        const utils = new baseutillib.BaseUtilLib(tl);
         try {
             const cmakeCacheTxtPath = path.join(buildDir, "CMakeCache.txt");
             const [ok, cacheContent] = utils.readFile(cmakeCacheTxtPath);
@@ -9087,7 +9087,7 @@ class ActionLib {
         if (!process.env.GITHUB_WORKSPACE) {
             throw new Error("GITHUB_WORKSPACE is not set.");
         }
-        const binPath = utils.BaseLibUtils.normalizePath(path.join(process.env.GITHUB_WORKSPACE, "../b/"));
+        const binPath = utils.BaseUtilLib.normalizePath(path.join(process.env.GITHUB_WORKSPACE, "../b/"));
         if (!fs.existsSync(binPath)) {
             core.debug(`BinDir '${binPath}' does not exists, creating it...`);
             fs.mkdirSync(binPath);
@@ -9098,7 +9098,7 @@ class ActionLib {
         if (!process.env.GITHUB_WORKSPACE) {
             throw new Error("GITHUB_WORKSPACE env var is not set.");
         }
-        const srcPath = utils.BaseLibUtils.normalizePath(process.env.GITHUB_WORKSPACE);
+        const srcPath = utils.BaseUtilLib.normalizePath(process.env.GITHUB_WORKSPACE);
         if (!fs.existsSync(srcPath)) {
             throw new Error(`SourceDir '${srcPath}' does not exists.`);
         }
@@ -9109,7 +9109,7 @@ class ActionLib {
             throw new Error("GITHUB_WORKSPACE is not set.");
         }
         //?? HACK. How to get the value of '{{ runner.temp }}' in JS's action?
-        const artifactsPath = utils.BaseLibUtils.normalizePath(path.join(process.env.GITHUB_WORKSPACE, "../../_temp"));
+        const artifactsPath = utils.BaseUtilLib.normalizePath(path.join(process.env.GITHUB_WORKSPACE, "../../_temp"));
         if (!fs.existsSync(artifactsPath)) {
             core.debug(`ArtifactsDir '${artifactsPath}' does not exists, creating it...`);
             fs.mkdirSync(artifactsPath);
@@ -9661,9 +9661,9 @@ class Configuration {
         this.cmakeToolchain = cmakeToolchain;
         this.variables = variables;
         this.inheritEnvironments = inheritEnvironments;
-        baseutillib.BaseLibUtils.throwIfUndefined(name, "name");
-        baseutillib.BaseLibUtils.throwIfUndefined(buildDir, "buildDir");
-        baseutillib.BaseLibUtils.throwIfUndefined(cmakeSettingsJsonPath, "cmakeSettingsJsonPath");
+        baseutillib.BaseUtilLib.throwIfUndefined(name, "name");
+        baseutillib.BaseUtilLib.throwIfUndefined(buildDir, "buildDir");
+        baseutillib.BaseUtilLib.throwIfUndefined(cmakeSettingsJsonPath, "cmakeSettingsJsonPath");
         this.buildDir = path.normalize(buildDir);
     }
     /**
@@ -9968,11 +9968,11 @@ class CMakeSettingsJsonRunner {
         this.buildDir = buildDir;
         this.baseLib.debug(`CMakeSettingsJsonRunner()<<`);
         this.configurationFilter = configurationFilter;
-        this.baseUtils = new baseutillib.BaseLibUtils(this.baseLib);
+        this.baseUtils = new baseutillib.BaseUtilLib(this.baseLib);
         this.cmakeUtils = new cmakeutil.CMakeUtils(this.baseUtils);
         this.ninjaLib = new ninjalib.NinjaProvider(this.baseLib);
         this.baseLib.debug(`buildDir=${buildDir}`);
-        this.buildDir = baseutillib.BaseLibUtils.normalizePath(buildDir);
+        this.buildDir = baseutillib.BaseUtilLib.normalizePath(buildDir);
         this.baseLib.debug(`normalized buildDir=${this.buildDir}`);
         if (!this.baseLib.exist(cmakeSettingsJson)) {
             throw new Error(`File '${cmakeSettingsJson}' does not exist.`);
@@ -10053,7 +10053,7 @@ class CMakeSettingsJsonRunner {
                     // "$(Build.ArtifactStagingDirectory)/{name}" which should be empty.
                     console.log(`Note: run-cmake always ignores the 'buildRoot' value specified in the CMakeSettings.json (buildRoot=${configuration.buildDir}). User can override the default value by setting the '${globals.buildDirectory}' input.`);
                     const artifactsDir = yield this.baseLib.getArtifactsDir();
-                    if (baseutillib.BaseLibUtils.normalizePath(this.buildDir) === baseutillib.BaseLibUtils.normalizePath(artifactsDir)) {
+                    if (baseutillib.BaseUtilLib.normalizePath(this.buildDir) === baseutillib.BaseUtilLib.normalizePath(artifactsDir)) {
                         // The build directory goes into the artifact directory in a subdir
                         // named with the configuration name.
                         evaledConf.buildDir = path.join(artifactsDir, configuration.name);
@@ -14277,6 +14277,13 @@ module.exports = (function() {
     }
 })();
 
+
+/***/ }),
+
+/***/ 630:
+/***/ (function(module) {
+
+module.exports = require("perf_hooks");
 
 /***/ }),
 
@@ -19544,14 +19551,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Matcher = exports.BaseLibUtils = void 0;
+exports.Matcher = exports.BaseUtilLib = void 0;
 const fs = __importStar(__webpack_require__(747));
 const os = __importStar(__webpack_require__(87));
 const path = __importStar(__webpack_require__(622));
 const adm_zip_1 = __importDefault(__webpack_require__(639));
 const http = __importStar(__webpack_require__(549));
 const del = __importStar(__webpack_require__(245));
-class BaseLibUtils {
+const perf_hooks_1 = __webpack_require__(630);
+class BaseUtilLib {
     constructor(baseLib) {
         this.baseLib = baseLib;
     }
@@ -19694,7 +19702,7 @@ class BaseLibUtils {
             if (arg.startsWith("@")) {
                 const [ok, content] = readFile(arg.substring(1));
                 if (ok) {
-                    const t = BaseLibUtils.extractTriplet(content, readFile);
+                    const t = BaseUtilLib.extractTriplet(content, readFile);
                     if (t) {
                         return t.trim();
                     }
@@ -19714,7 +19722,7 @@ class BaseLibUtils {
             arg = arg.replace(/\s/, '');
             let isResponseFile = false;
             if (arg.startsWith("@")) {
-                const resolvedFilePath = BaseLibUtils.normalizePath(arg);
+                const resolvedFilePath = BaseUtilLib.normalizePath(arg);
                 if (this.baseLib.exist(resolvedFilePath)) {
                     const [ok, content] = readFile(resolvedFilePath);
                     if (ok && content) {
@@ -19744,11 +19752,13 @@ class BaseLibUtils {
         return __awaiter(this, void 0, void 0, function* () {
             this.baseLib.beginOperation(name);
             let result;
+            const startTime = perf_hooks_1.performance.now();
             try {
                 result = yield fn();
             }
             finally {
                 this.baseLib.endOperation();
+                this.baseLib.info(`⏱ elapsed: ${((perf_hooks_1.performance.now() - startTime) / 1000.).toFixed(3)} seconds`);
             }
             return result;
         });
@@ -19756,11 +19766,13 @@ class BaseLibUtils {
     wrapOpSync(name, fn) {
         this.baseLib.beginOperation(name);
         let result;
+        const startTime = perf_hooks_1.performance.now();
         try {
             result = fn();
         }
         finally {
             this.baseLib.endOperation();
+            this.baseLib.info(`⏱ elapsed: ${((perf_hooks_1.performance.now() - startTime) / 1000.).toFixed(3)} seconds`);
         }
         return result;
     }
@@ -19955,8 +19967,8 @@ class BaseLibUtils {
             throw new Error(`Agument '${name}' is undefined`);
     }
 }
-exports.BaseLibUtils = BaseLibUtils;
-BaseLibUtils.cachingFormatEnvName = 'AZP_CACHING_CONTENT_FORMAT';
+exports.BaseUtilLib = BaseUtilLib;
+BaseUtilLib.cachingFormatEnvName = 'AZP_CACHING_CONTENT_FORMAT';
 class Matcher {
     constructor(name, baseLib, fromPath) {
         this.name = name;
