@@ -642,7 +642,7 @@ class NinjaProvider {
     }
 }
 exports.NinjaProvider = NinjaProvider;
-NinjaProvider.baseUrl = 'https://github.com/ninja-build/ninja/releases/download/v1.10.0';
+NinjaProvider.baseUrl = 'https://github.com/ninja-build/ninja/releases/download/v1.10.1';
 //# sourceMappingURL=ninja.js.map
 
 /***/ }),
@@ -4116,52 +4116,54 @@ class CMakeUtils {
         this.baseUtils = baseUtils;
     }
     injectEnvVariables(vcpkgRoot, triplet, baseLib) {
-        var _a;
         return __awaiter(this, void 0, void 0, function* () {
-            if (!vcpkgRoot) {
-                vcpkgRoot = (_a = process.env[vcpkgGlobals.outVcpkgRootPath]) !== null && _a !== void 0 ? _a : "";
+            yield this.baseUtils.wrapOp(`Setup environment variables for triplet '${triplet}' using 'vcpkg env'`, () => __awaiter(this, void 0, void 0, function* () {
+                var _a;
                 if (!vcpkgRoot) {
-                    throw new Error(`${vcpkgGlobals.outVcpkgRootPath} environment variable is not set.`);
+                    vcpkgRoot = (_a = process.env[vcpkgGlobals.outVcpkgRootPath]) !== null && _a !== void 0 ? _a : "";
+                    if (!vcpkgRoot) {
+                        throw new Error(`${vcpkgGlobals.outVcpkgRootPath} environment variable is not set.`);
+                    }
                 }
-            }
-            // Search for vcpkg tool and run it
-            let vcpkgPath = path.join(vcpkgRoot, 'vcpkg');
-            if (this.baseUtils.isWin32()) {
-                vcpkgPath += '.exe';
-            }
-            const vcpkg = baseLib.tool(vcpkgPath);
-            vcpkg.arg("env");
-            vcpkg.arg("--bin");
-            vcpkg.arg("--include");
-            vcpkg.arg("--tools");
-            vcpkg.arg("--python");
-            vcpkg.line(`--triplet ${triplet} set`);
-            const options = {
-                cwd: vcpkgRoot,
-                failOnStdErr: false,
-                errStream: process.stdout,
-                outStream: process.stdout,
-                ignoreReturnCode: true,
-                silent: false,
-                windowsVerbatimArguments: false,
-                env: process.env
-            };
-            const output = yield vcpkg.execSync(options);
-            if (output.code !== 0) {
-                throw new Error(`${output.stdout}\n\n${output.stderr}`);
-            }
-            const map = this.baseUtils.parseVcpkgEnvOutput(output.stdout);
-            for (const key in map) {
-                if (this.baseUtils.isVariableStrippingPath(key))
-                    continue;
-                if (key.toUpperCase() === "PATH") {
-                    process.env[key] = process.env[key] + path.delimiter + map[key];
+                // Search for vcpkg tool and run it
+                let vcpkgPath = path.join(vcpkgRoot, 'vcpkg');
+                if (this.baseUtils.isWin32()) {
+                    vcpkgPath += '.exe';
                 }
-                else {
-                    process.env[key] = map[key];
+                const vcpkg = baseLib.tool(vcpkgPath);
+                vcpkg.arg("env");
+                vcpkg.arg("--bin");
+                vcpkg.arg("--include");
+                vcpkg.arg("--tools");
+                vcpkg.arg("--python");
+                vcpkg.line(`--triplet ${triplet} set`);
+                const options = {
+                    cwd: vcpkgRoot,
+                    failOnStdErr: false,
+                    errStream: process.stdout,
+                    outStream: process.stdout,
+                    ignoreReturnCode: true,
+                    silent: false,
+                    windowsVerbatimArguments: false,
+                    env: process.env
+                };
+                const output = yield vcpkg.execSync(options);
+                if (output.code !== 0) {
+                    throw new Error(`${output.stdout}\n\n${output.stderr}`);
                 }
-                baseLib.debug(`set ${key}=${process.env[key]}`);
-            }
+                const map = this.baseUtils.parseVcpkgEnvOutput(output.stdout);
+                for (const key in map) {
+                    if (this.baseUtils.isVariableStrippingPath(key))
+                        continue;
+                    if (key.toUpperCase() === "PATH") {
+                        process.env[key] = process.env[key] + path.delimiter + map[key];
+                    }
+                    else {
+                        process.env[key] = map[key];
+                    }
+                    baseLib.debug(`set ${key}=${process.env[key]}`);
+                }
+            }));
         });
     }
     injectVcpkgToolchain(args, triplet, baseLib) {
@@ -4183,7 +4185,7 @@ class CMakeUtils {
                     args.push(`-DVCPKG_TARGET_TRIPLET=${triplet}`);
                     // For Windows build agents, inject the environment variables used
                     // for the MSVC compiler using the 'vcpkg env' command.
-                    // This is not be needed for others compiler on Windows, but it should be harmless.
+                    // This is not needed for others compiler on Windows, but it should be harmless.
                     if (this.baseUtils.isWin32() && triplet) {
                         if (triplet.indexOf("windows") !== -1) {
                             process.env.CC = "cl.exe";
@@ -8744,7 +8746,7 @@ function escapeCmdExeArgument(argument) {
  * e.spawnSync('cmake', ['-G Ninja', '.'], {shell:true, stdio:'inherit', cwd:'/Users/git_repos/cmake-task-tests/'}) -> -- Configuring done
  * e.spawnSync('cmake', ['-GNinja', '.'], {shell:true, stdio:'inherit', cwd:'/Users/git_repos/cmake-task-tests/'}) -> -- Configuring done
  * Hence the caller of this function is always using no spaces in between arguments.
- * Exception is arbitrary text coming from the user, which will hit this problem when not useing a shell.
+ * Exception is arbitrary text coming from the user, which will hit this problem when not using a shell.
  *
  * Other corner cases:
  * e.spawnSync('cmake', ['-GUnix Makefiles', '.'], {shell:true, stdio:'inherit', cwd:'/Users/git_repos/cmake-task-tests/'}) -> CMake Error: Could not create named generator Unix
@@ -8794,7 +8796,7 @@ function exec(commandPath, args, execOptions) {
             commandPath = escapeShArgument(commandPath);
         }
         args = args2;
-        core.debug(`cp.spawn(${commandPath}, ${JSON.stringify(args)}, {cwd=${opts === null || opts === void 0 ? void 0 : opts.cwd}, shell=${opts === null || opts === void 0 ? void 0 : opts.shell}, path=${JSON.stringify((_a = opts === null || opts === void 0 ? void 0 : opts.env) === null || _a === void 0 ? void 0 : _a.PATH)}})`);
+        core.debug(`cp.spawn("${commandPath}", ${JSON.stringify(args)}, {cwd=${opts === null || opts === void 0 ? void 0 : opts.cwd}, shell=${opts === null || opts === void 0 ? void 0 : opts.shell}, path=${JSON.stringify((_a = opts === null || opts === void 0 ? void 0 : opts.env) === null || _a === void 0 ? void 0 : _a.PATH)}})`);
         return new Promise((resolve, reject) => {
             const child = cp.spawn(`${commandPath}`, args, opts);
             if (execOptions && child.stdout) {
@@ -9037,13 +9039,13 @@ class ActionLib {
     }
     execSync(path, args, options) {
         return __awaiter(this, void 0, void 0, function* () {
-            const exitCode = yield exec(`"${path}"`, args, options);
-            const res2 = {
+            const exitCode = yield exec(path, args, options);
+            const result = {
                 code: exitCode,
                 stdout: "",
                 stderr: ""
             };
-            return Promise.resolve(res2);
+            return Promise.resolve(result);
         });
     }
     which(name, required) {
