@@ -29,22 +29,24 @@ It is __highly recommended__ to [use vcpkg as a submodule](https://github.com/lu
 ```yaml
   # Sample when vcpkg is a submodule of your repository (highly recommended!)
 
-    # Cache/Restore the vcpkg's build artifacts.
-    - name: Run vcpkg
-      uses: lukka/run-vcpkg@v4
-      with:
-       # Response file stored in source control, it provides the list of ports and triplet(s).
-        vcpkgArguments: '@${{ env.vcpkgResponseFile }}'
-       # Location of the vcpkg as submodule of the repository.
+  # Cache/Restore the vcpkg's build artifacts using a vcpkg.json manifest.
+   - name: Run vcpkg
+     uses: lukka/run-vcpkg@v6
+     with:
+        # Just install vcpkg for now, do not install any ports in this step yet.
+        setupOnly: true
+        # Location of the vcpkg as submodule of the repository.
         vcpkgDirectory: '${{ github.workspace }}/vcpkg'
-
-    - name: 'Run CMake with Ninja'
+        # Since the cache must be invalidated when content of the vcpkg.json file changes, let's
+        # compute its hash and append this to the computed cache's key.
+        appendedCacheKey: ${{ hashFiles( '**/vcpkg.json' ) }}
+        vcpkgTriplet: ${{ matrix.triplet }}
+    - name: 'Run CMake with Ninja, install dependencies with vcpkg, build with CMake'
       uses: lukka/run-cmake@v3
       with:
         cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
         cmakeListsTxtPath: '${{ github.workspace }}/cmakesettings.json/CMakeLists.txt'
         useVcpkgToolchainFile: true
-        buildDirectory: '${{ runner.workspace }}/b//unixmakefiles'
         cmakeAppendedArgs: '-GNinja '
         # Or build multiple configurations out of a CMakeSettings.json file created with Visual Studio.
         # cmakeListsOrSettingsJson: CMakeSettingsJson
