@@ -24,7 +24,7 @@ Good companions are the [run-vcpkg](https://github.com/marketplace/actions/run-v
 
 ## <a id='quickstart'>Quickstart</a>
 
-It is __highly recommended__ to [use vcpkg as a submodule](https://github.com/lukka/run-vcpkg/#best-practices). Here below the sample where vcpkg is stored in a Git submodule:
+It is __highly recommended__ to use both [vcpkg as a submodule](https://github.com/lukka/run-vcpkg/#vcpkgsubmodule) and a [vcpkg.json](https://github.com/lukka/run-vcpkg/#vcpkgjson) manifest file to declaratively specify the dependencies.
 
 ```yaml
   # Sample when vcpkg is a submodule of your repository (highly recommended!)
@@ -94,7 +94,6 @@ Features available only in the GitHub version of **'run-cmake'**:
 |[CppOpenGLWebAssemblyCMake](https://github.com/lukka/CppOpenGLWebAssemblyCMake) |[WASM/Linux/macOS](https://github.com/lukka/CppOpenGLWebAssemblyCMake/blob/master/.github/workflows/build.yml) | [![Actions Status](https://github.com/lukka/CppOpenGLWebAssemblyCMake/workflows/hosted-wasm-macos-linux/badge.svg)](https://github.com/lukka/CppOpenGLWebAssemblyCMake/actions)
 |[quiniouben/vban](https://github.com/quiniouben/vban/) | [Windows/Linux](https://github.com/quiniouben/vban/blob/master/.github/workflows/main.yml) | [![CI](https://github.com/quiniouben/vban/workflows/CI/badge.svg)](https://github.com/quiniouben/vban/actions)
 |[OPM/ResInsight](https://github.com/OPM/ResInsight/) | [Windows/Linux](https://github.com/OPM/ResInsight/blob/dev/.github/workflows/main.yml) | [![CI](https://github.com/OPM/ResInsight/workflows/ResInsight%20Build/badge.svg)](https://github.com/OPM/ResInsight/actions)
-|[iovw/Notepad--](https://github.com/iovw/Notepad--/) | [Windows](https://github.com/iovw/Notepad--/blob/master/.github/workflows/ccpp.yml) | [![CI](https://github.com/iovw/Notepad--/workflows/C/C++%20CI/badge.svg)](https://github.com/iovw/Notepad--/actions)
 |[Mudlet/Mudlet](https://github.com/Mudlet/Mudlet) | [Linux/macOS](https://github.com/Mudlet/Mudlet/blob/development/.github/workflows/build-mudlet.yml) | [![Build Mudlet](https://github.com/Mudlet/Mudlet/workflows/Build%20Mudlet/badge.svg)](https://github.com/Mudlet/Mudlet/actions) 
 |[otland/forgottenserver](https://github.com/otland/forgottenserver) | [Linux/macOS/Windows](https://github.com/otland/forgottenserver/blob/master/.github/workflows/build-vcpkg.yml) | [![Build with vcpkg](https://github.com/otland/forgottenserver/workflows/Build%20with%20vcpkg/badge.svg)](https://github.com/otland/forgottenserver/actions)
 |[Element-0/ElementZero](https://github.com/Element-0/ElementZero) | [Windows](https://github.com/Element-0/ElementZero/blob/master/.github/workflows/ci.yml) | [![CI](https://github.com/Element-0/ElementZero/workflows/CI/badge.svg)](https://github.com/Element-0/ElementZero/actions)
@@ -104,6 +103,10 @@ Features available only in the GitHub version of **'run-cmake'**:
 |[zealdocs/zeal](https://github.com/zealdocs/zeal) | [Linux/Windows](https://github.com/zealdocs/zeal/blob/master/.github/workflows/build-check.yml) | [![Build Check](https://github.com/zealdocs/zeal/workflows/Build%20Check/badge.svg)](https://github.com/zealdocs/zeal/actions)
 |[marian-nmt/marian-dev](https://github.com/marian-nmt/marian-dev) | [Windows](https://github.com/marian-nmt/marian-dev/blob/master/.github/workflows/windows.yml)/[Linux](https://github.com/marian-nmt/marian-dev/blob/master/.github/workflows/ubuntu.yml)/[macOS](https://github.com/marian-nmt/marian-dev/blob/master/.github/workflows/macos.yml)|[![Windows](https://github.com/marian-nmt/marian-dev/workflows/Windows/badge.svg)](https://github.com/marian-nmt/marian-dev/actions/) [![Linux](https://github.com/marian-nmt/marian-dev/workflows/Ubuntu/badge.svg)](https://github.com/marian-nmt/marian-dev/actions/) [![macOS](https://github.com/marian-nmt/marian-dev/workflows/MacOS/badge.svg)](https://github.com/marian-nmt/marian-dev/actions/) 
 |[GrinPlusPlus](https://github.com/GrinPlusPlus/GrinPlusPlus) | [Linux/Windows/macOS](https://github.com/GrinPlusPlus/GrinPlusPlus/blob/master/.github/workflows/ci.yml) | [![ci](https://github.com/GrinPlusPlus/GrinPlusPlus/workflows/ci/badge.svg)](https://github.com/GrinPlusPlus/GrinPlusPlus/actions/)
+|[OpenTDD](https://github.com/OpenTTD/OpenTTD) | [Windows/macOS](https://github.com/OpenTTD/OpenTTD/blob/master/.github/workflows/ci-build.yml) | [![CI](https://github.com/OpenTTD/OpenTTD/workflows/CI/badge.svg)](https://github.com/OpenTTD/OpenTTD/actions/)
+
+
+
 
 # Developers information
 
