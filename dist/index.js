@@ -13052,7 +13052,7 @@ rimraf.sync = rimrafSync
 
 "use strict";
 
-// Copyright (c) 2019 Luca Cappa
+// Copyright (c) 2019-2020-2021 Luca Cappa
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
