@@ -540,7 +540,7 @@ function onceStrict (fn) {
 
 "use strict";
 
-// Copyright (c) 2019-2020 Luca Cappa
+// Copyright (c) 2019-2020-2021 Luca Cappa
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
@@ -3235,7 +3235,7 @@ module.exports = require("https");
 
 "use strict";
 
-// Copyright (c) 2019-2020 Luca Cappa
+// Copyright (c) 2019-2020-2021 Luca Cappa
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
@@ -4076,7 +4076,7 @@ function getSettings(settingsOrOptions = {}) {
 
 "use strict";
 
-// Copyright (c) 2019-2020 Luca Cappa
+// Copyright (c) 2019-2020-2021 Luca Cappa
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
@@ -5870,7 +5870,7 @@ function plural(ms, msAbs, n, name) {
 
 "use strict";
 
-// Copyright (c) 2019-2020 Luca Cappa
+// Copyright (c) 2019-2020-2021 Luca Cappa
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -8672,7 +8672,7 @@ module.exports = FastGlob;
 
 "use strict";
 
-// Copyright (c) 2019-2020 Luca Cappa
+// Copyright (c) 2019-2020-2021 Luca Cappa
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
@@ -9545,7 +9545,7 @@ exports.flatten = flatten;
 
 "use strict";
 
-// Copyright (c) 2019-2020 Luca Cappa
+// Copyright (c) 2019-2020-2021 Luca Cappa
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
@@ -19518,7 +19518,7 @@ module.exports = function(num) {
 
 "use strict";
 
-// Copyright (c) 2019-2020 Luca Cappa
+// Copyright (c) 2019-2020-2021 Luca Cappa
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
@@ -20072,7 +20072,7 @@ function clone (obj) {
 
 "use strict";
 
-// Copyright (c) 2019-2020 Luca Cappa
+// Copyright (c) 2019-2020-2021 Luca Cappa
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 Object.defineProperty(exports, "__esModule", { value: true });
