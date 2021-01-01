@@ -32,7 +32,7 @@ It is __highly recommended__ to use both [vcpkg as a submodule](https://github.c
 jobs: 
   build:
     env:
-      buildDir: '${{ github.workspace }}/b/vcpkg_submod_manifest'
+      buildDir: '${{ github.workspace }}/build'
     steps:
       # Cache/Restore the vcpkg's build artifacts using a vcpkg.json manifest.
       - name: Run vcpkg
@@ -54,7 +54,8 @@ jobs:
           cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
           cmakeListsTxtPath: '${{ github.workspace }}/cmakesettings.json/CMakeLists.txt'
           useVcpkgToolchainFile: true
-          cmakeAppendedArgs: '-GNinja '
+          cmakeAppendedArgs: '-GNinja'
+          buildDirectory: ${{ env.buildDir }}
           # Or build multiple configurations out of a CMakeSettings.json file created with Visual Studio.
           # cmakeListsOrSettingsJson: CMakeSettingsJson
           # cmakeSettingsJsonPath: '${{ github.workspace }}/cmakesettings.json/CMakeSettings.json'
