@@ -29,29 +29,37 @@ It is __highly recommended__ to use both [vcpkg as a submodule](https://github.c
 ```yaml
   # Sample when vcpkg is a submodule of your repository (highly recommended!)
 
-  # Cache/Restore the vcpkg's build artifacts using a vcpkg.json manifest.
-   - name: Run vcpkg
-     uses: lukka/run-vcpkg@v6
-     with:
-        # Just install vcpkg for now, do not install any ports in this step yet.
-        setupOnly: true
-        # Location of the vcpkg as submodule of the repository.
-        vcpkgDirectory: '${{ github.workspace }}/vcpkg'
-        # Since the cache must be invalidated when content of the vcpkg.json file changes, let's
-        # compute its hash and append this to the computed cache's key.
-        appendedCacheKey: ${{ hashFiles( '**/vcpkg.json' ) }}
-        vcpkgTriplet: ${{ matrix.triplet }}
-    - name: 'Run CMake with Ninja, install dependencies with vcpkg, build with CMake'
-      uses: lukka/run-cmake@v3
-      with:
-        cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
-        cmakeListsTxtPath: '${{ github.workspace }}/cmakesettings.json/CMakeLists.txt'
-        useVcpkgToolchainFile: true
-        cmakeAppendedArgs: '-GNinja '
-        # Or build multiple configurations out of a CMakeSettings.json file created with Visual Studio.
-        # cmakeListsOrSettingsJson: CMakeSettingsJson
-        # cmakeSettingsJsonPath: '${{ github.workspace }}/cmakesettings.json/CMakeSettings.json'
-        # configurationRegexFilter: '${{ matrix.configuration }}'
+jobs: 
+  build:
+    env:
+      buildDir: '${{ github.workspace }}/build'
+    steps:
+      # Cache/Restore the vcpkg's build artifacts using a vcpkg.json manifest.
+      - name: Run vcpkg
+        uses: lukka/run-vcpkg@v6
+        with:
+          # Just install vcpkg for now, do not install any ports in this step yet.
+          setupOnly: true
+          # Location of the vcpkg as submodule of the repository.
+          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+          # Since the cache must be invalidated when content of the vcpkg.json file changes, let's
+          # compute its hash and append this to the computed cache's key.
+          appendedCacheKey: ${{ hashFiles( '**/vcpkg.json' ) }}
+          vcpkgTriplet: ${{ matrix.triplet }}
+          # Ensure the vcpkg artifacts are cached, they are generated in the 'CMAKE_BINARY_DIR/vcpkg_installed'.
+          additionalCachedPaths: ${{ env.buildDir }}/vcpkg_installed
+      - name: 'Run CMake with Ninja, install dependencies with vcpkg, build with CMake'
+        uses: lukka/run-cmake@v3
+        with:
+          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
+          cmakeListsTxtPath: '${{ github.workspace }}/cmakesettings.json/CMakeLists.txt'
+          useVcpkgToolchainFile: true
+          cmakeAppendedArgs: '-GNinja'
+          buildDirectory: ${{ env.buildDir }}
+          # Or build multiple configurations out of a CMakeSettings.json file created with Visual Studio.
+          # cmakeListsOrSettingsJson: CMakeSettingsJson
+          # cmakeSettingsJsonPath: '${{ github.workspace }}/cmakesettings.json/CMakeSettings.json'
+          # configurationRegexFilter: '${{ matrix.configuration }}'
 ```
 ### <a id='flowchart'>Flowchart</a>
 
@@ -156,8 +164,8 @@ The software is provided as is, there is no warranty of any kind. All users are 
 # License
 All the content in this repository is licensed under the [MIT License](LICENSE.txt).
 
-Copyright (c) 2019-2020 Luca Cappa
+Copyright (c) 2019-2020-2021 Luca Cappa
 
 # Donating
 
-Other than submitting a pull request, [donating](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=EGNDRPRXM62G2&source=url) is another way to contribute to this project.
+Other than submitting a pull request, [donating](paypal.me/lucappa) is another way to contribute to this project.
