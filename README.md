@@ -1,5 +1,10 @@
 [![Action Status](https://github.com/lukka/run-cmake/workflows/build-test/badge.svg)](https://github.com/lukka/run-cmake/actions)
 
+# Before using this action, consider writing a _pure_ workflow!
+
+Before using this action, please consider reading and learning how to write a workflow which is directly using the well known tools you can run on your own machine, without relying on GitHub actions that you cannot run on your development machine.
+You can read more in this issue about it: https://github.com/lukka/run-cmake/issues/41
+
 # [The **run-cmake** action for using CMake on GitHub](https://github.com/marketplace/actions/run-cmake)
 
 Build C++ software with the multi-platform **run-cmake** action by running [CMake](https://cmake.org) on GitHub workflows. [Samples](#samples) provided use [GitHub hosted runners](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/virtual-environments-for-github-hosted-runners) and [Caching](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/caching-dependencies-to-speed-up-workflows).
