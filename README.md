@@ -73,18 +73,14 @@ jobs:
 
 ## <a id='run-cmake'>The ***run-cmake*** action</a>
 
-This action behaves the same way as it does the [run-cmake](https://marketplace.visualstudio.com/items?itemName=lucappa.cmake-ninja-vcpkg-tasks) task for Azure DevOps.
-
-The documentation of the **'run-cmake"** action is identical to the [**'run-cmake'** task's one](https://github.com/lukka/CppBuildTasks/blob/master/README.md#runcmake
-) for Azure DevOps.
-
-Features available only in the GitHub version of **'run-cmake'**:
- 
-  -  Annotations for CMake errors/warnings and for build (gcc/msvc/clang) errors/warning are created inline in the changed source files the build run for, e.g.:
-![Annotation](./docs/imgs/annotation.png)
+Features:
+  - run `cmake` to generate project files and to build the projects. Look to <a href=#samples>samples</a> and to <a href="#flowchart">flowchart</a> for details.
+  - Automatic dump of log files created by `CMake` (e.g., `CMakeOutput.log`) and `vcpkg`. The content of those files flow into the workflow output log.
+  - Annotations for CMake errors/warnings and for build (gcc/msvc/clang) errors/warning are created inline in the changed source files the build run for, e.g.: ![Annotation](./docs/imgs/annotation.png)
 
 ## <a id='reference'>Action reference: all input/output parameters</a>
 
+Description of all input parameters: 
 [action.yml](https://github.com/lukka/run-cmake/blob/main/action.yml)
 
 ## <a id="samples">Samples</a>
