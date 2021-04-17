@@ -3326,6 +3326,8 @@ class CMakeRunner {
         this.baseUtils = new baseutillib.BaseUtilLib(this.tl);
         this.cmakeUtils = new cmakelib.CMakeUtils(this.baseUtils);
         this.ninjaLib = new ninjalib.NinjaProvider(this.tl);
+        const regs = this.tl.getDelimitedInput(cmakeglobals.logCollectionRegExps, ';', false);
+        this.logFilesCollector = new baseutillib.LogFileCollector(this.tl, regs, (path) => baseutillib.dumpFile(this.tl, path));
         const mode = (_a = this.tl.getInput(cmakeglobals.cmakeListsOrSettingsJson, true)) !== null && _a !== void 0 ? _a : "";
         const runMode = getTargetType(mode);
         if (!runMode) {
@@ -3441,7 +3443,11 @@ class CMakeRunner {
                         ignoreReturnCode: true,
                         silent: false,
                         windowsVerbatimArguments: false,
-                        env: process.env
+                        env: process.env,
+                        listeners: {
+                            stdout: (t) => this.logFilesCollector.handleOutput(t),
+                            stderr: (t) => this.logFilesCollector.handleOutput(t),
+                        }
                     };
                     this.tl.debug(`Generating project files with CMake in build directory '${options.cwd}' ...`);
                     let code = -1;
@@ -5874,7 +5880,7 @@ function plural(ms, msAbs, n, name) {
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.useVcpkgToolchainFile = exports.cmakeWrapperCommand = exports.cmakeVcpkgTriplet = exports.cmakeBuildType = exports.buildWithCMakeArgs = exports.buildWithCMake = exports.cmakeToolchainPath = exports.cmakeGenerator = exports.cmakeListsOrSettingsJson = exports.ninjaDownloadUrl = exports.ninjaPath = exports.configurationRegexFilter = exports.cmakeAppendedArgs = exports.buildDirectory = exports.cmakeListsTxtPath = exports.cmakeSettingsJsonPath = void 0;
+exports.logCollectionRegExps = exports.useVcpkgToolchainFile = exports.cmakeWrapperCommand = exports.cmakeVcpkgTriplet = exports.cmakeBuildType = exports.buildWithCMakeArgs = exports.buildWithCMake = exports.cmakeToolchainPath = exports.cmakeGenerator = exports.cmakeListsOrSettingsJson = exports.ninjaDownloadUrl = exports.ninjaPath = exports.configurationRegexFilter = exports.cmakeAppendedArgs = exports.buildDirectory = exports.cmakeListsTxtPath = exports.cmakeSettingsJsonPath = void 0;
 exports.cmakeSettingsJsonPath = 'cmakeSettingsJsonPath';
 exports.cmakeListsTxtPath = 'cmakeListsTxtPath';
 exports.buildDirectory = 'buildDirectory';
@@ -5891,6 +5897,7 @@ exports.cmakeBuildType = 'cmakeBuildType';
 exports.cmakeVcpkgTriplet = 'vcpkgTriplet';
 exports.cmakeWrapperCommand = 'cmakeWrapperCommand';
 exports.useVcpkgToolchainFile = 'useVcpkgToolchainFile';
+exports.logCollectionRegExps = 'logCollectionRegExps';
 //# sourceMappingURL=cmake-globals.js.map
 
 /***/ }),
@@ -8883,7 +8890,7 @@ class ActionToolRunner {
         });
     }
     convertExecOptions(options) {
-        var _a, _b, _c, _d, _e, _f;
+        var _a, _b, _c, _d, _e, _f, _g, _h;
         const result = {
             cwd: (_a = options.cwd) !== null && _a !== void 0 ? _a : process.cwd(),
             env: (_b = options.env) !== null && _b !== void 0 ? _b : process.env,
@@ -8892,21 +8899,8 @@ class ActionToolRunner {
             ignoreReturnCode: (_e = options.ignoreReturnCode) !== null && _e !== void 0 ? _e : false,
             windowsVerbatimArguments: (_f = options.windowsVerbatimArguments) !== null && _f !== void 0 ? _f : false,
             listeners: {
-                stdout: (data) => void {
-                // Nothing to do.
-                },
-                stderr: (data) => void {
-                // Nothing to do.
-                },
-                stdline: (data) => void {
-                // Nothing to do.
-                },
-                errline: (data) => void {
-                // Nothing to do.
-                },
-                debug: (data) => void {
-                // Nothing to do.
-                },
+                stdout: (_g = options.listeners) === null || _g === void 0 ? void 0 : _g.stdout,
+                stderr: (_h = options.listeners) === null || _h === void 0 ? void 0 : _h.stderr,
             }
         };
         result.outStream = options.outStream || process.stdout;
@@ -19553,7 +19547,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Matcher = exports.BaseUtilLib = void 0;
+exports.dumpFile = exports.LogFileCollector = exports.dumpError = exports.Matcher = exports.BaseUtilLib = void 0;
 const fs = __importStar(__webpack_require__(747));
 const os = __importStar(__webpack_require__(87));
 const path = __importStar(__webpack_require__(622));
@@ -19714,30 +19708,32 @@ class BaseUtilLib {
         return triplet;
     }
     resolveArguments(args, readFile) {
-        let resolvedArguments = "";
-        // Split string on any 'whitespace' character
-        const argsSplitted = args.split(/\s/).filter((a) => a.length != 0);
-        let index = 0;
-        for (; index < argsSplitted.length; index++) {
-            let arg = argsSplitted[index].trim();
-            // remove all whitespace characters (e.g. newlines, tabs, blanks)
-            arg = arg.replace(/\s/, '');
-            let isResponseFile = false;
-            if (arg.startsWith("@")) {
-                const resolvedFilePath = BaseUtilLib.normalizePath(arg);
-                if (this.baseLib.exist(resolvedFilePath)) {
-                    const [ok, content] = readFile(resolvedFilePath);
-                    if (ok && content) {
-                        isResponseFile = true;
-                        resolvedArguments += content;
+        return __awaiter(this, void 0, void 0, function* () {
+            let resolvedArguments = "";
+            // Split string on any 'whitespace' character
+            const argsSplitted = args.split(/\s/).filter((a) => a.length != 0);
+            let index = 0;
+            for (; index < argsSplitted.length; index++) {
+                let arg = argsSplitted[index].trim();
+                // remove all whitespace characters (e.g. newlines, tabs, blanks)
+                arg = arg.replace(/\s/, '');
+                let isResponseFile = false;
+                if (arg.startsWith("@")) {
+                    const resolvedFilePath = BaseUtilLib.normalizePath(arg);
+                    if (yield this.baseLib.exist(resolvedFilePath)) {
+                        const [ok, content] = readFile(resolvedFilePath);
+                        if (ok && content) {
+                            isResponseFile = true;
+                            resolvedArguments += content;
+                        }
                     }
                 }
+                if (!isResponseFile) {
+                    resolvedArguments += arg;
+                }
             }
-            if (!isResponseFile) {
-                resolvedArguments += arg;
-            }
-        }
-        return resolvedArguments;
+            return resolvedArguments;
+        });
     }
     // Force 'name' env variable to have value of 'value'.
     setEnvVar(name, value) {
@@ -19968,6 +19964,9 @@ class BaseUtilLib {
         if (obj === undefined)
             throw new Error(`Agument '${name}' is undefined`);
     }
+    static isValidSHA1(text) {
+        return /^[a-fA-F0-9]{40}$/.test(text);
+    }
 }
 exports.BaseUtilLib = BaseUtilLib;
 BaseUtilLib.cachingFormatEnvName = 'AZP_CACHING_CONTENT_FORMAT';
@@ -19988,6 +19987,71 @@ class Matcher {
     }
 }
 exports.Matcher = Matcher;
+function dumpError(baseLib, err) {
+    const error = err;
+    const errorAsString = (error !== null && error !== void 0 ? error : "undefined error").toString();
+    baseLib.debug(errorAsString);
+    if (error === null || error === void 0 ? void 0 : error.stack) {
+        baseLib.debug(error.stack);
+    }
+}
+exports.dumpError = dumpError;
+class LogFileCollector {
+    constructor(baseLib, regExps, func) {
+        this.baseLib = baseLib;
+        this.func = func;
+        this.regExps = [];
+        this.bufferString = "";
+        for (const s of regExps) {
+            this.regExps.push(new RegExp(s, "m"));
+        }
+    }
+    appendBuffer(buffer) {
+        this.bufferString += buffer.toString();
+    }
+    limitBuffer(consumeUntil) {
+        if (consumeUntil && consumeUntil > 0)
+            this.bufferString = this.bufferString.slice(consumeUntil);
+        const len = this.bufferString.length;
+        if (len > LogFileCollector.MAXLEN)
+            this.bufferString = this.bufferString.slice(len - LogFileCollector.MAXLEN);
+    }
+    handleOutput(buffer) {
+        this.appendBuffer(buffer);
+        let consumedUntil = -1;
+        for (const re of this.regExps) {
+            try {
+                if (re.test(this.bufferString)) {
+                    const matches = re.exec(this.bufferString);
+                    if (matches) {
+                        consumedUntil = Math.max(consumedUntil, re.lastIndex);
+                        this.func(matches[1]);
+                    }
+                }
+            }
+            catch (err) {
+                dumpError(this.baseLib, err);
+            }
+        }
+        this.limitBuffer(consumedUntil);
+    }
+}
+exports.LogFileCollector = LogFileCollector;
+LogFileCollector.MAXLEN = 1024;
+function dumpFile(baseLib, filePath) {
+    try {
+        if (filePath && fs.existsSync(filePath)) {
+            const content = fs.readFileSync(filePath);
+            if (content) {
+                baseLib.info(`[LogCollection][Start]File:'${filePath}':\n${content}\n[LogCollection][End]File:'${filePath}'.`);
+            }
+        }
+    }
+    catch (err) {
+        dumpError(baseLib, err);
+    }
+}
+exports.dumpFile = dumpFile;
 //# sourceMappingURL=utils.js.map
 
 /***/ }),
