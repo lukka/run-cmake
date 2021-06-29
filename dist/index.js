@@ -20018,6 +20018,8 @@ class LogFileCollector {
     }
     handleOutput(buffer) {
         this.appendBuffer(buffer);
+        this.baseLib.debug(`\n\nappending: ${buffer}\n\n`);
+        this.baseLib.debug(`\n\nbuffer: ${this.bufferString}\n\n`);
         let consumedUntil = -1;
         for (const re of this.regExps) {
             re.lastIndex = 0;
@@ -20027,6 +20029,7 @@ class LogFileCollector {
                     const matches = re.exec(this.bufferString);
                     if (matches) {
                         consumedUntil = Math.max(consumedUntil, re.lastIndex);
+                        this.baseLib.debug(`\n\nmatched expression: ${re}\n\n`);
                         this.func(matches[1]);
                     }
                 }
@@ -20036,6 +20039,7 @@ class LogFileCollector {
             }
         }
         this.limitBuffer(consumedUntil);
+        this.baseLib.debug(`\n\nremaining: ${this.bufferString}\n\n`);
     }
 }
 exports.LogFileCollector = LogFileCollector;
@@ -20047,7 +20051,11 @@ function dumpFile(baseLib, filePath) {
             if (content) {
                 baseLib.info(`[LogCollection][Start]File:'${filePath}':\n${content}\n[LogCollection][End]File:'${filePath}'.`);
             }
+            else
+                baseLib.warning(`[LogCollection][Warn]File empty:'${filePath}'.`);
         }
+        else
+            baseLib.warning(`[LogCollection][Warn]File not found:'${filePath}'.`);
     }
     catch (err) {
         dumpError(baseLib, err);
