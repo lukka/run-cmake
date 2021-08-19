@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2020 Luca Cappa
+// Copyright (c) 2019-2020-2021 Luca Cappa
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 
@@ -38,10 +38,10 @@ var eslinter = function () {
     .pipe(eslint.failAfterError());
 }
 
-// Copy matchers to consumers.
+// Copy the assets-lib provided matchers.
 var copyMatchersJson = function () {
   return gulp.src(
-    ['./libs/run-cmake-lib/src/matchers/*.json'])
+    ['./node_modules/@lukka/assets-lib/src/matchers/*.json'])
     .pipe(gulp.dest('./dist/'));
 }
 

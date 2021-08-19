@@ -13,3 +13,6 @@ __tests__/build Directory
 __tests__/b
 !dist
 .npmrc
+.DS_Store
+__tests__/theAssets/builds
+coverage

@@ -1,0 +1,56 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "default",
+      "displayName": "Ninja Configure Settings",
+      "description": "Sets build and install directories",
+      "binaryDir": "${sourceDir}/builds/${presetName}",
+      "generator": "Ninja"
+    },
+    {
+      "name": "default-toolchain",
+      "displayName": "Ninja Configure Settings with toolchain",
+      "description": "Sets build and install directories",
+      "binaryDir": "${sourceDir}/builds/${presetName}-toolchain",
+      "generator": "Ninja",
+      "toolchainFile": "$env{TOOLCHAINFILE}"
+    },
+    {
+      "name": "default-multi",
+      "displayName": "Ninja Multi-Config Configure Settings",
+      "description": "Sets build and install directories",
+      "binaryDir": "${sourceDir}/builds/${presetName}",
+      "generator": "Ninja Multi-Config"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default",
+      "displayName": "Build",
+      "description": "Build"
+    },
+    {
+      "name": "default-multi",
+      "configurePreset": "default-multi",
+      "displayName": "Build Multi",
+      "description": "Build Multi Configurations"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default"
+    },
+    {
+      "name": "default-multi",
+      "configurePreset": "default-multi"
+    }
+  ]
+}

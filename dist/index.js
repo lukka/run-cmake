@@ -34,7 +34,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(580);
+/******/ 		return __webpack_require__(195);
 /******/ 	};
 /******/
 /******/ 	// run startup
@@ -350,7 +350,7 @@ const path = __webpack_require__(622);
 const deep_1 = __webpack_require__(887);
 const entry_1 = __webpack_require__(703);
 const error_1 = __webpack_require__(375);
-const entry_2 = __webpack_require__(912);
+const entry_2 = __webpack_require__(317);
 class Provider {
     constructor(_settings) {
         this._settings = _settings;
@@ -1049,6 +1049,7 @@ function wrappy (fn, cb) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.merge = void 0;
 const merge2 = __webpack_require__(538);
 function merge(streams) {
     const mergedStream = merge2(streams);
@@ -1073,6 +1074,7 @@ function propagateCloseEventToSources(streams) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.createDirentFromStats = void 0;
 class DirentFromStats {
     constructor(name, stats) {
         this.name = name;
@@ -1142,118 +1144,6 @@ function onceStrict (fn) {
 
 /***/ }),
 
-/***/ 72:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-// Copyright (c) 2019-2020-2021 Luca Cappa
-// Released under the term specified in file LICENSE.txt
-// SPDX short identifier: MIT
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.NinjaProvider = void 0;
-const path = __importStar(__webpack_require__(622));
-const BaseUtilLib = __importStar(__webpack_require__(758));
-class NinjaProvider {
-    constructor(baseLib) {
-        this.baseLib = baseLib;
-        this.baseUtils = new BaseUtilLib.BaseUtilLib(baseLib);
-    }
-    download(url) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!url) {
-                if (this.baseUtils.isLinux()) {
-                    url = `${NinjaProvider.baseUrl}/ninja-linux.zip`;
-                }
-                else if (this.baseUtils.isDarwin()) {
-                    url = `${NinjaProvider.baseUrl}/ninja-mac.zip`;
-                }
-                else if (this.baseUtils.isWin32()) {
-                    url = `${NinjaProvider.baseUrl}/ninja-win.zip`;
-                }
-            }
-            // Create the name of the executable, i.e. ninja or ninja.exe .
-            let ninjaExeName = 'ninja';
-            if (this.baseUtils.isWin32()) {
-                ninjaExeName += ".exe";
-            }
-            const ninjaPath = yield this.baseUtils.downloadArchive(url);
-            const ninjaFullPath = path.join(ninjaPath, ninjaExeName);
-            if (this.baseUtils.isLinux() || this.baseUtils.isDarwin()) {
-                yield this.baseLib.exec('chmod', ['+x', ninjaFullPath]);
-            }
-            return ninjaFullPath;
-        });
-    }
-    findNinjaTool() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const ninjaPath = yield this.baseLib.which('ninja', false);
-            return ninjaPath;
-        });
-    }
-    ;
-    /**
-     * Retrieve the path to 'ninja' executable. If the provided path to ninja is no existent
-     * it will download the ninja archive from the provided one, if the latter not provided from
-     * the default URL for ths host platform.
-     * @param {(string | undefined)} ninjaPath Optional path to ninja executable.
-     * @param {string} ninjaDownloadUrl Optional URL to download ninja from.
-     * @returns {Promise<string>} The full path to the ninja executable.
-     * @memberof NinjaDownloader
-     */
-    retrieveNinjaPath(ninjaPath, ninjaDownloadUrl) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!ninjaPath) {
-                this.baseLib.debug("Path to ninja executable has not been explicitly specified on the task. Searching for it now...");
-                ninjaPath = yield this.findNinjaTool();
-                if (!ninjaPath) {
-                    this.baseLib.debug("Cannot find Ninja in PATH environment variable.");
-                    ninjaPath =
-                        yield this.download(ninjaDownloadUrl);
-                    if (!ninjaPath) {
-                        throw new Error("Cannot find nor download Ninja.");
-                    }
-                }
-            }
-            this.baseLib.debug(`Returning ninja at: ${ninjaPath}`);
-            return ninjaPath;
-        });
-    }
-}
-exports.NinjaProvider = NinjaProvider;
-NinjaProvider.baseUrl = 'https://github.com/ninja-build/ninja/releases/download/v1.10.1';
-//# sourceMappingURL=ninja.js.map
-
-/***/ }),
-
 /***/ 74:
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
@@ -1264,7 +1154,7 @@ const util = __webpack_require__(669);
 const braces = __webpack_require__(783);
 const picomatch = __webpack_require__(827);
 const utils = __webpack_require__(265);
-const isEmptyString = val => typeof val === 'string' && (val === '' || val === './');
+const isEmptyString = val => val === '' || val === './';
 
 /**
  * Returns an array of strings that match one or more glob patterns.
@@ -1276,9 +1166,9 @@ const isEmptyString = val => typeof val === 'string' && (val === '' || val === '
  * console.log(mm(['a.js', 'a.txt'], ['*.js']));
  * //=> [ 'a.js' ]
  * ```
- * @param {String|Array<string>} list List of strings to match.
- * @param {String|Array<string>} patterns One or more glob patterns to use for matching.
- * @param {Object} options See available [options](#options)
+ * @param {String|Array<string>} `list` List of strings to match.
+ * @param {String|Array<string>} `patterns` One or more glob patterns to use for matching.
+ * @param {Object} `options` See available [options](#options)
  * @return {Array} Returns an array of matches
  * @summary false
  * @api public
@@ -1373,9 +1263,9 @@ micromatch.matcher = (pattern, options) => picomatch(pattern, options);
  * console.log(mm.isMatch('a.a', ['b.*', '*.a'])); //=> true
  * console.log(mm.isMatch('a.a', 'b.*')); //=> false
  * ```
- * @param {String} str The string to test.
- * @param {String|Array} patterns One or more glob patterns to use for matching.
- * @param {Object} [options] See available [options](#options).
+ * @param {String} `str` The string to test.
+ * @param {String|Array} `patterns` One or more glob patterns to use for matching.
+ * @param {Object} `[options]` See available [options](#options).
  * @return {Boolean} Returns true if any patterns match `str`
  * @api public
  */
@@ -1441,7 +1331,7 @@ micromatch.not = (list, patterns, options = {}) => {
  * @param {String} `str` The string to match.
  * @param {String|Array} `patterns` Glob pattern to use for matching.
  * @param {Object} `options` See available [options](#options) for changing how matches are performed
- * @return {Boolean} Returns true if the patter matches any part of `str`.
+ * @return {Boolean} Returns true if any of the patterns matches any part of `str`.
  * @api public
  */
 
@@ -1512,7 +1402,7 @@ micromatch.matchKeys = (obj, patterns, options) => {
  * @param {String|Array} `list` The string or array of strings to test. Returns as soon as the first match is found.
  * @param {String|Array} `patterns` One or more glob patterns to use for matching.
  * @param {Object} `options` See available [options](#options) for changing how matches are performed
- * @return {Boolean} Returns true if any patterns match `str`
+ * @return {Boolean} Returns true if any `patterns` matches any of the strings in `list`
  * @api public
  */
 
@@ -1548,7 +1438,7 @@ micromatch.some = (list, patterns, options) => {
  * @param {String|Array} `list` The string or array of strings to test.
  * @param {String|Array} `patterns` One or more glob patterns to use for matching.
  * @param {Object} `options` See available [options](#options) for changing how matches are performed
- * @return {Boolean} Returns true if any patterns match `str`
+ * @return {Boolean} Returns true if all `patterns` matches all of the strings in `list`
  * @api public
  */
 
@@ -1614,7 +1504,7 @@ micromatch.all = (str, patterns, options) => {
  * @param {String} `glob` Glob pattern to use for matching.
  * @param {String} `input` String to match
  * @param {Object} `options` See available [options](#options) for changing how matches are performed
- * @return {Boolean} Returns an array of captures if the input matches the glob pattern, otherwise `null`.
+ * @return {Array|null} Returns an array of captures if the input matches the glob pattern, otherwise `null`.
  * @api public
  */
 
@@ -1729,6 +1619,52 @@ module.exports = micromatch;
 
 /***/ }),
 
+/***/ 75:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const matcher_1 = __webpack_require__(320);
+class PartialMatcher extends matcher_1.default {
+    match(filepath) {
+        const parts = filepath.split('/');
+        const levels = parts.length;
+        const patterns = this._storage.filter((info) => !info.complete || info.segments.length > levels);
+        for (const pattern of patterns) {
+            const section = pattern.sections[0];
+            /**
+             * In this case, the pattern has a globstar and we must read all directories unconditionally,
+             * but only if the level has reached the end of the first group.
+             *
+             * fixtures/{a,b}/**
+             *  ^ true/false  ^ always true
+            */
+            if (!pattern.complete && levels > section.length) {
+                return true;
+            }
+            const match = parts.every((part, index) => {
+                const segment = pattern.segments[index];
+                if (segment.dynamic && segment.patternRe.test(part)) {
+                    return true;
+                }
+                if (!segment.dynamic && segment.pattern === part) {
+                    return true;
+                }
+                return false;
+            });
+            if (match) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+exports.default = PartialMatcher;
+
+
+/***/ }),
+
 /***/ 78:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -1756,188 +1692,6 @@ class ProviderSync extends provider_1.default {
     }
 }
 exports.default = ProviderSync;
-
-
-/***/ }),
-
-/***/ 81:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-/**
- * Module dependencies.
- */
-var tty = __webpack_require__(867);
-
-var util = __webpack_require__(669);
-/**
- * This is the Node.js implementation of `debug()`.
- */
-
-
-exports.init = init;
-exports.log = log;
-exports.formatArgs = formatArgs;
-exports.save = save;
-exports.load = load;
-exports.useColors = useColors;
-/**
- * Colors.
- */
-
-exports.colors = [6, 2, 3, 4, 5, 1];
-
-try {
-  // Optional dependency (as in, doesn't need to be installed, NOT like optionalDependencies in package.json)
-  // eslint-disable-next-line import/no-extraneous-dependencies
-  var supportsColor = __webpack_require__(247);
-
-  if (supportsColor && (supportsColor.stderr || supportsColor).level >= 2) {
-    exports.colors = [20, 21, 26, 27, 32, 33, 38, 39, 40, 41, 42, 43, 44, 45, 56, 57, 62, 63, 68, 69, 74, 75, 76, 77, 78, 79, 80, 81, 92, 93, 98, 99, 112, 113, 128, 129, 134, 135, 148, 149, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 178, 179, 184, 185, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 214, 215, 220, 221];
-  }
-} catch (error) {} // Swallow - we only care if `supports-color` is available; it doesn't have to be.
-
-/**
- * Build up the default `inspectOpts` object from the environment variables.
- *
- *   $ DEBUG_COLORS=no DEBUG_DEPTH=10 DEBUG_SHOW_HIDDEN=enabled node script.js
- */
-
-
-exports.inspectOpts = Object.keys(process.env).filter(function (key) {
-  return /^debug_/i.test(key);
-}).reduce(function (obj, key) {
-  // Camel-case
-  var prop = key.substring(6).toLowerCase().replace(/_([a-z])/g, function (_, k) {
-    return k.toUpperCase();
-  }); // Coerce string value into JS value
-
-  var val = process.env[key];
-
-  if (/^(yes|on|true|enabled)$/i.test(val)) {
-    val = true;
-  } else if (/^(no|off|false|disabled)$/i.test(val)) {
-    val = false;
-  } else if (val === 'null') {
-    val = null;
-  } else {
-    val = Number(val);
-  }
-
-  obj[prop] = val;
-  return obj;
-}, {});
-/**
- * Is stdout a TTY? Colored output is enabled when `true`.
- */
-
-function useColors() {
-  return 'colors' in exports.inspectOpts ? Boolean(exports.inspectOpts.colors) : tty.isatty(process.stderr.fd);
-}
-/**
- * Adds ANSI color escape codes if enabled.
- *
- * @api public
- */
-
-
-function formatArgs(args) {
-  var name = this.namespace,
-      useColors = this.useColors;
-
-  if (useColors) {
-    var c = this.color;
-    var colorCode = "\x1B[3" + (c < 8 ? c : '8;5;' + c);
-    var prefix = "  ".concat(colorCode, ";1m").concat(name, " \x1B[0m");
-    args[0] = prefix + args[0].split('\n').join('\n' + prefix);
-    args.push(colorCode + 'm+' + module.exports.humanize(this.diff) + "\x1B[0m");
-  } else {
-    args[0] = getDate() + name + ' ' + args[0];
-  }
-}
-
-function getDate() {
-  if (exports.inspectOpts.hideDate) {
-    return '';
-  }
-
-  return new Date().toISOString() + ' ';
-}
-/**
- * Invokes `util.format()` with the specified arguments and writes to stderr.
- */
-
-
-function log() {
-  return process.stderr.write(util.format.apply(util, arguments) + '\n');
-}
-/**
- * Save `namespaces`.
- *
- * @param {String} namespaces
- * @api private
- */
-
-
-function save(namespaces) {
-  if (namespaces) {
-    process.env.DEBUG = namespaces;
-  } else {
-    // If you set a process.env field to null or undefined, it gets cast to the
-    // string 'null' or 'undefined'. Just delete instead.
-    delete process.env.DEBUG;
-  }
-}
-/**
- * Load `namespaces`.
- *
- * @return {String} returns the previously persisted debug modes
- * @api private
- */
-
-
-function load() {
-  return process.env.DEBUG;
-}
-/**
- * Init logic for `debug` instances.
- *
- * Create a new `inspectOpts` object in case `useColors` is set
- * differently for a particular `debug` instance.
- */
-
-
-function init(debug) {
-  debug.inspectOpts = {};
-  var keys = Object.keys(exports.inspectOpts);
-
-  for (var i = 0; i < keys.length; i++) {
-    debug.inspectOpts[keys[i]] = exports.inspectOpts[keys[i]];
-  }
-}
-
-module.exports = __webpack_require__(486)(exports);
-var formatters = module.exports.formatters;
-/**
- * Map %o to `util.inspect()`, all on a single line.
- */
-
-formatters.o = function (v) {
-  this.inspectOpts.colors = this.useColors;
-  return util.inspect(v, this.inspectOpts).replace(/\s*\n\s*/g, ' ');
-};
-/**
- * Map %O to `util.inspect()`, allowing multiple lines if needed.
- */
-
-
-formatters.O = function (v) {
-  this.inspectOpts.colors = this.useColors;
-  return util.inspect(v, this.inspectOpts);
-};
-
 
 
 /***/ }),
@@ -2905,6 +2659,386 @@ function regExpEscape (s) {
 
 /***/ }),
 
+/***/ 95:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+// Copyright (c) 2019-2020-2021 Luca Cappa
+// Released under the term specified in file LICENSE.txt
+// SPDX short identifier: MIT
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.VcpkgRunner = void 0;
+const path = __importStar(__webpack_require__(622));
+const globals = __importStar(__webpack_require__(848));
+const vcpkgutils = __importStar(__webpack_require__(722));
+const baseutillib = __importStar(__webpack_require__(758));
+const using_statement_1 = __webpack_require__(443);
+class VcpkgRunner {
+    /**
+     * @description Used only in tests.
+     */
+    constructor(baseUtils, vcpkgDestPath, vcpkgUrl, vcpkgGitCommitId, doRunVcpkgInstall, doNotUpdateVcpkg, runVcpkgInstallPath, pathToLastBuiltCommitId, options = {}, vcpkgInstallCmd) {
+        this.baseUtils = baseUtils;
+        this.vcpkgDestPath = vcpkgDestPath;
+        this.vcpkgUrl = vcpkgUrl;
+        this.vcpkgGitCommitId = vcpkgGitCommitId;
+        this.doRunVcpkgInstall = doRunVcpkgInstall;
+        this.doNotUpdateVcpkg = doNotUpdateVcpkg;
+        this.runVcpkgInstallPath = runVcpkgInstallPath;
+        this.pathToLastBuiltCommitId = pathToLastBuiltCommitId;
+        this.options = options;
+        this.vcpkgInstallCmd = vcpkgInstallCmd;
+    }
+    /**
+     * @description Used only in tests.
+     */
+    static create(baseUtil, vcpkgDestPath, vcpkgUrl, vcpkgGitCommitId, doRunVcpkgInstall, doNotUpdateVcpkg, logCollectionRegExps, runVcpkgInstallPath, vcpkgInstallCmd) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!vcpkgUrl) {
+                vcpkgUrl = VcpkgRunner.DEFAULTVCPKGURL;
+                baseUtil.baseLib.info(`The vcpkg's URL Git repository is not provided, using the predefined: '${VcpkgRunner.DEFAULTVCPKGURL}'`);
+            }
+            baseutillib.setEnvVarIfUndefined("VCPKG_INSTALLED_DIR", yield vcpkgutils.getDefaultVcpkgInstallDirectory(baseUtil.baseLib));
+            baseutillib.setEnvVarIfUndefined(globals.VCPKGDEFAULTTRIPLET, baseUtil.getDefaultTriplet());
+            if (!vcpkgInstallCmd) {
+                vcpkgInstallCmd = baseutillib.replaceFromEnvVar(VcpkgRunner.VCPKGINSTALLCMDDEFAULT);
+            }
+            else {
+                vcpkgInstallCmd = baseutillib.replaceFromEnvVar(vcpkgInstallCmd);
+            }
+            const vcpkgInstallArgs = eval(vcpkgInstallCmd);
+            // Git update or clone depending on content of vcpkgDestPath input parameter.
+            const pathToLastBuiltCommitId = path.join(vcpkgDestPath, globals.vcpkgLastBuiltCommitId);
+            const logFilesCollector = new baseutillib.LogFileCollector(baseUtil.baseLib, logCollectionRegExps, (path) => baseutillib.dumpFile(baseUtil.baseLib, path));
+            const options = {
+                cwd: vcpkgDestPath,
+                failOnStdErr: false,
+                errStream: process.stdout,
+                outStream: process.stdout,
+                ignoreReturnCode: true,
+                silent: false,
+                windowsVerbatimArguments: false,
+                env: process.env,
+                listeners: {
+                    stdout: (t) => logFilesCollector.handleOutput(t),
+                    stderr: (t) => logFilesCollector.handleOutput(t),
+                }
+            };
+            return new VcpkgRunner(baseUtil, vcpkgDestPath, vcpkgUrl, vcpkgGitCommitId, doRunVcpkgInstall, doNotUpdateVcpkg, runVcpkgInstallPath, pathToLastBuiltCommitId, options, vcpkgInstallArgs);
+        });
+    }
+    static run(baseUtil, vcpkgRootPath, vcpkgUrl, vcpkgGitCommitId, doRunVcpkgInstall, doNotUpdateVcpkg, logCollectionRegExps, runVcpkgInstallPath, vcpkgInstallCmd) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const vcpkgRunner = yield VcpkgRunner.create(baseUtil, vcpkgRootPath, vcpkgUrl, vcpkgGitCommitId, doRunVcpkgInstall, doNotUpdateVcpkg, logCollectionRegExps, runVcpkgInstallPath, vcpkgInstallCmd);
+            yield vcpkgRunner.run();
+        });
+    }
+    run() {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield using_statement_1.using(baseutillib.Matcher.createMatcher('all', this.baseUtils.baseLib, __dirname), () => __awaiter(this, void 0, void 0, function* () { return this.runImpl(); }));
+        });
+    }
+    runImpl() {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.baseUtils.baseLib.debug("runImpl()<<");
+            // Ensuring `this.vcpkgDestPath` is existent, since is going to be used as current working directory.
+            if (!(yield this.baseUtils.baseLib.exist(this.vcpkgDestPath))) {
+                this.baseUtils.baseLib.debug(`Creating vcpkg root directory as it is not existing: ${this.vcpkgDestPath}`);
+                yield this.baseUtils.baseLib.mkdirP(this.vcpkgDestPath);
+            }
+            let needRebuild = false;
+            const currentCommitId = yield this.baseUtils.wrapOp(`Retrieving the vcpkg Git commit id (${this.vcpkgDestPath})`, () => __awaiter(this, void 0, void 0, function* () { return yield VcpkgRunner.getCommitId(this.baseUtils, this.vcpkgDestPath); }));
+            if (this.doNotUpdateVcpkg) {
+                this.baseUtils.baseLib.info(`DoNotUpdateVcpkg' is 'true', skipping any check to update the vcpkg directory (${this.vcpkgDestPath}).`);
+            }
+            else {
+                const updated = yield this.baseUtils.wrapOp("Check whether vcpkg repository is up to date", () => this.checkRepoUpdated(currentCommitId));
+                if (!updated) {
+                    yield this.baseUtils.wrapOp("Download vcpkg source code repository", () => this.cloneRepo());
+                    needRebuild = true;
+                }
+            }
+            // Build is needed at the first check which is saying so.
+            if (!needRebuild) {
+                needRebuild = this.baseUtils.wrapOpSync("Check whether last vcpkg's build is up to date with sources", () => this.checkLastBuildCommitId(currentCommitId));
+                if (!needRebuild) {
+                    needRebuild = yield this.baseUtils.wrapOp("Check vcpkg executable exists", () => this.checkExecutable());
+                }
+            }
+            if (needRebuild) {
+                yield this.baseUtils.wrapOp("Build vcpkg executable", () => this.build());
+            }
+            yield this.runVcpkgInstall();
+            this.baseUtils.wrapOpSync("Set output environment variables", () => this.setOutputs());
+            this.baseUtils.baseLib.debug("runImpl()>>");
+        });
+    }
+    runVcpkgInstall() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.doRunVcpkgInstall)
+                return;
+            if (!this.runVcpkgInstallPath) {
+                throw new Error(`Cannot run '${this.vcpkgInstallCmd}' because no valid directory has been provided.`);
+            }
+            const vcpkgRunPath = this.runVcpkgInstallPath;
+            yield this.baseUtils.wrapOp("Install/Update ports using vcpkg.json", () => __awaiter(this, void 0, void 0, function* () { return yield this.runVcpkgInstallImpl(vcpkgRunPath); }));
+        });
+    }
+    runVcpkgInstallImpl(vcpkgRunPath) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let vcpkgPath = path.join(this.vcpkgDestPath, 'vcpkg');
+            if (this.baseUtils.isWin32()) {
+                vcpkgPath += '.exe';
+            }
+            // A shallow copy the ExecOptions suffices.
+            const optionsForRunningVcpkgInstall = Object.assign({}, this.options);
+            optionsForRunningVcpkgInstall.cwd = vcpkgRunPath;
+            // Run the command.
+            const vcpkgTool = this.baseUtils.baseLib.tool(vcpkgPath);
+            for (const arg of this.vcpkgInstallCmd)
+                vcpkgTool.arg(arg);
+            this.baseUtils.baseLib.info(`Running 'vcpkg ${this.vcpkgInstallCmd}' in directory '${optionsForRunningVcpkgInstall.cwd}' ...`);
+            this.baseUtils.throwIfErrorCode(yield vcpkgTool.exec(optionsForRunningVcpkgInstall));
+        });
+    }
+    setOutputs() {
+        // Set the RUNVCPKG_VCPKG_ROOT value, it could be re-used later by run-cmake.
+        this.baseUtils.setVariableVerbose(globals.RUNVCPKG_VCPKG_ROOT, this.vcpkgDestPath);
+        // Override the VCPKG_ROOT value, it must point to this vcpkg instance, it is used by 
+        // any subsequent invocation of the vcpkg executable.
+        this.baseUtils.setVariableVerbose(globals.VCPKGROOT, this.vcpkgDestPath);
+        // The output variable must have a different name than the
+        // one set with setVariable(), as the former get a prefix added out of our control.
+        const outVarName = `${globals.RUNVCPKG_VCPKG_ROOT}_OUT`;
+        this.baseUtils.setOutputVerbose(outVarName, this.vcpkgDestPath);
+        if (this.doRunVcpkgInstall) {
+            // If vcpkg install was run, expose which triplet has been used to run it with.
+            const triplet = process.env[globals.VCPKGDEFAULTTRIPLET];
+            if (triplet) {
+                this.baseUtils.setVariableVerbose(globals.VCPKGDEFAULTTRIPLET, triplet);
+                const vcpkgTripletOutVarName = `${globals.RUNVCPKG_VCPKG_DEFAULT_TRIPLET}_OUT`;
+                this.baseUtils.setOutputVerbose(vcpkgTripletOutVarName, triplet);
+            }
+            else {
+                this.baseUtils.baseLib.warning(`Environment variable ${globals.VCPKGDEFAULTTRIPLET} is not defined. Cannot set the output/environment variables containing the used vcpkg's triplet.`);
+            }
+        }
+    }
+    /**
+     *
+     * Get the commit id of the repository at the directory specified in 'path' parameter.
+     * @static
+     * @param {baseutillib.BaseUtilLib} baseUtilLib The BaseUtilLib instance to use.
+     * @param {string} path Path of the repository.
+     * @returns {Promise<string>} The commit id of the repository at given path.
+     * @memberof VcpkgRunner
+     */
+    static getCommitId(baseUtilLib, path) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const options = {
+                cwd: path,
+                failOnStdErr: false,
+                errStream: process.stdout,
+                outStream: process.stdout,
+                ignoreReturnCode: true,
+                silent: false,
+                windowsVerbatimArguments: false,
+                env: process.env
+            };
+            baseUtilLib.baseLib.debug("getCommitId()<<");
+            let currentCommitId = "";
+            const gitPath = yield baseUtilLib.baseLib.which('git', true);
+            // Use git to verify whether the repo is up to date.
+            const gitRunner = baseUtilLib.baseLib.tool(gitPath);
+            gitRunner.arg(['rev-parse', 'HEAD']);
+            baseUtilLib.baseLib.info(`Fetching the Git commit id at '${path}' ...`);
+            const res = yield gitRunner.execSync(options);
+            if (res.code === 0) {
+                currentCommitId = baseUtilLib.trimString(res.stdout);
+                baseUtilLib.baseLib.debug(`git rev-parse: code=${res.code}, stdout=${baseUtilLib.trimString(res.stdout)}, stderr=${baseUtilLib.trimString(res.stderr)}`);
+            }
+            else /* if (res.code !== 0) */ {
+                baseUtilLib.baseLib.debug(`error executing git: code=${res.code}, stdout=${baseUtilLib.trimString(res.stdout)}, stderr=${baseUtilLib.trimString(res.stderr)}`);
+                baseUtilLib.baseLib.info(`Git commit id not found.`);
+            }
+            baseUtilLib.baseLib.debug(`getCommitId()>> -> ${currentCommitId}`);
+            return currentCommitId;
+        });
+    }
+    checkRepoUpdated(currentCommitId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.baseUtils.baseLib.info(`Checking whether vcpkg's repository is updated to commit id '${currentCommitId}' ...`);
+            let updated = false;
+            const gitPath = yield this.baseUtils.baseLib.which('git', true);
+            const isSubmodule = yield this.baseUtils.isVcpkgSubmodule(gitPath, this.vcpkgDestPath);
+            if (isSubmodule) {
+                // In case vcpkg it is a Git submodule...
+                this.baseUtils.baseLib.info(`'vcpkg' is detected as a submodule.`);
+                updated = true;
+                // Issue a warning if the vcpkgCommitId is specified.
+                if (this.vcpkgGitCommitId) {
+                    this.baseUtils.baseLib.warning(`Since the vcpkg directory '${this.vcpkgDestPath}' is a submodule, the vcpkg's Git commit id is disregarded and should not be provided (${this.vcpkgGitCommitId})`);
+                }
+            }
+            else {
+                const res = this.baseUtils.directoryExists(this.vcpkgDestPath);
+                this.baseUtils.baseLib.debug(`exist('${this.vcpkgDestPath}') === ${res}`);
+                if (res && !isSubmodule) {
+                    // Use git to verify whether the repo is up to date.
+                    this.baseUtils.baseLib.info(`Current commit id of vcpkg: '${currentCommitId}'.`);
+                    if (!this.vcpkgGitCommitId) {
+                        throw new Error(`The vcpkg's Git commit id must be provided when the specified vcpkg directory (${this.vcpkgDestPath}) is not a submodule.`);
+                    }
+                    if (!baseutillib.BaseUtilLib.isValidSHA1(this.vcpkgGitCommitId)) {
+                        throw new Error(`The vcpkg's Git commit id must be a full SHA1 hash (40 hex digits).`);
+                    }
+                    if (this.vcpkgGitCommitId === currentCommitId) {
+                        this.baseUtils.baseLib.info(`Repository is up to date to requested commit id '${this.vcpkgGitCommitId}'`);
+                        updated = true;
+                    }
+                }
+            }
+            this.baseUtils.baseLib.info(`Is vcpkg repository updated? ${updated ? "Yes" : "No"}`);
+            return updated;
+        });
+    }
+    checkLastBuildCommitId(vcpkgCommitId) {
+        this.baseUtils.baseLib.info(`Checking last vcpkg build commit id in file '${this.pathToLastBuiltCommitId}' ...`);
+        let rebuild = true; // Default is true.
+        const lastCommitIdLast = this.baseUtils.readFile(this.pathToLastBuiltCommitId);
+        this.baseUtils.baseLib.debug(`last build check: ${lastCommitIdLast}`);
+        if (lastCommitIdLast) {
+            this.baseUtils.baseLib.debug(`lastcommitid = ${lastCommitIdLast}, currentcommitid = ${vcpkgCommitId}`);
+            if (lastCommitIdLast === vcpkgCommitId) {
+                rebuild = false;
+                this.baseUtils.baseLib.info(`vcpkg executable is up to date with sources.`);
+            }
+            else {
+                this.baseUtils.baseLib.info(`vcpkg executable is out of date with sources.`);
+            }
+        }
+        else {
+            rebuild = true; // Force a rebuild.
+            this.baseUtils.baseLib.info(`There is no file containing last built commit id of vcpkg, forcing a rebuild.`);
+        }
+        return rebuild;
+    }
+    cloneRepo() {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.baseUtils.baseLib.debug(`cloneRepo()<<`);
+            this.baseUtils.baseLib.info(`Cloning vcpkg in '${this.vcpkgDestPath}'...`);
+            if (!this.vcpkgGitCommitId) {
+                throw new Error(`When the vcpkg directory is empty, the vcpkg's Git commit id must be provided to git clone the repository.`);
+            }
+            const gitPath = yield this.baseUtils.baseLib.which('git', true);
+            yield this.baseUtils.baseLib.rmRF(this.vcpkgDestPath);
+            yield this.baseUtils.baseLib.mkdirP(this.vcpkgDestPath);
+            this.baseUtils.baseLib.cd(this.vcpkgDestPath);
+            let gitTool = this.baseUtils.baseLib.tool(gitPath);
+            gitTool.arg(['clone', this.vcpkgUrl, '-n', '.']);
+            this.baseUtils.throwIfErrorCode(yield gitTool.exec(this.options));
+            gitTool = this.baseUtils.baseLib.tool(gitPath);
+            gitTool.arg(['checkout', '--force', this.vcpkgGitCommitId]);
+            this.baseUtils.throwIfErrorCode(yield gitTool.exec(this.options));
+            this.baseUtils.baseLib.info(`Clone vcpkg in '${this.vcpkgDestPath}'.`);
+            this.baseUtils.baseLib.debug(`cloneRepo()>>`);
+        });
+    }
+    checkExecutable() {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.baseUtils.baseLib.debug(`checkExecutable()<<`);
+            let needRebuild = false;
+            // If the executable file ./vcpkg/vcpkg is not present or it is not wokring, force build. The fact that 'the repository is up to date' is meaningless.
+            const vcpkgExePath = this.baseUtils.getVcpkgExePath(this.vcpkgDestPath);
+            if (!this.baseUtils.fileExists(vcpkgExePath)) {
+                this.baseUtils.baseLib.info("Building vcpkg is necessary since its executable is missing.");
+                needRebuild = true;
+            }
+            else {
+                if (!this.baseUtils.isWin32()) {
+                    yield this.baseUtils.baseLib.execSync('chmod', ["+x", vcpkgExePath]);
+                }
+                this.baseUtils.baseLib.info(`vcpkg executable exists at: '${vcpkgExePath}'.`);
+                const result = yield this.baseUtils.baseLib.execSync(vcpkgExePath, ['version']);
+                if (result.code != 0) {
+                    needRebuild = true;
+                    this.baseUtils.baseLib.info(`vcpkg executable returned code ${result.code}, forcing a rebuild.`);
+                }
+            }
+            this.baseUtils.baseLib.debug(`checkExecutable()>> -> ${needRebuild}`);
+            return needRebuild;
+        });
+    }
+    build() {
+        return __awaiter(this, void 0, void 0, function* () {
+            // Build vcpkg.
+            let bootstrapFileName = 'bootstrap-vcpkg';
+            if (this.baseUtils.isWin32()) {
+                bootstrapFileName += '.bat';
+            }
+            else {
+                bootstrapFileName += '.sh';
+            }
+            if (this.baseUtils.isWin32()) {
+                const cmdPath = yield this.baseUtils.baseLib.which('cmd.exe', true);
+                const cmdTool = this.baseUtils.baseLib.tool(cmdPath);
+                cmdTool.arg(['/c', path.join(this.vcpkgDestPath, bootstrapFileName)]);
+                this.baseUtils.throwIfErrorCode(yield cmdTool.exec(this.options));
+            }
+            else {
+                const shPath = yield this.baseUtils.baseLib.which('sh', true);
+                const shTool = this.baseUtils.baseLib.tool(shPath);
+                const bootstrapFullPath = path.join(this.vcpkgDestPath, bootstrapFileName);
+                if (!this.baseUtils.isWin32()) {
+                    yield this.baseUtils.baseLib.execSync('chmod', ["+x", bootstrapFullPath]);
+                }
+                shTool.arg(['-c', bootstrapFullPath]);
+                this.baseUtils.throwIfErrorCode(yield shTool.exec(this.options));
+            }
+            // After a build, refetch the commit id of the vcpkg's repo, and store it into the file.
+            const builtCommitId = yield VcpkgRunner.getCommitId(this.baseUtils, this.vcpkgDestPath);
+            this.baseUtils.writeFile(this.pathToLastBuiltCommitId, builtCommitId);
+            // Keep track of last successful build commit id.
+            this.baseUtils.baseLib.info(`Stored last built vcpkg commit id '${builtCommitId}' in file '${this.pathToLastBuiltCommitId}'.`);
+        });
+    }
+}
+exports.VcpkgRunner = VcpkgRunner;
+VcpkgRunner.VCPKGINSTALLCMDDEFAULT = '[`install`, `--recurse`, `--clean-after-build`, `--x-install-root`, `$[env.VCPKG_INSTALLED_DIR]`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`]';
+VcpkgRunner.DEFAULTVCPKGURL = 'https://github.com/microsoft/vcpkg.git';
+//# sourceMappingURL=vcpkg-runner.js.map
+
+/***/ }),
+
 /***/ 102:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -2983,6 +3117,7 @@ exports.default = ProviderAsync;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.isEnoentCodeError = void 0;
 function isEnoentCodeError(error) {
     return error.code === 'ENOENT';
 }
@@ -3462,15 +3597,6 @@ exports.IS_SUPPORT_READDIR_WITH_FILE_TYPES = IS_MATCHED_BY_MAJOR || IS_MATCHED_B
 
 /***/ }),
 
-/***/ 181:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-exports.EntryHeader = __webpack_require__(239);
-exports.MainHeader = __webpack_require__(602);
-
-
-/***/ }),
-
 /***/ 182:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -3565,6 +3691,24 @@ function callFailureCallback(callback, error) {
 function callSuccessCallback(callback, result) {
     callback(null, result);
 }
+
+
+/***/ }),
+
+/***/ 195:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+// Copyright (c) 2019-2020-2021 Luca Cappa
+// Released under the term specified in file LICENSE.txt
+// SPDX short identifier: MIT
+Object.defineProperty(exports, "__esModule", { value: true });
+const cmakeaction = __webpack_require__(580);
+// Main entry point of the task.
+cmakeaction.main().catch(error => console.error("main() failed!", error));
+
+//# sourceMappingURL=action.js.map
 
 
 /***/ }),
@@ -3830,13 +3974,6 @@ exports.createDirentFromStats = createDirentFromStats;
 
 /***/ }),
 
-/***/ 211:
-/***/ (function(module) {
-
-module.exports = require("https");
-
-/***/ }),
-
 /***/ 214:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -3860,7 +3997,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
@@ -3877,316 +4014,163 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CMakeRunner = void 0;
 const baseutillib = __importStar(__webpack_require__(758));
 const path = __importStar(__webpack_require__(622));
-const cmakesettings_runner_1 = __webpack_require__(454);
 const cmakeglobals = __importStar(__webpack_require__(330));
-const ninjalib = __importStar(__webpack_require__(72));
 const using_statement_1 = __webpack_require__(443);
-const cmakelib = __importStar(__webpack_require__(233));
-var RunCMakeModeType;
-(function (RunCMakeModeType) {
-    RunCMakeModeType[RunCMakeModeType["CMakeListsTxtBasic"] = 1] = "CMakeListsTxtBasic";
-    RunCMakeModeType[RunCMakeModeType["CMakeListsTxtAdvanced"] = 2] = "CMakeListsTxtAdvanced";
-    RunCMakeModeType[RunCMakeModeType["CMakeSettingsJson"] = 3] = "CMakeSettingsJson";
-})(RunCMakeModeType || (RunCMakeModeType = {}));
-function getTargetType(typeString) {
-    return RunCMakeModeType[typeString];
-}
-const CMakeGenerator = {
-    'Unknown': {},
-    'VS16Arm': { 'G': 'Visual Studio 16 2019', 'A': 'ARM', 'MultiConfiguration': true },
-    'VS16Win32': { 'G': 'Visual Studio 16 2019', 'A': 'Win32', 'MultiConfiguration': true },
-    'VS16Win64': { 'G': 'Visual Studio 16 2019', 'A': 'x64', 'MultiConfiguration': true },
-    'VS16Arm64': { 'G': 'Visual Studio 16 2019', 'A': 'ARM64', 'MultiConfiguration': true },
-    'VS15Arm': { 'G': 'Visual Studio 15 2017', 'A': 'ARM', 'MultiConfiguration': true },
-    'VS15Win32': { 'G': 'Visual Studio 15 2017', 'A': 'Win32', 'MultiConfiguration': true },
-    'VS15Win64': { 'G': 'Visual Studio 15 2017', 'A': 'x64', 'MultiConfiguration': true },
-    'VS15Arm64': { 'G': 'Visual Studio 15 2017', 'A': 'ARM64', 'MultiConfiguration': true },
-    'Ninja': { 'G': 'Ninja', 'A': '', 'MultiConfiguration': false },
-    'NinjaMulti': { 'G': 'Ninja Multi-Config', 'A': '', 'MultiConfiguration': true },
-    'UnixMakefiles': { 'G': 'Unix Makefiles', 'A': '', 'MultiConfiguration': false }
-};
-function getGenerator(generatorString) {
-    const generatorName = CMakeGenerator[generatorString];
-    return generatorName;
-}
+const cmakeutil = __importStar(__webpack_require__(432));
+const runvcpkglib = __importStar(__webpack_require__(496));
 class CMakeRunner {
-    /*
-      // Unfortunately there is not a way to discriminate between a value provided by the user
-      // from a default value (not provided by the user), hence it is not possible to identify
-      // what the user provided.
-      private static warnIfUnused(inputName: string, taskMode: TaskModeType): void {
-        if (inputName in CMakeRunner.modePerInput) {
-          const usedInMode: TaskModeType[] = CMakeRunner.modePerInput[name];
-          if (usedInMode) {
-            if (usedInMode.indexOf(taskMode) < 0) { }
-    
-            //??this.tl.warning(`The input '${inputName}' is ignored in mode '${taskMode}'`);
-          }
-        }
-      }
-    */
-    constructor(tl) {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s;
-        this.tl = tl;
-        this.buildDir = "";
-        this.generator = {};
-        this.baseUtils = new baseutillib.BaseUtilLib(this.tl);
-        this.cmakeUtils = new cmakelib.CMakeUtils(this.baseUtils);
-        this.ninjaLib = new ninjalib.NinjaProvider(this.tl);
-        const regs = this.tl.getDelimitedInput(cmakeglobals.logCollectionRegExps, ';', false);
-        this.logFilesCollector = new baseutillib.LogFileCollector(this.tl, regs, (path) => baseutillib.dumpFile(this.tl, path));
-        const mode = (_a = this.tl.getInput(cmakeglobals.cmakeListsOrSettingsJson, true)) !== null && _a !== void 0 ? _a : "";
-        const runMode = getTargetType(mode);
-        if (!runMode) {
-            throw new Error(`ctor(): invalid mode '${mode}'.`);
-        }
-        this.runMode = runMode;
-        let required = this.runMode === RunCMakeModeType.CMakeSettingsJson;
-        this.cmakeSettingsJsonPath = (_b = this.tl.getPathInput(cmakeglobals.cmakeSettingsJsonPath, required, required)) !== null && _b !== void 0 ? _b : "";
-        required = this.runMode !== RunCMakeModeType.CMakeSettingsJson;
-        this.cmakeListsTxtPath = (_c = this.tl.getPathInput(cmakeglobals.cmakeListsTxtPath, required, required)) !== null && _c !== void 0 ? _c : "";
-        this.buildDir = (_d = this.tl.getInput(cmakeglobals.buildDirectory, this.runMode === RunCMakeModeType.CMakeListsTxtBasic)) !== null && _d !== void 0 ? _d : "";
-        this.appendedArgs = (_e = this.tl.getInput(cmakeglobals.cmakeAppendedArgs, false)) !== null && _e !== void 0 ? _e : "";
-        this.configurationFilter = (_f = this.tl.getInput(cmakeglobals.configurationRegexFilter, false)) !== null && _f !== void 0 ? _f : "";
-        this.ninjaPath = '';
-        if (this.tl.isFilePathSupplied(cmakeglobals.ninjaPath)) {
-            this.ninjaPath = (_g = tl.getInput(cmakeglobals.ninjaPath, false)) !== null && _g !== void 0 ? _g : "";
-        }
-        this.cmakeToolchainPath = "";
-        if (this.tl.isFilePathSupplied(cmakeglobals.cmakeToolchainPath)) {
-            this.cmakeToolchainPath = (_h = tl.getInput(cmakeglobals.cmakeToolchainPath, false)) !== null && _h !== void 0 ? _h : "";
-        }
-        const gen = (_j = this.tl.getInput(cmakeglobals.cmakeGenerator, this.runMode === RunCMakeModeType.CMakeListsTxtBasic)) !== null && _j !== void 0 ? _j : "";
-        this.generator = getGenerator(gen);
-        this.ninjaDownloadUrl = (_k = this.tl.getInput(cmakeglobals.ninjaDownloadUrl, false)) !== null && _k !== void 0 ? _k : "";
-        this.doBuild = (_l = this.tl.getBoolInput(cmakeglobals.buildWithCMake, false)) !== null && _l !== void 0 ? _l : false;
-        this.doBuildArgs = (_m = this.tl.getInput(cmakeglobals.buildWithCMakeArgs, false)) !== null && _m !== void 0 ? _m : "";
-        this.cmakeSourceDir = path.dirname((_o = baseutillib.BaseUtilLib.normalizePath(this.cmakeListsTxtPath)) !== null && _o !== void 0 ? _o : "");
-        this.useVcpkgToolchainFile = (_p = this.tl.getBoolInput(cmakeglobals.useVcpkgToolchainFile, false)) !== null && _p !== void 0 ? _p : false;
-        this.cmakeBuildType = (_q = this.tl.getInput(cmakeglobals.cmakeBuildType, this.runMode === RunCMakeModeType.CMakeListsTxtBasic)) !== null && _q !== void 0 ? _q : "";
-        this.vcpkgTriplet = (_r = (this.tl.getInput(cmakeglobals.cmakeVcpkgTriplet, false) ||
-            process.env.RUNVCPKG_VCPKG_TRIPLET)) !== null && _r !== void 0 ? _r : "";
-        this.sourceScript = (_s = this.tl.getInput(cmakeglobals.cmakeWrapperCommand, false)) !== null && _s !== void 0 ? _s : "";
+    constructor(baseLib, configurePresetCmdStringFormat = CMakeRunner.configurePresetDefault, buildPresetCmdStringFormat = CMakeRunner.buildPresetDefault, testPresetCmdStringFormat = CMakeRunner.testPresetDefault, vcpkgEnvStringFormat = CMakeRunner.vcpkgEnvDefault) {
+        var _a, _b, _c, _d, _e, _f;
+        this.baseLib = baseLib;
+        this.configurePresetCmdStringFormat = configurePresetCmdStringFormat;
+        this.buildPresetCmdStringFormat = buildPresetCmdStringFormat;
+        this.testPresetCmdStringFormat = testPresetCmdStringFormat;
+        this.vcpkgEnvStringFormat = vcpkgEnvStringFormat;
+        this.baseUtils = new baseutillib.BaseUtilLib(this.baseLib);
+        const regs = (_a = this.baseLib.getDelimitedInput(cmakeglobals.logCollectionRegExps, ';', false)) !== null && _a !== void 0 ? _a : [];
+        this.logFilesCollector = new baseutillib.LogFileCollector(this.baseLib, regs, (path) => baseutillib.dumpFile(this.baseLib, path));
+        this.cmakeListsTxtPath = (_b = this.baseLib.getPathInput(cmakeglobals.cmakeListsTxtPath, true, true)) !== null && _b !== void 0 ? _b : "";
+        this.cmakeConfigurePreset = (_c = this.baseLib.getInput(cmakeglobals.configurePreset, true)) !== null && _c !== void 0 ? _c : null;
+        this.cmakeBuildPreset = (_d = this.baseLib.getInput(cmakeglobals.buildPreset, false)) !== null && _d !== void 0 ? _d : null;
+        this.cmakeTestPreset = (_e = this.baseLib.getInput(cmakeglobals.testPreset, false)) !== null && _e !== void 0 ? _e : null;
+        this.cmakeSourceDir = path.dirname((_f = baseutillib.BaseUtilLib.normalizePath(this.cmakeListsTxtPath)) !== null && _f !== void 0 ? _f : "");
+        baseutillib.BaseUtilLib.throwIfNull(this.cmakeSourceDir, cmakeglobals.cmakeListsTxtPath);
+    }
+    static run(baseLib, configurePresetCmdStringFormat, buildPresetCmdStringFormat, testPresetCmdStringFormat, vcpkgEnvCmdStringFormat) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield using_statement_1.using(baseutillib.Matcher.createMatcher('all', baseLib, __dirname), () => __awaiter(this, void 0, void 0, function* () {
+                const cmakeRunner = new CMakeRunner(baseLib, configurePresetCmdStringFormat, buildPresetCmdStringFormat, testPresetCmdStringFormat, vcpkgEnvCmdStringFormat);
+                yield cmakeRunner.run();
+            }));
+        });
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.tl.debug('run()<<');
-            yield this.configure();
-            this.tl.debug('run()>>');
-        });
-    }
-    configure() {
-        var _a;
-        return __awaiter(this, void 0, void 0, function* () {
-            this.tl.debug('configure()<<');
-            // Contains the '--config <CONFIG>' when using multiconfiguration generators.
-            let prependedBuildArguments = "";
-            let cmakeArgs = [];
-            switch (this.runMode) {
-                case RunCMakeModeType.CMakeListsTxtAdvanced:
-                case RunCMakeModeType.CMakeListsTxtBasic: {
-                    // Search for CMake tool and run it.
-                    let cmake;
-                    if (this.sourceScript) {
-                        cmake = this.tl.tool(this.sourceScript);
-                        cmakeArgs.push(yield this.tl.which('cmake', true));
-                    }
-                    else {
-                        cmake = this.tl.tool(yield this.tl.which('cmake', true));
-                    }
-                    if (this.runMode === RunCMakeModeType.CMakeListsTxtAdvanced) {
-                        // If Ninja is required, specify the path to it.
-                        if (this.baseUtils.isNinjaGenerator([this.appendedArgs])) {
-                            if (!this.baseUtils.isMakeProgram([this.appendedArgs])) {
-                                const ninjaPath = yield this.ninjaLib.retrieveNinjaPath(this.ninjaPath, this.ninjaDownloadUrl);
-                                cmakeArgs.push(`-DCMAKE_MAKE_PROGRAM=${ninjaPath}`);
-                            }
-                        }
-                        if (this.appendedArgs) {
-                            this.tl.debug(`Parsing additional CMake args: ${this.appendedArgs}`);
-                            const addedArgs = cmake._argStringToArray(this.appendedArgs);
-                            this.tl.debug(`Appending args: ${JSON.stringify(addedArgs)}`);
-                            cmakeArgs = [...cmakeArgs, ...addedArgs];
-                        }
-                    }
-                    else if (this.runMode === RunCMakeModeType.CMakeListsTxtBasic) {
-                        const generatorName = this.generator['G'];
-                        const generatorArch = this.generator['A'];
-                        const generatorIsMultiConf = (_a = this.generator['MultiConfiguration']) !== null && _a !== void 0 ? _a : false;
-                        cmakeArgs.push(`-G${generatorName}`);
-                        if (generatorArch) {
-                            cmakeArgs.push(`-A${generatorArch}`);
-                        }
-                        if (CMakeRunner.isNinjaGenerator(generatorName)) {
-                            const ninjaPath = yield this.ninjaLib.retrieveNinjaPath(this.ninjaPath, this.ninjaDownloadUrl);
-                            cmakeArgs.push(`-DCMAKE_MAKE_PROGRAM=${ninjaPath}`);
-                        }
-                        if (this.cmakeToolchainPath) {
-                            cmakeArgs.push(`-DCMAKE_TOOLCHAIN_FILE=${this.cmakeToolchainPath}`);
-                        }
-                        // Add CMake's build type, unless a multi configuration generator is being used.
-                        if (!generatorIsMultiConf) {
-                            cmakeArgs.push(`-DCMAKE_BUILD_TYPE=${this.cmakeBuildType}`);
-                        }
-                        prependedBuildArguments = this.prependBuildConfigIfNeeded(this.doBuildArgs, generatorIsMultiConf, this.cmakeBuildType);
-                    }
-                    // Use vcpkg toolchain if requested.
-                    if (this.useVcpkgToolchainFile === true) {
-                        cmakeArgs = yield this.cmakeUtils.injectVcpkgToolchain(cmakeArgs, this.vcpkgTriplet, this.tl);
-                    }
-                    // The source directory is required for any mode.
-                    cmakeArgs.push(this.cmakeSourceDir);
-                    this.tl.debug(`CMake arguments: ${cmakeArgs}`);
-                    for (const arg of cmakeArgs) {
-                        cmake.arg(arg);
-                    }
-                    // Ensure the build directory is existing.
-                    yield this.tl.mkdirP(this.buildDir);
-                    const options = {
-                        cwd: this.buildDir,
-                        failOnStdErr: false,
-                        errStream: process.stdout,
-                        outStream: process.stdout,
-                        ignoreReturnCode: true,
-                        silent: false,
-                        windowsVerbatimArguments: false,
-                        env: process.env,
-                        listeners: {
-                            stdout: (t) => this.logFilesCollector.handleOutput(t),
-                            stderr: (t) => this.logFilesCollector.handleOutput(t),
-                        }
-                    };
-                    this.tl.debug(`Generating project files with CMake in build directory '${options.cwd}' ...`);
-                    let code = -1;
-                    yield using_statement_1.using(baseutillib.Matcher.createMatcher('cmake', this.tl, this.cmakeSourceDir), (matcher) => __awaiter(this, void 0, void 0, function* () {
-                        code = yield this.baseUtils.wrapOp("Generate project files with CMake", () => __awaiter(this, void 0, void 0, function* () { return yield cmake.exec(options); }));
-                    }));
-                    if (code !== 0) {
-                        throw new Error(`"CMake failed with error code: '${code}'.`);
-                    }
-                    if (this.doBuild) {
-                        yield using_statement_1.using(baseutillib.Matcher.createMatcher(CMakeRunner.getBuildMatcher(this.buildDir, this.tl), this.tl), (matcher) => __awaiter(this, void 0, void 0, function* () {
-                            yield this.baseUtils.wrapOp("Build with CMake", () => __awaiter(this, void 0, void 0, function* () { return yield CMakeRunner.build(this.tl, this.buildDir, prependedBuildArguments + this.doBuildArgs, options); }));
-                        }));
-                    }
-                    break;
-                }
-                case RunCMakeModeType.CMakeSettingsJson: {
-                    const cmakeJson = new cmakesettings_runner_1.CMakeSettingsJsonRunner(this.tl, this.cmakeSettingsJsonPath, this.configurationFilter, this.appendedArgs, this.tl.getSrcDir(), this.vcpkgTriplet, this.useVcpkgToolchainFile, this.doBuild, this.ninjaPath, this.ninjaDownloadUrl, this.sourceScript, this.buildDir);
-                    yield this.baseUtils.wrapOp("Run CMake with CMakeSettings.json", () => __awaiter(this, void 0, void 0, function* () { return yield cmakeJson.run(); }));
-                    break;
-                }
+            this.baseLib.debug('run()<<');
+            const cmake = yield this.baseLib.which('cmake', true);
+            const ctest = yield this.baseLib.which('ctest', true);
+            if (this.cmakeConfigurePreset) {
+                const configureTool = this.baseLib.tool(cmake);
+                yield this.configure(configureTool, this.cmakeConfigurePreset);
             }
+            if (this.cmakeBuildPreset) {
+                const buildTool = this.baseLib.tool(cmake);
+                yield this.build(buildTool, this.cmakeBuildPreset);
+            }
+            if (this.cmakeTestPreset) {
+                const testTool = this.baseLib.tool(ctest);
+                yield this.test(testTool, this.cmakeTestPreset);
+            }
+            this.baseLib.debug('run()>>');
         });
     }
-    static isNinjaGenerator(generatorName) {
-        return generatorName === CMakeGenerator['Ninja']['G'] ||
-            generatorName === CMakeGenerator['NinjaMulti']['G'];
-    }
-    /// If not already provided, creates the '--config <CONFIG>' argument to pass when building.
-    /// Return a string of arguments to prepend the build arguments.
-    prependBuildConfigIfNeeded(buildArgs, multiConfi, buildType) {
-        let prependArgs = "";
-        if (multiConfi && !buildArgs.includes("--config")) {
-            prependArgs = ` --config ${buildType} `;
-        }
-        return prependArgs;
-    }
-    /**
-     * Build with CMake.
-     * @export
-     * @param {string} buildDir
-     * @param {string} buildArgs
-     * @param {trm.IExecOptions} options
-     * @param {string} sourceScript
-     * @returns {Promise<void>}
-    */
-    static build(baseLib, buildDir, buildArgs, options) {
+    test(cmake, testPresetName) {
         return __awaiter(this, void 0, void 0, function* () {
-            // Run CMake with the given arguments
-            const cmake = baseLib.tool(yield baseLib.which('cmake', true));
-            cmake.arg("--build");
-            cmake.arg(".");
-            if (buildArgs)
-                cmake.line(buildArgs);
-            // Run the command in the build directory
-            options.cwd = buildDir;
-            console.log(`Building with CMake in build directory '${options.cwd}' ...`);
+            this.baseLib.debug('test()<<');
+            baseutillib.setEnvVarIfUndefined("TEST_PRESET_NAME", testPresetName);
+            const args = baseutillib.replaceFromEnvVar(this.testPresetCmdStringFormat);
+            const cmakeArgs = eval(args);
+            this.baseLib.debug(`CTest arguments: ${cmakeArgs}`);
+            for (const arg of cmakeArgs) {
+                cmake.arg(arg);
+            }
+            this.baseLib.debug(`Testing with CTest ...`);
+            yield this.baseUtils.wrapOp("Test with CTest", () => __awaiter(this, void 0, void 0, function* () {
+                return yield this.launchCMake(cmake, this.cmakeSourceDir, this.logFilesCollector);
+            }));
+            this.baseLib.debug('test()>>');
+        });
+    }
+    build(cmake, buildPresetName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.baseLib.debug('build()<<');
+            baseutillib.setEnvVarIfUndefined("BUILD_PRESET_NAME", buildPresetName);
+            const args = baseutillib.replaceFromEnvVar(this.buildPresetCmdStringFormat);
+            const cmakeArgs = eval(args);
+            this.baseLib.debug(`CMake arguments: ${cmakeArgs}`);
+            for (const arg of cmakeArgs) {
+                cmake.arg(arg);
+            }
+            this.baseLib.debug(`Building with CMake ...`);
+            yield this.baseUtils.wrapOp("Build with CMake", () => __awaiter(this, void 0, void 0, function* () {
+                return yield this.launchCMake(cmake, this.cmakeSourceDir, this.logFilesCollector);
+            }));
+            this.baseLib.debug('build()>>');
+        });
+    }
+    configure(cmake, configurePresetName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.baseLib.debug('configure()<<');
+            baseutillib.setEnvVarIfUndefined("CONFIGURE_PRESET_NAME", configurePresetName);
+            const args = baseutillib.replaceFromEnvVar(this.configurePresetCmdStringFormat);
+            // Transform to array.
+            const cmakeArgs = eval(args);
+            this.baseLib.debug(`CMake arguments: ${cmakeArgs}`);
+            for (const arg of cmakeArgs) {
+                cmake.arg(arg);
+            }
+            yield this.baseUtils.wrapOp(`Setup C/C++ toolset environment variables`, () => __awaiter(this, void 0, void 0, function* () {
+                const vcpkgRoot = process.env[runvcpkglib.VCPKGROOT];
+                // if VCPKG_ROOT is defined, then use it.
+                if (!vcpkgRoot || vcpkgRoot.length == 0) {
+                    this.baseLib.info(`Skipping setting up the environment since VCPKG_ROOT is not defined. It is needed to know where vcpkg executable is located.`);
+                }
+                else if (!this.baseUtils.isWin32()) {
+                    this.baseLib.info(`Skipping setting up the environment since the platform is not Windows.`);
+                }
+                else if (process.env.CXX || process.env.CC) {
+                    // If a C++ compiler is user-enforced, skip setting up the environment for MSVC.
+                    this.baseLib.info(`Skipping setting up the environment since CXX or CC environment variable are defined. This allows user customization.`);
+                }
+                else {
+                    // If Win32 && (!CC && !CXX), let hardcode CC and CXX so that CMake uses the MSVC toolset.
+                    process.env['CC'] = "cl.exe";
+                    process.env['CXX'] = "cl.exe";
+                    this.baseLib.setVariable("CC", "cl.exe");
+                    this.baseLib.setVariable("CXX", "cl.exe");
+                    // Use vcpkg to set the environment using provided command line (which includes the triplet).
+                    // This is only useful to setup the environment for MSVC on Windows.
+                    baseutillib.setEnvVarIfUndefined(runvcpkglib.VCPKGDEFAULTTRIPLET, this.baseUtils.getDefaultTriplet());
+                    const vcpkgEnvArgsString = baseutillib.replaceFromEnvVar(this.vcpkgEnvStringFormat);
+                    const vcpkgEnvArgs = eval(vcpkgEnvArgsString);
+                    this.baseLib.debug(`'vcpkg env' arguments: ${vcpkgEnvArgs}`);
+                    yield cmakeutil.injectEnvVariables(this.baseUtils, vcpkgRoot, vcpkgEnvArgs);
+                }
+            }));
+            // 
+            this.baseLib.debug(`Generating project files with CMake ...`);
+            yield this.baseUtils.wrapOp("Generate project files with CMake", () => __awaiter(this, void 0, void 0, function* () { return yield this.launchCMake(cmake, this.cmakeSourceDir, this.logFilesCollector); }));
+            this.baseLib.debug('configure()>>');
+        });
+    }
+    launchCMake(cmake, sourceDir, logCollector) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const options = {
+                cwd: sourceDir,
+                failOnStdErr: false,
+                errStream: process.stdout,
+                outStream: process.stdout,
+                ignoreReturnCode: true,
+                silent: false,
+                windowsVerbatimArguments: false,
+                env: process.env,
+                listeners: {
+                    stdout: (t) => logCollector.handleOutput(t),
+                    stderr: (t) => logCollector.handleOutput(t),
+                }
+            };
             const code = yield cmake.exec(options);
             if (code !== 0) {
-                throw new Error(`"Build failed with error code: '${code}'."`);
+                throw new Error(`"CMake failed with error code: '${code}'.`);
             }
         });
-    }
-    static getDefaultMatcher() {
-        const plat = process.platform;
-        return plat === "win32" ? CMakeRunner.msvcMatcher :
-            plat === "darwin" ? CMakeRunner.clangMatcher : CMakeRunner.gccMatcher;
-    }
-    static getCompilerMatcher(line) {
-        let matcherName = undefined;
-        if (line.includes('g++') || line.includes('gcc') || line.includes('c++'))
-            matcherName = CMakeRunner.gccMatcher;
-        else if (line.includes('cl.exe'))
-            matcherName = CMakeRunner.msvcMatcher;
-        else if (line.includes('clang'))
-            matcherName = CMakeRunner.clangMatcher;
-        return matcherName;
-    }
-    static getBuildMatcher(buildDir, tl) {
-        var _a;
-        let cxxMatcher;
-        let ccMatcher;
-        const utils = new baseutillib.BaseUtilLib(tl);
-        try {
-            const cmakeCacheTxtPath = path.join(buildDir, "CMakeCache.txt");
-            const [ok, cacheContent] = utils.readFile(cmakeCacheTxtPath);
-            tl.debug(`Loaded fileCMakeCache.txt at path='${cmakeCacheTxtPath}'`);
-            if (ok) {
-                for (const line of cacheContent.split('\n')) {
-                    tl.debug(`text=${line}`);
-                    if (line.includes("CMAKE_CXX_COMPILER:")) {
-                        tl.debug(`Found CXX compiler: '${line}'.`);
-                        cxxMatcher = CMakeRunner.getCompilerMatcher(line);
-                        tl.debug(`Matcher selected for CXX: ${cxxMatcher}`);
-                        break;
-                    }
-                    if (line.includes("CMAKE_C_COMPILER:")) {
-                        tl.debug(`Found C compiler: '${line}'.`);
-                        ccMatcher = CMakeRunner.getCompilerMatcher(line);
-                        tl.debug(`Matcher selected for CC: ${ccMatcher}`);
-                        break;
-                    }
-                }
-            }
-        }
-        catch (error) {
-            tl.debug(error.toString());
-        }
-        const defaultMatcher = CMakeRunner.getDefaultMatcher();
-        tl.debug(`Default matcher according to platform is: ${defaultMatcher}`);
-        const selectedMatcher = (_a = cxxMatcher !== null && cxxMatcher !== void 0 ? cxxMatcher : ccMatcher) !== null && _a !== void 0 ? _a : defaultMatcher;
-        tl.debug(`Selected matcher: ${selectedMatcher}`);
-        return selectedMatcher;
     }
 }
 exports.CMakeRunner = CMakeRunner;
-CMakeRunner.modePerInput = {
-    [cmakeglobals.cmakeListsTxtPath]: [RunCMakeModeType.CMakeListsTxtBasic, RunCMakeModeType.CMakeListsTxtAdvanced],
-    [cmakeglobals.cmakeSettingsJsonPath]: [RunCMakeModeType.CMakeSettingsJson],
-    [cmakeglobals.cmakeToolchainPath]: [RunCMakeModeType.CMakeListsTxtBasic],
-    /*[globals.useVcpkgToolchainFile]: all */
-    /*[globals.vcpkgTriplet]: all */
-    [cmakeglobals.cmakeBuildType]: [RunCMakeModeType.CMakeListsTxtBasic],
-    [cmakeglobals.cmakeGenerator]: [RunCMakeModeType.CMakeListsTxtBasic],
-    /*[globals.buildDirectory]: all */
-    [cmakeglobals.cmakeAppendedArgs]: [RunCMakeModeType.CMakeListsTxtAdvanced, RunCMakeModeType.CMakeSettingsJson],
-    [cmakeglobals.configurationRegexFilter]: [RunCMakeModeType.CMakeSettingsJson],
-    [cmakeglobals.buildWithCMakeArgs]: [RunCMakeModeType.CMakeListsTxtAdvanced, RunCMakeModeType.CMakeListsTxtBasic]
-};
-CMakeRunner.gccMatcher = 'gcc';
-CMakeRunner.clangMatcher = 'clang';
-CMakeRunner.msvcMatcher = 'msvc';
+CMakeRunner.configurePresetDefault = "[`--preset`, `$[env.CONFIGURE_PRESET_NAME]`]";
+CMakeRunner.buildPresetDefault = "[`--build`, `--preset`, `$[env.BUILD_PRESET_NAME]`]";
+CMakeRunner.testPresetDefault = "[`--preset`, `$[env.TEST_PRESET_NAME]`]";
+CMakeRunner.vcpkgEnvDefault = "[`env`, `--bin`, `--include`, `--tools`, `--python`, `--triplet $[env.VCPKG_DEFAULT_TRIPLET]`, `set`]";
 //# sourceMappingURL=cmake-runner.js.map
 
 /***/ }),
@@ -4684,409 +4668,6 @@ function getSettings(settingsOrOptions = {}) {
 
 /***/ }),
 
-/***/ 233:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-// Copyright (c) 2019-2020-2021 Luca Cappa
-// Released under the term specified in file LICENSE.txt
-// SPDX short identifier: MIT
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.CMakeUtils = void 0;
-const path = __importStar(__webpack_require__(622));
-const vcpkgGlobals = __importStar(__webpack_require__(946));
-class CMakeUtils {
-    constructor(baseUtils) {
-        this.baseUtils = baseUtils;
-    }
-    injectEnvVariables(vcpkgRoot, triplet, baseLib) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.baseUtils.wrapOp(`Setup environment variables for triplet '${triplet}' using 'vcpkg env'`, () => __awaiter(this, void 0, void 0, function* () {
-                var _a;
-                if (!vcpkgRoot) {
-                    vcpkgRoot = (_a = process.env[vcpkgGlobals.outVcpkgRootPath]) !== null && _a !== void 0 ? _a : "";
-                    if (!vcpkgRoot) {
-                        throw new Error(`${vcpkgGlobals.outVcpkgRootPath} environment variable is not set.`);
-                    }
-                }
-                // Search for vcpkg tool and run it
-                let vcpkgPath = path.join(vcpkgRoot, 'vcpkg');
-                if (this.baseUtils.isWin32()) {
-                    vcpkgPath += '.exe';
-                }
-                const vcpkg = baseLib.tool(vcpkgPath);
-                vcpkg.arg("env");
-                vcpkg.arg("--bin");
-                vcpkg.arg("--include");
-                vcpkg.arg("--tools");
-                vcpkg.arg("--python");
-                vcpkg.line(`--triplet ${triplet} set`);
-                const options = {
-                    cwd: vcpkgRoot,
-                    failOnStdErr: false,
-                    errStream: process.stdout,
-                    outStream: process.stdout,
-                    ignoreReturnCode: true,
-                    silent: false,
-                    windowsVerbatimArguments: false,
-                    env: process.env
-                };
-                const output = yield vcpkg.execSync(options);
-                if (output.code !== 0) {
-                    throw new Error(`${output.stdout}\n\n${output.stderr}`);
-                }
-                const map = this.baseUtils.parseVcpkgEnvOutput(output.stdout);
-                for (const key in map) {
-                    if (this.baseUtils.isVariableStrippingPath(key))
-                        continue;
-                    if (key.toUpperCase() === "PATH") {
-                        process.env[key] = process.env[key] + path.delimiter + map[key];
-                    }
-                    else {
-                        process.env[key] = map[key];
-                    }
-                    baseLib.debug(`set ${key}=${process.env[key]}`);
-                }
-            }));
-        });
-    }
-    injectVcpkgToolchain(args, triplet, baseLib) {
-        return __awaiter(this, void 0, void 0, function* () {
-            args = args !== null && args !== void 0 ? args : [];
-            const vcpkgRoot = process.env[vcpkgGlobals.outVcpkgRootPath];
-            // if RUNVCPKG_VCPKG_ROOT is defined, then use it, and put aside into
-            // VCPKG_CHAINLOAD_TOOLCHAIN_FILE the existing toolchain.
-            if (vcpkgRoot && vcpkgRoot.length > 1) {
-                const toolchainFile = this.baseUtils.getToolchainFile(args);
-                args = this.baseUtils.removeToolchainFile(args);
-                const vcpkgToolchain = path.join(vcpkgRoot, '/scripts/buildsystems/vcpkg.cmake');
-                args.push(`-DCMAKE_TOOLCHAIN_FILE=${vcpkgToolchain}`);
-                if (toolchainFile) {
-                    args.push(`-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${toolchainFile}`);
-                }
-                // If the triplet is provided, specify the same triplet on the cmd line and set the environment for msvc.
-                if (triplet) {
-                    args.push(`-DVCPKG_TARGET_TRIPLET=${triplet}`);
-                    // For Windows build agents, inject the environment variables used
-                    // for the MSVC compiler using the 'vcpkg env' command.
-                    // This is not needed for others compiler on Windows, but it should be harmless.
-                    if (this.baseUtils.isWin32() && triplet) {
-                        if (triplet.indexOf("windows") !== -1) {
-                            process.env.CC = "cl.exe";
-                            process.env.CXX = "cl.exe";
-                            baseLib.setVariable("CC", "cl.exe");
-                            baseLib.setVariable("CXX", "cl.exe");
-                        }
-                        yield this.injectEnvVariables(vcpkgRoot, triplet, baseLib);
-                    }
-                }
-            }
-            return args;
-        });
-    }
-}
-exports.CMakeUtils = CMakeUtils;
-//# sourceMappingURL=utils.js.map
-
-/***/ }),
-
-/***/ 239:
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-var Utils = __webpack_require__(643),
-    Constants = Utils.Constants;
-
-/* The central directory file header */
-module.exports = function () {
-    var _verMade = 0x0A,
-        _version = 0x0A,
-        _flags = 0,
-        _method = 0,
-        _time = 0,
-        _crc = 0,
-        _compressedSize = 0,
-        _size = 0,
-        _fnameLen = 0,
-        _extraLen = 0,
-
-        _comLen = 0,
-        _diskStart = 0,
-        _inattr = 0,
-        _attr = 0,
-        _offset = 0;
-
-    var _dataHeader = {};
-
-    function setTime(val) {
-        val = new Date(val);
-        _time = (val.getFullYear() - 1980 & 0x7f) << 25  // b09-16 years from 1980
-            | (val.getMonth() + 1) << 21                 // b05-08 month
-            | val.getDate() << 16                        // b00-04 hour
-
-            // 2 bytes time
-            | val.getHours() << 11    // b11-15 hour
-            | val.getMinutes() << 5   // b05-10 minute
-            | val.getSeconds() >> 1;  // b00-04 seconds divided by 2
-    }
-
-    setTime(+new Date());
-
-    return {
-        get made () { return _verMade; },
-        set made (val) { _verMade = val; },
-
-        get version () { return _version; },
-        set version (val) { _version = val },
-
-        get flags () { return _flags },
-        set flags (val) { _flags = val; },
-
-        get method () { return _method; },
-        set method (val) { _method = val; },
-
-        get time () { return new Date(
-            ((_time >> 25) & 0x7f) + 1980,
-            ((_time >> 21) & 0x0f) - 1,
-            (_time >> 16) & 0x1f,
-            (_time >> 11) & 0x1f,
-            (_time >> 5) & 0x3f,
-            (_time & 0x1f) << 1
-        );
-        },
-        set time (val) {
-            setTime(val);
-        },
-
-        get crc () { return _crc; },
-        set crc (val) { _crc = val; },
-
-        get compressedSize () { return _compressedSize; },
-        set compressedSize (val) { _compressedSize = val; },
-
-        get size () { return _size; },
-        set size (val) { _size = val; },
-
-        get fileNameLength () { return _fnameLen; },
-        set fileNameLength (val) { _fnameLen = val; },
-
-        get extraLength () { return _extraLen },
-        set extraLength (val) { _extraLen = val; },
-
-        get commentLength () { return _comLen },
-        set commentLength (val) { _comLen = val },
-
-        get diskNumStart () { return _diskStart },
-        set diskNumStart (val) { _diskStart = val },
-
-        get inAttr () { return _inattr },
-        set inAttr (val) { _inattr = val },
-
-        get attr () { return _attr },
-        set attr (val) { _attr = val },
-
-        get offset () { return _offset },
-        set offset (val) { _offset = val },
-
-        get encripted () { return (_flags & 1) === 1 },
-
-        get entryHeaderSize () {
-            return Constants.CENHDR + _fnameLen + _extraLen + _comLen;
-        },
-
-        get realDataOffset () {
-            return _offset + Constants.LOCHDR + _dataHeader.fnameLen + _dataHeader.extraLen;
-        },
-
-        get dataHeader () {
-            return _dataHeader;
-        },
-
-        loadDataHeaderFromBinary : function(/*Buffer*/input) {
-            var data = input.slice(_offset, _offset + Constants.LOCHDR);
-            // 30 bytes and should start with "PK\003\004"
-            if (data.readUInt32LE(0) !== Constants.LOCSIG) {
-                throw Utils.Errors.INVALID_LOC;
-            }
-            _dataHeader = {
-                // version needed to extract
-                version : data.readUInt16LE(Constants.LOCVER),
-                // general purpose bit flag
-                flags : data.readUInt16LE(Constants.LOCFLG),
-                // compression method
-                method : data.readUInt16LE(Constants.LOCHOW),
-                // modification time (2 bytes time, 2 bytes date)
-                time : data.readUInt32LE(Constants.LOCTIM),
-                // uncompressed file crc-32 value
-                crc : data.readUInt32LE(Constants.LOCCRC),
-                // compressed size
-                compressedSize : data.readUInt32LE(Constants.LOCSIZ),
-                // uncompressed size
-                size : data.readUInt32LE(Constants.LOCLEN),
-                // filename length
-                fnameLen : data.readUInt16LE(Constants.LOCNAM),
-                // extra field length
-                extraLen : data.readUInt16LE(Constants.LOCEXT)
-            }
-        },
-
-        loadFromBinary : function(/*Buffer*/data) {
-            // data should be 46 bytes and start with "PK 01 02"
-            if (data.length !== Constants.CENHDR || data.readUInt32LE(0) !== Constants.CENSIG) {
-                throw Utils.Errors.INVALID_CEN;
-            }
-            // version made by
-            _verMade = data.readUInt16LE(Constants.CENVEM);
-            // version needed to extract
-            _version = data.readUInt16LE(Constants.CENVER);
-            // encrypt, decrypt flags
-            _flags = data.readUInt16LE(Constants.CENFLG);
-            // compression method
-            _method = data.readUInt16LE(Constants.CENHOW);
-            // modification time (2 bytes time, 2 bytes date)
-            _time = data.readUInt32LE(Constants.CENTIM);
-            // uncompressed file crc-32 value
-            _crc = data.readUInt32LE(Constants.CENCRC);
-            // compressed size
-            _compressedSize = data.readUInt32LE(Constants.CENSIZ);
-            // uncompressed size
-            _size = data.readUInt32LE(Constants.CENLEN);
-            // filename length
-            _fnameLen = data.readUInt16LE(Constants.CENNAM);
-            // extra field length
-            _extraLen = data.readUInt16LE(Constants.CENEXT);
-            // file comment length
-            _comLen = data.readUInt16LE(Constants.CENCOM);
-            // volume number start
-            _diskStart = data.readUInt16LE(Constants.CENDSK);
-            // internal file attributes
-            _inattr = data.readUInt16LE(Constants.CENATT);
-            // external file attributes
-            _attr = data.readUInt32LE(Constants.CENATX);
-            // LOC header offset
-            _offset = data.readUInt32LE(Constants.CENOFF);
-        },
-
-        dataHeaderToBinary : function() {
-            // LOC header size (30 bytes)
-            var data = Buffer.alloc(Constants.LOCHDR);
-            // "PK\003\004"
-            data.writeUInt32LE(Constants.LOCSIG, 0);
-            // version needed to extract
-            data.writeUInt16LE(_version, Constants.LOCVER);
-            // general purpose bit flag
-            data.writeUInt16LE(_flags, Constants.LOCFLG);
-            // compression method
-            data.writeUInt16LE(_method, Constants.LOCHOW);
-            // modification time (2 bytes time, 2 bytes date)
-            data.writeUInt32LE(_time, Constants.LOCTIM);
-            // uncompressed file crc-32 value
-            data.writeUInt32LE(_crc, Constants.LOCCRC);
-            // compressed size
-            data.writeUInt32LE(_compressedSize, Constants.LOCSIZ);
-            // uncompressed size
-            data.writeUInt32LE(_size, Constants.LOCLEN);
-            // filename length
-            data.writeUInt16LE(_fnameLen, Constants.LOCNAM);
-            // extra field length
-            data.writeUInt16LE(_extraLen, Constants.LOCEXT);
-            return data;
-        },
-
-        entryHeaderToBinary : function() {
-            // CEN header size (46 bytes)
-            var data = Buffer.alloc(Constants.CENHDR + _fnameLen + _extraLen + _comLen);
-            // "PK\001\002"
-            data.writeUInt32LE(Constants.CENSIG, 0);
-            // version made by
-            data.writeUInt16LE(_verMade, Constants.CENVEM);
-            // version needed to extract
-            data.writeUInt16LE(_version, Constants.CENVER);
-            // encrypt, decrypt flags
-            data.writeUInt16LE(_flags, Constants.CENFLG);
-            // compression method
-            data.writeUInt16LE(_method, Constants.CENHOW);
-            // modification time (2 bytes time, 2 bytes date)
-            data.writeUInt32LE(_time, Constants.CENTIM);
-            // uncompressed file crc-32 value
-            data.writeInt32LE(_crc & 0xFFFF, Constants.CENCRC, true);
-            // compressed size
-            data.writeUInt32LE(_compressedSize, Constants.CENSIZ);
-            // uncompressed size
-            data.writeUInt32LE(_size, Constants.CENLEN);
-            // filename length
-            data.writeUInt16LE(_fnameLen, Constants.CENNAM);
-            // extra field length
-            data.writeUInt16LE(_extraLen, Constants.CENEXT);
-            // file comment length
-            data.writeUInt16LE(_comLen, Constants.CENCOM);
-            // volume number start
-            data.writeUInt16LE(_diskStart, Constants.CENDSK);
-            // internal file attributes
-            data.writeUInt16LE(_inattr, Constants.CENATT);
-            // external file attributes
-            data.writeUInt32LE(_attr, Constants.CENATX);
-            // LOC header offset
-            data.writeUInt32LE(_offset, Constants.CENOFF);
-            // fill all with
-            data.fill(0x00, Constants.CENHDR);
-            return data;
-        },
-
-        toString : function() {
-            return '{\n' +
-                '\t"made" : ' + _verMade + ",\n" +
-                '\t"version" : ' + _version + ",\n" +
-                '\t"flags" : ' + _flags + ",\n" +
-                '\t"method" : ' + Utils.methodToString(_method) + ",\n" +
-                '\t"time" : ' + this.time + ",\n" +
-                '\t"crc" : 0x' + _crc.toString(16).toUpperCase() + ",\n" +
-                '\t"compressedSize" : ' + _compressedSize + " bytes,\n" +
-                '\t"size" : ' + _size + " bytes,\n" +
-                '\t"fileNameLength" : ' + _fnameLen + ",\n" +
-                '\t"extraLength" : ' + _extraLen + " bytes,\n" +
-                '\t"commentLength" : ' + _comLen + " bytes,\n" +
-                '\t"diskNumStart" : ' + _diskStart + ",\n" +
-                '\t"inAttr" : ' + _inattr + ",\n" +
-                '\t"attr" : ' + _attr + ",\n" +
-                '\t"offset" : ' + _offset + ",\n" +
-                '\t"entryHeaderSize" : ' + (Constants.CENHDR + _fnameLen + _extraLen + _comLen) + " bytes\n" +
-                '}';
-        }
-    }
-};
-
-
-/***/ }),
-
 /***/ 245:
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
@@ -5095,7 +4676,7 @@ module.exports = function () {
 const {promisify} = __webpack_require__(669);
 const path = __webpack_require__(622);
 const globby = __webpack_require__(625);
-const isGlob = __webpack_require__(846);
+const isGlob = __webpack_require__(486);
 const slash = __webpack_require__(143);
 const gracefulFs = __webpack_require__(598);
 const isPathCwd = __webpack_require__(350);
@@ -5211,145 +4792,6 @@ module.exports.sync = (patterns, {force, dryRun, cwd = process.cwd(), ...options
 	removedFiles.sort((a, b) => a.localeCompare(b));
 
 	return removedFiles;
-};
-
-
-/***/ }),
-
-/***/ 247:
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-"use strict";
-
-const os = __webpack_require__(87);
-const hasFlag = __webpack_require__(364);
-
-const env = process.env;
-
-let forceColor;
-if (hasFlag('no-color') ||
-	hasFlag('no-colors') ||
-	hasFlag('color=false')) {
-	forceColor = false;
-} else if (hasFlag('color') ||
-	hasFlag('colors') ||
-	hasFlag('color=true') ||
-	hasFlag('color=always')) {
-	forceColor = true;
-}
-if ('FORCE_COLOR' in env) {
-	forceColor = env.FORCE_COLOR.length === 0 || parseInt(env.FORCE_COLOR, 10) !== 0;
-}
-
-function translateLevel(level) {
-	if (level === 0) {
-		return false;
-	}
-
-	return {
-		level,
-		hasBasic: true,
-		has256: level >= 2,
-		has16m: level >= 3
-	};
-}
-
-function supportsColor(stream) {
-	if (forceColor === false) {
-		return 0;
-	}
-
-	if (hasFlag('color=16m') ||
-		hasFlag('color=full') ||
-		hasFlag('color=truecolor')) {
-		return 3;
-	}
-
-	if (hasFlag('color=256')) {
-		return 2;
-	}
-
-	if (stream && !stream.isTTY && forceColor !== true) {
-		return 0;
-	}
-
-	const min = forceColor ? 1 : 0;
-
-	if (process.platform === 'win32') {
-		// Node.js 7.5.0 is the first version of Node.js to include a patch to
-		// libuv that enables 256 color output on Windows. Anything earlier and it
-		// won't work. However, here we target Node.js 8 at minimum as it is an LTS
-		// release, and Node.js 7 is not. Windows 10 build 10586 is the first Windows
-		// release that supports 256 colors. Windows 10 build 14931 is the first release
-		// that supports 16m/TrueColor.
-		const osRelease = os.release().split('.');
-		if (
-			Number(process.versions.node.split('.')[0]) >= 8 &&
-			Number(osRelease[0]) >= 10 &&
-			Number(osRelease[2]) >= 10586
-		) {
-			return Number(osRelease[2]) >= 14931 ? 3 : 2;
-		}
-
-		return 1;
-	}
-
-	if ('CI' in env) {
-		if (['TRAVIS', 'CIRCLECI', 'APPVEYOR', 'GITLAB_CI'].some(sign => sign in env) || env.CI_NAME === 'codeship') {
-			return 1;
-		}
-
-		return min;
-	}
-
-	if ('TEAMCITY_VERSION' in env) {
-		return /^(9\.(0*[1-9]\d*)\.|\d{2,}\.)/.test(env.TEAMCITY_VERSION) ? 1 : 0;
-	}
-
-	if (env.COLORTERM === 'truecolor') {
-		return 3;
-	}
-
-	if ('TERM_PROGRAM' in env) {
-		const version = parseInt((env.TERM_PROGRAM_VERSION || '').split('.')[0], 10);
-
-		switch (env.TERM_PROGRAM) {
-			case 'iTerm.app':
-				return version >= 3 ? 3 : 2;
-			case 'Apple_Terminal':
-				return 2;
-			// No default
-		}
-	}
-
-	if (/-256(color)?$/i.test(env.TERM)) {
-		return 2;
-	}
-
-	if (/^screen|^xterm|^vt100|^vt220|^rxvt|color|ansi|cygwin|linux/i.test(env.TERM)) {
-		return 1;
-	}
-
-	if ('COLORTERM' in env) {
-		return 1;
-	}
-
-	if (env.TERM === 'dumb') {
-		return min;
-	}
-
-	return min;
-}
-
-function getSupportLevel(stream) {
-	const level = supportsColor(stream);
-	return translateLevel(level);
-}
-
-module.exports = {
-	supportsColor: getSupportLevel,
-	stdout: getSupportLevel(process.stdout),
-	stderr: getSupportLevel(process.stderr)
 };
 
 
@@ -5874,6 +5316,57 @@ module.exports = AggregateError;
 
 /***/ }),
 
+/***/ 281:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.hashFiles = exports.create = void 0;
+const internal_globber_1 = __webpack_require__(297);
+const internal_hash_files_1 = __webpack_require__(782);
+/**
+ * Constructs a globber
+ *
+ * @param patterns  Patterns separated by newlines
+ * @param options   Glob options
+ */
+function create(patterns, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield internal_globber_1.DefaultGlobber.create(patterns, options);
+    });
+}
+exports.create = create;
+/**
+ * Computes the sha256 hash of a glob
+ *
+ * @param patterns  Patterns separated by newlines
+ * @param options   Glob options
+ */
+function hashFiles(patterns, options) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let followSymbolicLinks = true;
+        if (options && typeof options.followSymbolicLinks === 'boolean') {
+            followSymbolicLinks = options.followSymbolicLinks;
+        }
+        const globber = yield create(patterns, { followSymbolicLinks });
+        return internal_hash_files_1.hashFiles(globber);
+    });
+}
+exports.hashFiles = hashFiles;
+//# sourceMappingURL=glob.js.map
+
+/***/ }),
+
 /***/ 291:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -5972,6 +5465,248 @@ class AsyncReader extends reader_1.default {
 }
 exports.default = AsyncReader;
 
+
+/***/ }),
+
+/***/ 297:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
+var __await = (this && this.__await) || function (v) { return this instanceof __await ? (this.v = v, this) : new __await(v); }
+var __asyncGenerator = (this && this.__asyncGenerator) || function (thisArg, _arguments, generator) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var g = generator.apply(thisArg, _arguments || []), i, q = [];
+    return i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i;
+    function verb(n) { if (g[n]) i[n] = function (v) { return new Promise(function (a, b) { q.push([n, v, a, b]) > 1 || resume(n, v); }); }; }
+    function resume(n, v) { try { step(g[n](v)); } catch (e) { settle(q[0][3], e); } }
+    function step(r) { r.value instanceof __await ? Promise.resolve(r.value.v).then(fulfill, reject) : settle(q[0][2], r); }
+    function fulfill(value) { resume("next", value); }
+    function reject(value) { resume("throw", value); }
+    function settle(f, v) { if (f(v), q.shift(), q.length) resume(q[0][0], q[0][1]); }
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DefaultGlobber = void 0;
+const core = __importStar(__webpack_require__(470));
+const fs = __importStar(__webpack_require__(747));
+const globOptionsHelper = __importStar(__webpack_require__(601));
+const path = __importStar(__webpack_require__(622));
+const patternHelper = __importStar(__webpack_require__(597));
+const internal_match_kind_1 = __webpack_require__(327);
+const internal_pattern_1 = __webpack_require__(923);
+const internal_search_state_1 = __webpack_require__(975);
+const IS_WINDOWS = process.platform === 'win32';
+class DefaultGlobber {
+    constructor(options) {
+        this.patterns = [];
+        this.searchPaths = [];
+        this.options = globOptionsHelper.getOptions(options);
+    }
+    getSearchPaths() {
+        // Return a copy
+        return this.searchPaths.slice();
+    }
+    glob() {
+        var e_1, _a;
+        return __awaiter(this, void 0, void 0, function* () {
+            const result = [];
+            try {
+                for (var _b = __asyncValues(this.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
+                    const itemPath = _c.value;
+                    result.push(itemPath);
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (_c && !_c.done && (_a = _b.return)) yield _a.call(_b);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+            return result;
+        });
+    }
+    globGenerator() {
+        return __asyncGenerator(this, arguments, function* globGenerator_1() {
+            // Fill in defaults options
+            const options = globOptionsHelper.getOptions(this.options);
+            // Implicit descendants?
+            const patterns = [];
+            for (const pattern of this.patterns) {
+                patterns.push(pattern);
+                if (options.implicitDescendants &&
+                    (pattern.trailingSeparator ||
+                        pattern.segments[pattern.segments.length - 1] !== '**')) {
+                    patterns.push(new internal_pattern_1.Pattern(pattern.negate, true, pattern.segments.concat('**')));
+                }
+            }
+            // Push the search paths
+            const stack = [];
+            for (const searchPath of patternHelper.getSearchPaths(patterns)) {
+                core.debug(`Search path '${searchPath}'`);
+                // Exists?
+                try {
+                    // Intentionally using lstat. Detection for broken symlink
+                    // will be performed later (if following symlinks).
+                    yield __await(fs.promises.lstat(searchPath));
+                }
+                catch (err) {
+                    if (err.code === 'ENOENT') {
+                        continue;
+                    }
+                    throw err;
+                }
+                stack.unshift(new internal_search_state_1.SearchState(searchPath, 1));
+            }
+            // Search
+            const traversalChain = []; // used to detect cycles
+            while (stack.length) {
+                // Pop
+                const item = stack.pop();
+                // Match?
+                const match = patternHelper.match(patterns, item.path);
+                const partialMatch = !!match || patternHelper.partialMatch(patterns, item.path);
+                if (!match && !partialMatch) {
+                    continue;
+                }
+                // Stat
+                const stats = yield __await(DefaultGlobber.stat(item, options, traversalChain)
+                // Broken symlink, or symlink cycle detected, or no longer exists
+                );
+                // Broken symlink, or symlink cycle detected, or no longer exists
+                if (!stats) {
+                    continue;
+                }
+                // Directory
+                if (stats.isDirectory()) {
+                    // Matched
+                    if (match & internal_match_kind_1.MatchKind.Directory && options.matchDirectories) {
+                        yield yield __await(item.path);
+                    }
+                    // Descend?
+                    else if (!partialMatch) {
+                        continue;
+                    }
+                    // Push the child items in reverse
+                    const childLevel = item.level + 1;
+                    const childItems = (yield __await(fs.promises.readdir(item.path))).map(x => new internal_search_state_1.SearchState(path.join(item.path, x), childLevel));
+                    stack.push(...childItems.reverse());
+                }
+                // File
+                else if (match & internal_match_kind_1.MatchKind.File) {
+                    yield yield __await(item.path);
+                }
+            }
+        });
+    }
+    /**
+     * Constructs a DefaultGlobber
+     */
+    static create(patterns, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const result = new DefaultGlobber(options);
+            if (IS_WINDOWS) {
+                patterns = patterns.replace(/\r\n/g, '\n');
+                patterns = patterns.replace(/\r/g, '\n');
+            }
+            const lines = patterns.split('\n').map(x => x.trim());
+            for (const line of lines) {
+                // Empty or comment
+                if (!line || line.startsWith('#')) {
+                    continue;
+                }
+                // Pattern
+                else {
+                    result.patterns.push(new internal_pattern_1.Pattern(line));
+                }
+            }
+            result.searchPaths.push(...patternHelper.getSearchPaths(result.patterns));
+            return result;
+        });
+    }
+    static stat(item, options, traversalChain) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // Note:
+            // `stat` returns info about the target of a symlink (or symlink chain)
+            // `lstat` returns info about a symlink itself
+            let stats;
+            if (options.followSymbolicLinks) {
+                try {
+                    // Use `stat` (following symlinks)
+                    stats = yield fs.promises.stat(item.path);
+                }
+                catch (err) {
+                    if (err.code === 'ENOENT') {
+                        if (options.omitBrokenSymbolicLinks) {
+                            core.debug(`Broken symlink '${item.path}'`);
+                            return undefined;
+                        }
+                        throw new Error(`No information found for the path '${item.path}'. This may indicate a broken symbolic link.`);
+                    }
+                    throw err;
+                }
+            }
+            else {
+                // Use `lstat` (not following symlinks)
+                stats = yield fs.promises.lstat(item.path);
+            }
+            // Note, isDirectory() returns false for the lstat of a symlink
+            if (stats.isDirectory() && options.followSymbolicLinks) {
+                // Get the realpath
+                const realPath = yield fs.promises.realpath(item.path);
+                // Fixup the traversal chain to match the item level
+                while (traversalChain.length >= item.level) {
+                    traversalChain.pop();
+                }
+                // Test for a cycle
+                if (traversalChain.some((x) => x === realPath)) {
+                    core.debug(`Symlink cycle detected for path '${item.path}' and realpath '${realPath}'`);
+                    return undefined;
+                }
+                // Update the traversal chain
+                traversalChain.push(realPath);
+            }
+            return stats;
+        });
+    }
+}
+exports.DefaultGlobber = DefaultGlobber;
+//# sourceMappingURL=internal-globber.js.map
 
 /***/ }),
 
@@ -6256,25 +5991,6 @@ function expand(str, isTop) {
 
 /***/ }),
 
-/***/ 307:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-exports.require = function() {
-  var fs = __webpack_require__(747);
-  if (process.versions['electron']) {
-	  try {
-	    originalFs = __webpack_require__(708);
-	    if (Object.keys(originalFs).length > 0) {
-	      fs = originalFs;
-      }
-	  } catch (e) {}
-  }
-  return fs
-};
-
-
-/***/ }),
-
 /***/ 315:
 /***/ (function(module) {
 
@@ -6310,171 +6026,119 @@ if (typeof Object.create === 'function') {
 /***/ }),
 
 /***/ 317:
-/***/ (function(module) {
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
-/**
- * Helpers.
- */
+"use strict";
 
-var s = 1000;
-var m = s * 60;
-var h = m * 60;
-var d = h * 24;
-var w = d * 7;
-var y = d * 365.25;
-
-/**
- * Parse or format the given `val`.
- *
- * Options:
- *
- *  - `long` verbose formatting [false]
- *
- * @param {String|Number} val
- * @param {Object} [options]
- * @throws {Error} throw an error if val is not a non-empty string or a number
- * @return {String|Number}
- * @api public
- */
-
-module.exports = function(val, options) {
-  options = options || {};
-  var type = typeof val;
-  if (type === 'string' && val.length > 0) {
-    return parse(val);
-  } else if (type === 'number' && isFinite(val)) {
-    return options.long ? fmtLong(val) : fmtShort(val);
-  }
-  throw new Error(
-    'val is not a non-empty string or a valid number. val=' +
-      JSON.stringify(val)
-  );
-};
-
-/**
- * Parse the given `str` and return milliseconds.
- *
- * @param {String} str
- * @return {Number}
- * @api private
- */
-
-function parse(str) {
-  str = String(str);
-  if (str.length > 100) {
-    return;
-  }
-  var match = /^(-?(?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|weeks?|w|years?|yrs?|y)?$/i.exec(
-    str
-  );
-  if (!match) {
-    return;
-  }
-  var n = parseFloat(match[1]);
-  var type = (match[2] || 'ms').toLowerCase();
-  switch (type) {
-    case 'years':
-    case 'year':
-    case 'yrs':
-    case 'yr':
-    case 'y':
-      return n * y;
-    case 'weeks':
-    case 'week':
-    case 'w':
-      return n * w;
-    case 'days':
-    case 'day':
-    case 'd':
-      return n * d;
-    case 'hours':
-    case 'hour':
-    case 'hrs':
-    case 'hr':
-    case 'h':
-      return n * h;
-    case 'minutes':
-    case 'minute':
-    case 'mins':
-    case 'min':
-    case 'm':
-      return n * m;
-    case 'seconds':
-    case 'second':
-    case 'secs':
-    case 'sec':
-    case 's':
-      return n * s;
-    case 'milliseconds':
-    case 'millisecond':
-    case 'msecs':
-    case 'msec':
-    case 'ms':
-      return n;
-    default:
-      return undefined;
-  }
+Object.defineProperty(exports, "__esModule", { value: true });
+const utils = __webpack_require__(444);
+class EntryTransformer {
+    constructor(_settings) {
+        this._settings = _settings;
+    }
+    getTransformer() {
+        return (entry) => this._transform(entry);
+    }
+    _transform(entry) {
+        let filepath = entry.path;
+        if (this._settings.absolute) {
+            filepath = utils.path.makeAbsolute(this._settings.cwd, filepath);
+            filepath = utils.path.unixify(filepath);
+        }
+        if (this._settings.markDirectories && entry.dirent.isDirectory()) {
+            filepath += '/';
+        }
+        if (!this._settings.objectMode) {
+            return filepath;
+        }
+        return Object.assign(Object.assign({}, entry), { path: filepath });
+    }
 }
+exports.default = EntryTransformer;
 
-/**
- * Short format for `ms`.
- *
- * @param {Number} ms
- * @return {String}
- * @api private
- */
 
-function fmtShort(ms) {
-  var msAbs = Math.abs(ms);
-  if (msAbs >= d) {
-    return Math.round(ms / d) + 'd';
-  }
-  if (msAbs >= h) {
-    return Math.round(ms / h) + 'h';
-  }
-  if (msAbs >= m) {
-    return Math.round(ms / m) + 'm';
-  }
-  if (msAbs >= s) {
-    return Math.round(ms / s) + 's';
-  }
-  return ms + 'ms';
+/***/ }),
+
+/***/ 320:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const utils = __webpack_require__(444);
+class Matcher {
+    constructor(_patterns, _settings, _micromatchOptions) {
+        this._patterns = _patterns;
+        this._settings = _settings;
+        this._micromatchOptions = _micromatchOptions;
+        this._storage = [];
+        this._fillStorage();
+    }
+    _fillStorage() {
+        /**
+         * The original pattern may include `{,*,**,a/*}`, which will lead to problems with matching (unresolved level).
+         * So, before expand patterns with brace expansion into separated patterns.
+         */
+        const patterns = utils.pattern.expandPatternsWithBraceExpansion(this._patterns);
+        for (const pattern of patterns) {
+            const segments = this._getPatternSegments(pattern);
+            const sections = this._splitSegmentsIntoSections(segments);
+            this._storage.push({
+                complete: sections.length <= 1,
+                pattern,
+                segments,
+                sections
+            });
+        }
+    }
+    _getPatternSegments(pattern) {
+        const parts = utils.pattern.getPatternParts(pattern, this._micromatchOptions);
+        return parts.map((part) => {
+            const dynamic = utils.pattern.isDynamicPattern(part, this._settings);
+            if (!dynamic) {
+                return {
+                    dynamic: false,
+                    pattern: part
+                };
+            }
+            return {
+                dynamic: true,
+                pattern: part,
+                patternRe: utils.pattern.makeRe(part, this._micromatchOptions)
+            };
+        });
+    }
+    _splitSegmentsIntoSections(segments) {
+        return utils.array.splitWhen(segments, (segment) => segment.dynamic && utils.pattern.hasGlobStar(segment.pattern));
+    }
 }
+exports.default = Matcher;
 
+
+/***/ }),
+
+/***/ 327:
+/***/ (function(__unusedmodule, exports) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.MatchKind = void 0;
 /**
- * Long format for `ms`.
- *
- * @param {Number} ms
- * @return {String}
- * @api private
+ * Indicates whether a pattern matches a path
  */
-
-function fmtLong(ms) {
-  var msAbs = Math.abs(ms);
-  if (msAbs >= d) {
-    return plural(ms, msAbs, d, 'day');
-  }
-  if (msAbs >= h) {
-    return plural(ms, msAbs, h, 'hour');
-  }
-  if (msAbs >= m) {
-    return plural(ms, msAbs, m, 'minute');
-  }
-  if (msAbs >= s) {
-    return plural(ms, msAbs, s, 'second');
-  }
-  return ms + ' ms';
-}
-
-/**
- * Pluralization helper.
- */
-
-function plural(ms, msAbs, n, name) {
-  var isPlural = msAbs >= n * 1.5;
-  return Math.round(ms / n) + ' ' + name + (isPlural ? 's' : '');
-}
-
+var MatchKind;
+(function (MatchKind) {
+    /** Not matched */
+    MatchKind[MatchKind["None"] = 0] = "None";
+    /** Matched if the path is a directory */
+    MatchKind[MatchKind["Directory"] = 1] = "Directory";
+    /** Matched if the path is a regular file */
+    MatchKind[MatchKind["File"] = 2] = "File";
+    /** Matched */
+    MatchKind[MatchKind["All"] = 3] = "All";
+})(MatchKind = exports.MatchKind || (exports.MatchKind = {}));
+//# sourceMappingURL=internal-match-kind.js.map
 
 /***/ }),
 
@@ -6487,23 +6151,11 @@ function plural(ms, msAbs, n, name) {
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logCollectionRegExps = exports.useVcpkgToolchainFile = exports.cmakeWrapperCommand = exports.cmakeVcpkgTriplet = exports.cmakeBuildType = exports.buildWithCMakeArgs = exports.buildWithCMake = exports.cmakeToolchainPath = exports.cmakeGenerator = exports.cmakeListsOrSettingsJson = exports.ninjaDownloadUrl = exports.ninjaPath = exports.configurationRegexFilter = exports.cmakeAppendedArgs = exports.buildDirectory = exports.cmakeListsTxtPath = exports.cmakeSettingsJsonPath = void 0;
-exports.cmakeSettingsJsonPath = 'cmakeSettingsJsonPath';
+exports.logCollectionRegExps = exports.testPreset = exports.buildPreset = exports.configurePreset = exports.cmakeListsTxtPath = void 0;
 exports.cmakeListsTxtPath = 'cmakeListsTxtPath';
-exports.buildDirectory = 'buildDirectory';
-exports.cmakeAppendedArgs = 'cmakeAppendedArgs';
-exports.configurationRegexFilter = 'configurationRegexFilter';
-exports.ninjaPath = 'ninjaPath';
-exports.ninjaDownloadUrl = 'ninjaDownloadUrl';
-exports.cmakeListsOrSettingsJson = 'cmakeListsOrSettingsJson';
-exports.cmakeGenerator = 'cmakeGenerator';
-exports.cmakeToolchainPath = 'cmakeToolchainPath';
-exports.buildWithCMake = 'buildWithCMake';
-exports.buildWithCMakeArgs = 'buildWithCMakeArgs';
-exports.cmakeBuildType = 'cmakeBuildType';
-exports.cmakeVcpkgTriplet = 'vcpkgTriplet';
-exports.cmakeWrapperCommand = 'cmakeWrapperCommand';
-exports.useVcpkgToolchainFile = 'useVcpkgToolchainFile';
+exports.configurePreset = 'configurePreset';
+exports.buildPreset = 'buildPreset';
+exports.testPreset = 'testPreset';
 exports.logCollectionRegExps = 'logCollectionRegExps';
 //# sourceMappingURL=cmake-globals.js.map
 
@@ -6515,9 +6167,14 @@ exports.logCollectionRegExps = 'logCollectionRegExps';
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.DEFAULT_FILE_SYSTEM_ADAPTER = void 0;
 const fs = __webpack_require__(747);
 const os = __webpack_require__(87);
-const CPU_COUNT = os.cpus().length;
+/**
+ * The `os.cpus` method can return zero. We expect the number of cores to be greater than zero.
+ * https://github.com/nodejs/node/blob/7faeddf23a98c53896f8b574a6e66589e8fb1eb8/lib/os.js#L106-L107
+ */
+const CPU_COUNT = Math.max(os.cpus().length, 1);
 exports.DEFAULT_FILE_SYSTEM_ADAPTER = {
     lstat: fs.lstat,
     lstatSync: fs.lstatSync,
@@ -6569,6 +6226,450 @@ exports.default = Settings;
 
 /***/ }),
 
+/***/ 344:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+// Copyright (c) 2019-2020-2021 Luca Cappa
+// Released under the term specified in file LICENSE.txt
+// SPDX short identifier: MIT
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.setEnvVarIfUndefined = exports.replaceFromEnvVar = exports.createKeySet = exports.dumpFile = exports.LogFileCollector = exports.dumpError = exports.Matcher = exports.BaseUtilLib = void 0;
+const fs = __importStar(__webpack_require__(747));
+const os = __importStar(__webpack_require__(87));
+const path = __importStar(__webpack_require__(622));
+const del = __importStar(__webpack_require__(245));
+const perf_hooks_1 = __webpack_require__(630);
+const fastglob = __importStar(__webpack_require__(406));
+class BaseUtilLib {
+    constructor(baseLib) {
+        this.baseLib = baseLib;
+    }
+    isVcpkgSubmodule(gitPath, fullVcpkgPath) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.baseLib.debug(`isVcpkgSubmodule()<<`);
+            let isSubmodule = false;
+            try {
+                const options = {
+                    cwd: process.env.GITHUB_WORKSPACE,
+                    failOnStdErr: false,
+                    errStream: process.stdout,
+                    outStream: process.stdout,
+                    ignoreReturnCode: true,
+                    silent: false,
+                    windowsVerbatimArguments: false,
+                    env: process.env
+                };
+                const res = yield this.baseLib.execSync(gitPath, ['submodule', 'status', fullVcpkgPath], options);
+                if (res.error !== null) {
+                    isSubmodule = res.code == 0;
+                    let msg;
+                    msg = `'git submodule ${fullVcpkgPath}': exit code='${res.code}' `;
+                    // If not null or undefined.
+                    if (res.stdout) {
+                        msg += `, stdout='${res.stdout.trim()}'`;
+                    }
+                    // If not null or undefined.
+                    if (res.stderr) {
+                        msg += `, stderr='${res.stderr.trim()}'`;
+                    }
+                    msg += '.';
+                    this.baseLib.debug(msg);
+                }
+            }
+            catch (error) {
+                this.baseLib.warning(`ïsVcpkgSubmodule() failed: ${error}`);
+                isSubmodule = false;
+            }
+            finally {
+                this.baseLib.debug(`isVcpkgSubmodule()>> --> ${isSubmodule}`);
+                return isSubmodule;
+            }
+        });
+    }
+    throwIfErrorCode(errorCode) {
+        if (errorCode !== 0) {
+            const errMsg = `Last command execution failed with error code '${errorCode}'.`;
+            this.baseLib.error(errMsg);
+            throw new Error(errMsg);
+        }
+    }
+    isWin32() {
+        return os.platform().toLowerCase() === 'win32';
+    }
+    isMacos() {
+        return os.platform().toLowerCase() === 'darwin';
+    }
+    // freeBSD or openBSD
+    isBSD() {
+        return os.platform().toLowerCase().indexOf("bsd") != -1;
+    }
+    isLinux() {
+        return os.platform().toLowerCase() === 'linux';
+    }
+    isDarwin() {
+        return os.platform().toLowerCase() === 'darwin';
+    }
+    getVcpkgExePath(vcpkgRoot) {
+        const vcpkgExe = this.isWin32() ? "vcpkg.exe" : "vcpkg";
+        const vcpkgExePath = path.join(vcpkgRoot, vcpkgExe);
+        return vcpkgExePath;
+    }
+    directoryExists(path) {
+        try {
+            return this.baseLib.stats(path).isDirectory();
+        }
+        catch (error) {
+            this.baseLib.debug(`directoryExists(${path}): ${"" + error}`);
+            return false;
+        }
+    }
+    fileExists(path) {
+        try {
+            return this.baseLib.stats(path).isFile();
+        }
+        catch (error) {
+            this.baseLib.debug(`fileExists(${path}): ${"" + error}`);
+            return false;
+        }
+    }
+    readFile(path) {
+        try {
+            const readString = fs.readFileSync(path, { encoding: 'utf8', flag: 'r' });
+            this.baseLib.debug(`readFile(${path})='${readString}'.`);
+            return readString;
+        }
+        catch (error) {
+            this.baseLib.debug(`readFile(${path}): ${"" + error}`);
+            return null;
+        }
+    }
+    writeFile(file, content) {
+        this.baseLib.debug(`Writing to file '${file}' content '${content}'.`);
+        this.baseLib.writeFile(file, content);
+    }
+    getDefaultTriplet() {
+        const envVar = process.env["VCPKG_DEFAULT_TRIPLET"];
+        if (envVar) {
+            return envVar;
+        }
+        else {
+            if (this.isWin32()) {
+                return "x64-windows";
+            }
+            else if (this.isLinux()) {
+                return "x64-linux";
+            }
+            else if (this.isMacos()) {
+                return "x64-osx";
+            }
+            else if (this.isBSD()) {
+                return "x64-freebsd";
+            }
+        }
+        return null;
+    }
+    // Force 'name' env variable to have value of 'value'.
+    setEnvVar(name, value) {
+        // Set variable both as env var and as step variable, which might be re-used in subseqeunt steps.  
+        process.env[name] = value;
+        this.baseLib.setVariable(name, value);
+        this.baseLib.debug(`Set variable and the env variable '${name}' to value '${value}'.`);
+    }
+    trimString(value) {
+        var _a;
+        return (_a = value === null || value === void 0 ? void 0 : value.trim()) !== null && _a !== void 0 ? _a : "";
+    }
+    wrapOp(name, fn) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.baseLib.beginOperation(name);
+            let result;
+            const startTime = perf_hooks_1.performance.now();
+            try {
+                result = yield fn();
+            }
+            finally {
+                this.baseLib.endOperation();
+                this.baseLib.info(`⏱ elapsed: ${((perf_hooks_1.performance.now() - startTime) / 1000.).toFixed(3)} seconds`);
+            }
+            return result;
+        });
+    }
+    wrapOpSync(name, fn) {
+        this.baseLib.beginOperation(name);
+        let result;
+        const startTime = perf_hooks_1.performance.now();
+        try {
+            result = fn();
+        }
+        finally {
+            this.baseLib.endOperation();
+            this.baseLib.info(`⏱ elapsed: ${((perf_hooks_1.performance.now() - startTime) / 1000.).toFixed(3)} seconds`);
+        }
+        return result;
+    }
+    mkdir(target, options) {
+        fs.mkdirSync(target, options);
+    }
+    rm(target) {
+        del.sync(target);
+    }
+    test(aPath) {
+        const result = fs.existsSync(aPath);
+        return result;
+    }
+    isVariableStrippingPath(variableName) {
+        // Avoid that the PATH is minimized by MSBuild props:
+        // https://github.com/lukka/run-cmake/issues/8#issuecomment-606956604
+        return (variableName.toUpperCase() === "__VSCMD_PREINIT_PATH");
+    }
+    parseVcpkgEnvOutput(data) {
+        const map = {};
+        const regex = {
+            param: /^\s*([^=]+?)\s*=\s*(.*?)\s*$/,
+        };
+        const lines = data.split(/[\r\n]+/);
+        for (const line of lines) {
+            if (regex.param.test(line)) {
+                const match = line.match(regex.param);
+                if (match) {
+                    map[match[1]] = match[2];
+                }
+            }
+        }
+        return map;
+    }
+    /**
+     * Normalize a filesystem path with path.normalize(), then remove any trailing space.
+     *
+     * @export
+     * @param {string} aPath The string representing a filesystem path.
+     * @returns {string} The normalized path without trailing slash.
+     */
+    static normalizePath(aPath) {
+        aPath = path.normalize(aPath);
+        if (/[\\\/]$/.test(aPath) && aPath.length > 1)
+            aPath = aPath.slice(0, -1);
+        return aPath;
+    }
+    static throwIfUndefined(obj, name) {
+        if (obj === undefined)
+            throw new Error(`Agument '${name}' is undefined`);
+    }
+    static throwIfNull(obj, name) {
+        if (obj === null)
+            throw new Error(`Agument '${name}' is null`);
+    }
+    static isValidSHA1(text) {
+        return /^[a-fA-F0-9]{40}$/.test(text);
+    }
+    /**
+     * Get the hash of one (and only one) file.
+     * @export
+     * @param {string} globExpr A glob expression to identify one file.
+     * @returns {[string, string]} The file hit and its hash, or [null, null] if no its.
+     * @throws When multiple hits occur.
+     */
+    getFileHash(globPattern, ignorePatterns) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let ret = [null, null];
+            this.baseLib.debug(`getFileHash()<<`);
+            const files = yield fastglob.default(globPattern, { ignore: ignorePatterns });
+            if (files.length > 1) {
+                throw new Error(`Error computing hash on '${globPattern}' as it matches multiple files: ${files}. It must match only one file.`);
+            }
+            else if (files.length == 0) {
+                ret = [null, null];
+            }
+            else {
+                const file = path.resolve(files[0]);
+                const fileHash = yield this.baseLib.hashFiles(file);
+                ret = [file, fileHash];
+            }
+            this.baseLib.debug(`getFileHash()>> -> file='${ret[0]}' hash='${ret[1]}'`);
+            return ret;
+        });
+    }
+    setVariableVerbose(name, value) {
+        this.baseLib.info(`Set the workflow environment variable '${name}' to value '${value}'`);
+        this.setEnvVar(name, value);
+    }
+    setOutputVerbose(name, value) {
+        this.baseLib.info(`Set the step output variable '${name}' to value '${value}''`);
+        this.baseLib.setOutput(name, value);
+    }
+}
+exports.BaseUtilLib = BaseUtilLib;
+class Matcher {
+    constructor(name, baseLib, fromPath) {
+        this.name = name;
+        this.baseLib = baseLib;
+        this.fromPath = fromPath;
+        const matcherFilePath = path.join(__dirname, `${name}.json`);
+        this.baseLib.addMatcher(matcherFilePath);
+    }
+    dispose() {
+        this.baseLib.removeMatcher(path.join(__dirname, `${this.name}.json`));
+    }
+    static createMatcher(name, baseLib, fromPath) {
+        return new Matcher(name, baseLib, fromPath);
+    }
+}
+exports.Matcher = Matcher;
+function dumpError(baseLib, error) {
+    var _a;
+    const errorAsString = ((_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : "undefined error");
+    baseLib.debug(errorAsString);
+    if (error === null || error === void 0 ? void 0 : error.stack) {
+        baseLib.debug(error.stack);
+    }
+}
+exports.dumpError = dumpError;
+class LogFileCollector {
+    constructor(baseLib, regExps, func) {
+        this.baseLib = baseLib;
+        this.func = func;
+        this.regExps = [];
+        this.bufferString = "";
+        baseLib.debug(`LogFileCollector(${JSON.stringify(regExps)})<<`);
+        for (const s of regExps) {
+            this.regExps.push(new RegExp(s, "g"));
+        }
+        baseLib.debug(`LogFileCollector()>>`);
+    }
+    appendBuffer(buffer) {
+        this.bufferString += buffer.toString();
+    }
+    limitBuffer(consumeUntil) {
+        if (consumeUntil && consumeUntil > 0)
+            this.bufferString = this.bufferString.slice(consumeUntil);
+        const len = this.bufferString.length;
+        if (len > LogFileCollector.MAXLEN)
+            this.bufferString = this.bufferString.slice(len - LogFileCollector.MAXLEN);
+    }
+    handleOutput(buffer) {
+        this.appendBuffer(buffer);
+        _debug(`\n\nappending: ${buffer}\n\n`);
+        _debug(`\n\nbuffer: ${this.bufferString}\n\n`);
+        let consumedUntil = -1;
+        for (const re of this.regExps) {
+            re.lastIndex = 0;
+            try {
+                if (re.test(this.bufferString)) {
+                    re.lastIndex = 0;
+                    const matches = re.exec(this.bufferString);
+                    if (matches) {
+                        consumedUntil = Math.max(consumedUntil, re.lastIndex);
+                        this.baseLib.debug(`\n\nmatched expression: ${re}\n\n`);
+                        this.func(matches[1]);
+                    }
+                }
+            }
+            catch (err) {
+                dumpError(this.baseLib, err);
+            }
+        }
+        this.limitBuffer(consumedUntil);
+        _debug(`\n\nremaining: ${this.bufferString}\n\n`);
+    }
+}
+exports.LogFileCollector = LogFileCollector;
+LogFileCollector.MAXLEN = 1024;
+function dumpFile(baseLib, filePath) {
+    try {
+        if (filePath && fs.existsSync(filePath)) {
+            const content = fs.readFileSync(filePath);
+            if (content) {
+                baseLib.info(`[LogCollection][Start]File:'${filePath}':\n${content}\n[LogCollection][End]File:'${filePath}'.`);
+            }
+            else
+                baseLib.warning(`[LogCollection][Warn]File empty:'${filePath}'.`);
+        }
+        else
+            baseLib.warning(`[LogCollection][Warn]File not found:'${filePath}'.`);
+    }
+    catch (err) {
+        dumpError(baseLib, err);
+    }
+}
+exports.dumpFile = dumpFile;
+function createKeySet(segments) {
+    const keys = [];
+    for (let i = segments.length; i > 0; i--) {
+        let key = segments[0];
+        for (let j = 1; j < i; j++) {
+            key += `_${segments[j]}`;
+        }
+        keys.push(key);
+    }
+    // Extract the primary key and all the rest.
+    const primaryKey = keys.shift();
+    if (!primaryKey)
+        throw Error("createKeySet(): primary key is undefined!");
+    return { primary: primaryKey, restore: keys };
+}
+exports.createKeySet = createKeySet;
+function _debug(msg) {
+    if (process.env.DEBUG)
+        console.log(`DEBUG: '${msg}'`);
+}
+function replaceFromEnvVar(text, values) {
+    return text.replace(/\$\[(.*?)\]/gi, (a, b) => {
+        var _a;
+        let ret = "undefined";
+        if (typeof b == "string") {
+            if (b.startsWith("env.")) {
+                b = b.slice(4);
+                ret = (_a = process.env[b]) !== null && _a !== void 0 ? _a : `${b}-is-undefined`;
+            }
+            else {
+                ret = `${b}-is-undefined`;
+                if (values && values[b])
+                    ret = values[b];
+            }
+        }
+        return ret;
+    });
+}
+exports.replaceFromEnvVar = replaceFromEnvVar;
+function setEnvVarIfUndefined(name, value) {
+    if (!process.env[name] && value)
+        process.env[name] = value;
+}
+exports.setEnvVarIfUndefined = setEnvVarIfUndefined;
+//# sourceMappingURL=base-util-lib.js.map
+
+/***/ }),
+
 /***/ 350:
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
@@ -6592,323 +6693,10 @@ module.exports = path_ => {
 
 /***/ }),
 
-/***/ 352:
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-var Utils = __webpack_require__(643),
-    Headers = __webpack_require__(181),
-    Constants = Utils.Constants,
-    Methods = __webpack_require__(880);
-
-module.exports = function (/*Buffer*/input) {
-
-    var _entryHeader = new Headers.EntryHeader(),
-        _entryName = Buffer.alloc(0),
-        _comment = Buffer.alloc(0),
-        _isDirectory = false,
-        uncompressedData = null,
-        _extra = Buffer.alloc(0);
-
-    function getCompressedDataFromZip() {
-        if (!input || !Buffer.isBuffer(input)) {
-            return Buffer.alloc(0);
-        }
-        _entryHeader.loadDataHeaderFromBinary(input);
-        return input.slice(_entryHeader.realDataOffset, _entryHeader.realDataOffset + _entryHeader.compressedSize)
-    }
-
-    function crc32OK(data) {
-        // if bit 3 (0x08) of the general-purpose flags field is set, then the CRC-32 and file sizes are not known when the header is written
-        if ((_entryHeader.flags & 0x8) !== 0x8) {
-           if (Utils.crc32(data) !== _entryHeader.dataHeader.crc) {
-               return false;
-           }
-        } else {
-            // @TODO: load and check data descriptor header
-            // The fields in the local header are filled with zero, and the CRC-32 and size are appended in a 12-byte structure
-            // (optionally preceded by a 4-byte signature) immediately after the compressed data:
-        }
-        return true;
-    }
-
-    function decompress(/*Boolean*/async, /*Function*/callback, /*String*/pass) {
-        if(typeof callback === 'undefined' && typeof async === 'string') {
-            pass=async;
-            async=void 0;
-        }
-        if (_isDirectory) {
-            if (async && callback) {
-                callback(Buffer.alloc(0), Utils.Errors.DIRECTORY_CONTENT_ERROR); //si added error.
-            }
-            return Buffer.alloc(0);
-        }
-
-        var compressedData = getCompressedDataFromZip();
-       
-        if (compressedData.length === 0) {
-            if (async && callback) callback(compressedData, Utils.Errors.NO_DATA);//si added error.
-            return compressedData;
-        }
-
-        var data = Buffer.alloc(_entryHeader.size);
-
-        switch (_entryHeader.method) {
-            case Utils.Constants.STORED:
-                compressedData.copy(data);
-                if (!crc32OK(data)) {
-                    if (async && callback) callback(data, Utils.Errors.BAD_CRC);//si added error
-                    return Utils.Errors.BAD_CRC;
-                } else {//si added otherwise did not seem to return data.
-                    if (async && callback) callback(data);
-                    return data;
-                }
-            case Utils.Constants.DEFLATED:
-                var inflater = new Methods.Inflater(compressedData);
-                if (!async) {
-                    var result = inflater.inflate(data);
-                    result.copy(data, 0);
-                    if (!crc32OK(data)) {
-                        console.warn(Utils.Errors.BAD_CRC + " " + _entryName.toString())
-                    }
-                    return data;
-                } else {
-                    inflater.inflateAsync(function(result) {
-                        result.copy(data, 0);
-                        if (!crc32OK(data)) {
-                            if (callback) callback(data, Utils.Errors.BAD_CRC); //si added error
-                        } else { //si added otherwise did not seem to return data.
-                            if (callback) callback(data);
-                        }
-                    })
-                }
-                break;
-            default:
-                if (async && callback) callback(Buffer.alloc(0), Utils.Errors.UNKNOWN_METHOD);
-                return Utils.Errors.UNKNOWN_METHOD;
-        }
-    }
-
-    function compress(/*Boolean*/async, /*Function*/callback) {
-        if ((!uncompressedData || !uncompressedData.length) && Buffer.isBuffer(input)) {
-            // no data set or the data wasn't changed to require recompression
-            if (async && callback) callback(getCompressedDataFromZip());
-            return getCompressedDataFromZip();
-        }
-
-        if (uncompressedData.length && !_isDirectory) {
-            var compressedData;
-            // Local file header
-            switch (_entryHeader.method) {
-                case Utils.Constants.STORED:
-                    _entryHeader.compressedSize = _entryHeader.size;
-
-                    compressedData = Buffer.alloc(uncompressedData.length);
-                    uncompressedData.copy(compressedData);
-
-                    if (async && callback) callback(compressedData);
-                    return compressedData;
-                default:
-                case Utils.Constants.DEFLATED:
-
-                    var deflater = new Methods.Deflater(uncompressedData);
-                    if (!async) {
-                        var deflated = deflater.deflate();
-                        _entryHeader.compressedSize = deflated.length;
-                        return deflated;
-                    } else {
-                        deflater.deflateAsync(function(data) {
-                            compressedData = Buffer.alloc(data.length);
-                            _entryHeader.compressedSize = data.length;
-                            data.copy(compressedData);
-                            callback && callback(compressedData);
-                        })
-                    }
-                    deflater = null;
-                    break;
-            }
-        } else {
-            if (async && callback) {
-                callback(Buffer.alloc(0));
-            } else {
-                return Buffer.alloc(0);
-            }
-        }
-    }
-
-    function readUInt64LE(buffer, offset) {
-        return (buffer.readUInt32LE(offset + 4) << 4) + buffer.readUInt32LE(offset);
-    }
-
-    function parseExtra(data) {
-        var offset = 0;
-        var signature, size, part;
-        while(offset<data.length) {
-            signature = data.readUInt16LE(offset);
-            offset += 2;
-            size = data.readUInt16LE(offset);
-            offset += 2;
-            part = data.slice(offset, offset+size);
-            offset += size;
-            if(Constants.ID_ZIP64 === signature) {
-                parseZip64ExtendedInformation(part);
-            }
-        }
-    }
-
-    //Override header field values with values from the ZIP64 extra field
-    function parseZip64ExtendedInformation(data) {
-        var size, compressedSize, offset, diskNumStart;
-
-        if(data.length >= Constants.EF_ZIP64_SCOMP) {
-            size = readUInt64LE(data, Constants.EF_ZIP64_SUNCOMP);
-            if(_entryHeader.size === Constants.EF_ZIP64_OR_32) {
-                _entryHeader.size = size;
-            }
-        }
-        if(data.length >= Constants.EF_ZIP64_RHO) {
-            compressedSize = readUInt64LE(data, Constants.EF_ZIP64_SCOMP);
-            if(_entryHeader.compressedSize === Constants.EF_ZIP64_OR_32) {
-                _entryHeader.compressedSize = compressedSize;
-            }
-        }
-        if(data.length >= Constants.EF_ZIP64_DSN) {
-            offset = readUInt64LE(data, Constants.EF_ZIP64_RHO);
-            if(_entryHeader.offset === Constants.EF_ZIP64_OR_32) {
-                _entryHeader.offset = offset;
-            }
-        }
-        if(data.length >= Constants.EF_ZIP64_DSN+4) {
-            diskNumStart = data.readUInt32LE(Constants.EF_ZIP64_DSN);
-            if(_entryHeader.diskNumStart === Constants.EF_ZIP64_OR_16) {
-                _entryHeader.diskNumStart = diskNumStart;
-            }
-        }
-    }
-
-
-    return {
-        get entryName () { return _entryName.toString(); },
-        get rawEntryName() { return _entryName; },
-        set entryName (val) {
-            _entryName = Utils.toBuffer(val);
-            var lastChar = _entryName[_entryName.length - 1];
-            _isDirectory = (lastChar === 47) || (lastChar === 92);
-            _entryHeader.fileNameLength = _entryName.length;
-        },
-
-        get extra () { return _extra; },
-        set extra (val) {
-            _extra = val;
-            _entryHeader.extraLength = val.length;
-            parseExtra(val);
-        },
-
-        get comment () { return _comment.toString(); },
-        set comment (val) {
-            _comment = Utils.toBuffer(val);
-            _entryHeader.commentLength = _comment.length;
-        },
-
-        get name () { var n = _entryName.toString(); return _isDirectory ? n.substr(n.length - 1).split("/").pop() : n.split("/").pop(); },
-        get isDirectory () { return _isDirectory },
-
-        getCompressedData : function() {
-            return compress(false, null)
-        },
-
-        getCompressedDataAsync : function(/*Function*/callback) {
-            compress(true, callback)
-        },
-
-        setData : function(value) {
-            uncompressedData = Utils.toBuffer(value);
-            if (!_isDirectory && uncompressedData.length) {
-                _entryHeader.size = uncompressedData.length;
-                _entryHeader.method = Utils.Constants.DEFLATED;
-                _entryHeader.crc = Utils.crc32(value);
-                _entryHeader.changed = true;
-            } else { // folders and blank files should be stored
-                _entryHeader.method = Utils.Constants.STORED;
-            }
-        },
-
-        getData : function(pass) {
-            if (_entryHeader.changed) {
-				return uncompressedData;
-			} else {
-				return decompress(false, null, pass);
-            }
-        },
-
-        getDataAsync : function(/*Function*/callback, pass) {
-			if (_entryHeader.changed) {
-				callback(uncompressedData)
-			} else {
-				decompress(true, callback, pass)
-            }
-        },
-
-        set attr(attr) { _entryHeader.attr = attr; },
-        get attr() { return _entryHeader.attr; },
-
-        set header(/*Buffer*/data) {
-            _entryHeader.loadFromBinary(data);
-        },
-
-        get header() {
-            return _entryHeader;
-        },
-
-        packHeader : function() {
-            var header = _entryHeader.entryHeaderToBinary();
-            // add
-            _entryName.copy(header, Utils.Constants.CENHDR);
-            if (_entryHeader.extraLength) {
-                _extra.copy(header, Utils.Constants.CENHDR + _entryName.length)
-            }
-            if (_entryHeader.commentLength) {
-                _comment.copy(header, Utils.Constants.CENHDR + _entryName.length + _entryHeader.extraLength, _comment.length);
-            }
-            return header;
-        },
-
-        toString : function() {
-            return '{\n' +
-                '\t"entryName" : "' + _entryName.toString() + "\",\n" +
-                '\t"name" : "' + (_isDirectory ? _entryName.toString().replace(/\/$/, '').split("/").pop() : _entryName.toString().split("/").pop()) + "\",\n" +
-                '\t"comment" : "' + _comment.toString() + "\",\n" +
-                '\t"isDirectory" : ' + _isDirectory + ",\n" +
-                '\t"header" : ' + _entryHeader.toString().replace(/\t/mg, "\t\t").replace(/}/mg, "\t}")  + ",\n" +
-                '\t"compressedData" : <' + (input && input.length  + " bytes buffer" || "null") + ">\n" +
-                '\t"data" : <' + (uncompressedData && uncompressedData.length  + " bytes buffer" || "null") + ">\n" +
-                '}';
-        }
-    }
-};
-
-
-/***/ }),
-
 /***/ 357:
 /***/ (function(module) {
 
 module.exports = require("assert");
-
-/***/ }),
-
-/***/ 364:
-/***/ (function(module) {
-
-"use strict";
-
-module.exports = (flag, argv) => {
-	argv = argv || process.argv;
-	const prefix = flag.startsWith('-') ? '' : (flag.length === 1 ? '-' : '--');
-	const pos = argv.indexOf(prefix + flag);
-	const terminatorPos = argv.indexOf('--');
-	return pos !== -1 && (terminatorPos === -1 ? true : pos < terminatorPos);
-};
-
 
 /***/ }),
 
@@ -7149,67 +6937,71 @@ picomatch.parse = (pattern, options) => {
 picomatch.scan = (input, options) => scan(input, options);
 
 /**
- * Create a regular expression from a glob pattern.
+ * Compile a regular expression from the `state` object returned by the
+ * [parse()](#parse) method.
  *
- * ```js
- * const picomatch = require('picomatch');
- * // picomatch.makeRe(input[, options]);
- *
- * console.log(picomatch.makeRe('*.js'));
- * //=> /^(?:(?!\.)(?=.)[^/]*?\.js)$/
- * ```
- * @param {String} `input` A glob pattern to convert to regex.
+ * @param {Object} `state`
  * @param {Object} `options`
- * @return {RegExp} Returns a regex created from the given pattern.
+ * @param {Boolean} `returnOutput` Intended for implementors, this argument allows you to return the raw output from the parser.
+ * @param {Boolean} `returnState` Adds the state to a `state` property on the returned regex. Useful for implementors and debugging.
+ * @return {RegExp}
  * @api public
  */
 
-picomatch.compileRe = (parsed, options, returnOutput = false, returnState = false) => {
+picomatch.compileRe = (state, options, returnOutput = false, returnState = false) => {
   if (returnOutput === true) {
-    return parsed.output;
+    return state.output;
   }
 
   const opts = options || {};
   const prepend = opts.contains ? '' : '^';
   const append = opts.contains ? '' : '$';
 
-  let source = `${prepend}(?:${parsed.output})${append}`;
-  if (parsed && parsed.negated === true) {
+  let source = `${prepend}(?:${state.output})${append}`;
+  if (state && state.negated === true) {
     source = `^(?!${source}).*$`;
   }
 
   const regex = picomatch.toRegex(source, options);
   if (returnState === true) {
-    regex.state = parsed;
+    regex.state = state;
   }
 
   return regex;
 };
 
-picomatch.makeRe = (input, options, returnOutput = false, returnState = false) => {
+/**
+ * Create a regular expression from a parsed glob pattern.
+ *
+ * ```js
+ * const picomatch = require('picomatch');
+ * const state = picomatch.parse('*.js');
+ * // picomatch.compileRe(state[, options]);
+ *
+ * console.log(picomatch.compileRe(state));
+ * //=> /^(?:(?!\.)(?=.)[^/]*?\.js)$/
+ * ```
+ * @param {String} `state` The object returned from the `.parse` method.
+ * @param {Object} `options`
+ * @param {Boolean} `returnOutput` Implementors may use this argument to return the compiled output, instead of a regular expression. This is not exposed on the options to prevent end-users from mutating the result.
+ * @param {Boolean} `returnState` Implementors may use this argument to return the state from the parsed glob with the returned regular expression.
+ * @return {RegExp} Returns a regex created from the given pattern.
+ * @api public
+ */
+
+picomatch.makeRe = (input, options = {}, returnOutput = false, returnState = false) => {
   if (!input || typeof input !== 'string') {
     throw new TypeError('Expected a non-empty string');
   }
 
-  const opts = options || {};
   let parsed = { negated: false, fastpaths: true };
-  let prefix = '';
-  let output;
 
-  if (input.startsWith('./')) {
-    input = input.slice(2);
-    prefix = parsed.prefix = './';
+  if (options.fastpaths !== false && (input[0] === '.' || input[0] === '*')) {
+    parsed.output = parse.fastpaths(input, options);
   }
 
-  if (opts.fastpaths !== false && (input[0] === '.' || input[0] === '*')) {
-    output = parse.fastpaths(input, options);
-  }
-
-  if (output === undefined) {
+  if (!parsed.output) {
     parsed = parse(input, options);
-    parsed.prefix = prefix + (parsed.prefix || '');
-  } else {
-    parsed.output = output;
   }
 
   return picomatch.compileRe(parsed, options, returnOutput, returnState);
@@ -7321,12 +7113,133 @@ module.exports = (ast, options = {}) => {
 
 /***/ }),
 
+/***/ 383:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Path = void 0;
+const path = __importStar(__webpack_require__(622));
+const pathHelper = __importStar(__webpack_require__(972));
+const assert_1 = __importDefault(__webpack_require__(357));
+const IS_WINDOWS = process.platform === 'win32';
+/**
+ * Helper class for parsing paths into segments
+ */
+class Path {
+    /**
+     * Constructs a Path
+     * @param itemPath Path or array of segments
+     */
+    constructor(itemPath) {
+        this.segments = [];
+        // String
+        if (typeof itemPath === 'string') {
+            assert_1.default(itemPath, `Parameter 'itemPath' must not be empty`);
+            // Normalize slashes and trim unnecessary trailing slash
+            itemPath = pathHelper.safeTrimTrailingSeparator(itemPath);
+            // Not rooted
+            if (!pathHelper.hasRoot(itemPath)) {
+                this.segments = itemPath.split(path.sep);
+            }
+            // Rooted
+            else {
+                // Add all segments, while not at the root
+                let remaining = itemPath;
+                let dir = pathHelper.dirname(remaining);
+                while (dir !== remaining) {
+                    // Add the segment
+                    const basename = path.basename(remaining);
+                    this.segments.unshift(basename);
+                    // Truncate the last segment
+                    remaining = dir;
+                    dir = pathHelper.dirname(remaining);
+                }
+                // Remainder is the root
+                this.segments.unshift(remaining);
+            }
+        }
+        // Array
+        else {
+            // Must not be empty
+            assert_1.default(itemPath.length > 0, `Parameter 'itemPath' must not be an empty array`);
+            // Each segment
+            for (let i = 0; i < itemPath.length; i++) {
+                let segment = itemPath[i];
+                // Must not be empty
+                assert_1.default(segment, `Parameter 'itemPath' must not contain any empty segments`);
+                // Normalize slashes
+                segment = pathHelper.normalizeSeparators(itemPath[i]);
+                // Root segment
+                if (i === 0 && pathHelper.hasRoot(segment)) {
+                    segment = pathHelper.safeTrimTrailingSeparator(segment);
+                    assert_1.default(segment === pathHelper.dirname(segment), `Parameter 'itemPath' root segment contains information for multiple segments`);
+                    this.segments.push(segment);
+                }
+                // All other segments
+                else {
+                    // Must not contain slash
+                    assert_1.default(!segment.includes(path.sep), `Parameter 'itemPath' contains unexpected path separators`);
+                    this.segments.push(segment);
+                }
+            }
+        }
+    }
+    /**
+     * Converts the path to it's string representation
+     */
+    toString() {
+        // First segment
+        let result = this.segments[0];
+        // All others
+        let skipSlash = result.endsWith(path.sep) || (IS_WINDOWS && /^[A-Z]:$/i.test(result));
+        for (let i = 1; i < this.segments.length; i++) {
+            if (skipSlash) {
+                skipSlash = false;
+            }
+            else {
+                result += path.sep;
+            }
+            result += this.segments[i];
+        }
+        return result;
+    }
+}
+exports.Path = Path;
+//# sourceMappingURL=internal-path.js.map
+
+/***/ }),
+
 /***/ 384:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.convertPatternGroupToTask = exports.convertPatternGroupsToTasks = exports.groupPatternsByBaseDirectory = exports.getNegativePatternsAsPositive = exports.getPositivePatterns = exports.convertPatternsToTasks = exports.generate = void 0;
 const utils = __webpack_require__(444);
 function generate(patterns, settings) {
     const positivePatterns = getPositivePatterns(patterns);
@@ -7338,15 +7251,30 @@ function generate(patterns, settings) {
     return staticTasks.concat(dynamicTasks);
 }
 exports.generate = generate;
+/**
+ * Returns tasks grouped by basic pattern directories.
+ *
+ * Patterns that can be found inside (`./`) and outside (`../`) the current directory are handled separately.
+ * This is necessary because directory traversal starts at the base directory and goes deeper.
+ */
 function convertPatternsToTasks(positive, negative, dynamic) {
-    const positivePatternsGroup = groupPatternsByBaseDirectory(positive);
-    // When we have a global group – there is no reason to divide the patterns into independent tasks.
-    // In this case, the global task covers the rest.
-    if ('.' in positivePatternsGroup) {
-        const task = convertPatternGroupToTask('.', positive, negative, dynamic);
-        return [task];
+    const tasks = [];
+    const patternsOutsideCurrentDirectory = utils.pattern.getPatternsOutsideCurrentDirectory(positive);
+    const patternsInsideCurrentDirectory = utils.pattern.getPatternsInsideCurrentDirectory(positive);
+    const outsideCurrentDirectoryGroup = groupPatternsByBaseDirectory(patternsOutsideCurrentDirectory);
+    const insideCurrentDirectoryGroup = groupPatternsByBaseDirectory(patternsInsideCurrentDirectory);
+    tasks.push(...convertPatternGroupsToTasks(outsideCurrentDirectoryGroup, negative, dynamic));
+    /*
+     * For the sake of reducing future accesses to the file system, we merge all tasks within the current directory
+     * into a global task, if at least one pattern refers to the root (`.`). In this case, the global task covers the rest.
+     */
+    if ('.' in insideCurrentDirectoryGroup) {
+        tasks.push(convertPatternGroupToTask('.', patternsInsideCurrentDirectory, negative, dynamic));
     }
-    return convertPatternGroupsToTasks(positivePatternsGroup, negative, dynamic);
+    else {
+        tasks.push(...convertPatternGroupsToTasks(insideCurrentDirectoryGroup, negative, dynamic));
+    }
+    return tasks;
 }
 exports.convertPatternsToTasks = convertPatternsToTasks;
 function getPositivePatterns(patterns) {
@@ -7389,342 +7317,6 @@ function convertPatternGroupToTask(base, positive, negative, dynamic) {
     };
 }
 exports.convertPatternGroupToTask = convertPatternGroupToTask;
-
-
-/***/ }),
-
-/***/ 385:
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-var ZipEntry = __webpack_require__(352),
-	Headers = __webpack_require__(181),
-	Utils = __webpack_require__(643);
-
-module.exports = function (/*String|Buffer*/input, /*Number*/inputType) {
-	var entryList = [],
-		entryTable = {},
-		_comment = Buffer.alloc(0),
-		filename = "",
-		fs = Utils.FileSystem.require(),
-		inBuffer = null,
-		mainHeader = new Headers.MainHeader();
-
-	if (inputType === Utils.Constants.FILE) {
-		// is a filename
-		filename = input;
-		inBuffer = fs.readFileSync(filename);
-		readMainHeader();
-	} else if (inputType === Utils.Constants.BUFFER) {
-		// is a memory buffer
-		inBuffer = input;
-		readMainHeader();
-	} else {
-		// none. is a new file
-	}
-
-	function readEntries() {
-		entryTable = {};
-		entryList = new Array(mainHeader.diskEntries);  // total number of entries
-		var index = mainHeader.offset;  // offset of first CEN header
-		for (var i = 0; i < entryList.length; i++) {
-
-			var tmp = index,
-				entry = new ZipEntry(inBuffer);
-			entry.header = inBuffer.slice(tmp, tmp += Utils.Constants.CENHDR);
-
-			entry.entryName = inBuffer.slice(tmp, tmp += entry.header.fileNameLength);
-
-			if (entry.header.extraLength) {
-				entry.extra = inBuffer.slice(tmp, tmp += entry.header.extraLength);
-			}
-
-			if (entry.header.commentLength)
-				entry.comment = inBuffer.slice(tmp, tmp + entry.header.commentLength);
-
-			index += entry.header.entryHeaderSize;
-
-			entryList[i] = entry;
-			entryTable[entry.entryName] = entry;
-		}
-	}
-
-	function readMainHeader() {
-		var i = inBuffer.length - Utils.Constants.ENDHDR, // END header size
-			n = Math.max(0, i - 0xFFFF), // 0xFFFF is the max zip file comment length
-			endOffset = -1; // Start offset of the END header
-
-		for (i; i >= n; i--) {
-			if (inBuffer[i] !== 0x50) continue; // quick check that the byte is 'P'
-			if (inBuffer.readUInt32LE(i) === Utils.Constants.ENDSIG) { // "PK\005\006"
-				endOffset = i;
-				break;
-			}
-		}
-		if (!~endOffset)
-			throw Utils.Errors.INVALID_FORMAT;
-
-		mainHeader.loadFromBinary(inBuffer.slice(endOffset, endOffset + Utils.Constants.ENDHDR));
-		if (mainHeader.commentLength) {
-			_comment = inBuffer.slice(endOffset + Utils.Constants.ENDHDR);
-		}
-		readEntries();
-	}
-
-	return {
-		/**
-		 * Returns an array of ZipEntry objects existent in the current opened archive
-		 * @return Array
-		 */
-		get entries() {
-			return entryList;
-		},
-
-		/**
-		 * Archive comment
-		 * @return {String}
-		 */
-		get comment() {
-			return _comment.toString();
-		},
-		set comment(val) {
-			mainHeader.commentLength = val.length;
-			_comment = val;
-		},
-
-		/**
-		 * Returns a reference to the entry with the given name or null if entry is inexistent
-		 *
-		 * @param entryName
-		 * @return ZipEntry
-		 */
-		getEntry: function (/*String*/entryName) {
-			return entryTable[entryName] || null;
-		},
-
-		/**
-		 * Adds the given entry to the entry list
-		 *
-		 * @param entry
-		 */
-		setEntry: function (/*ZipEntry*/entry) {
-			entryList.push(entry);
-			entryTable[entry.entryName] = entry;
-			mainHeader.totalEntries = entryList.length;
-		},
-
-		/**
-		 * Removes the entry with the given name from the entry list.
-		 *
-		 * If the entry is a directory, then all nested files and directories will be removed
-		 * @param entryName
-		 */
-		deleteEntry: function (/*String*/entryName) {
-			var entry = entryTable[entryName];
-			if (entry && entry.isDirectory) {
-				var _self = this;
-				this.getEntryChildren(entry).forEach(function (child) {
-					if (child.entryName !== entryName) {
-						_self.deleteEntry(child.entryName)
-					}
-				})
-			}
-			entryList.splice(entryList.indexOf(entry), 1);
-			delete(entryTable[entryName]);
-			mainHeader.totalEntries = entryList.length;
-		},
-
-		/**
-		 *  Iterates and returns all nested files and directories of the given entry
-		 *
-		 * @param entry
-		 * @return Array
-		 */
-		getEntryChildren: function (/*ZipEntry*/entry) {
-			if (entry.isDirectory) {
-				var list = [],
-					name = entry.entryName,
-					len = name.length;
-
-				entryList.forEach(function (zipEntry) {
-					if (zipEntry.entryName.substr(0, len) === name) {
-						list.push(zipEntry);
-					}
-				});
-				return list;
-			}
-			return []
-		},
-
-		/**
-		 * Returns the zip file
-		 *
-		 * @return Buffer
-		 */
-		compressToBuffer: function () {
-			if (entryList.length > 1) {
-				entryList.sort(function (a, b) {
-					var nameA = a.entryName.toLowerCase();
-					var nameB = b.entryName.toLowerCase();
-					if (nameA < nameB) {
-						return -1
-					}
-					if (nameA > nameB) {
-						return 1
-					}
-					return 0;
-				});
-			}
-
-			var totalSize = 0,
-				dataBlock = [],
-				entryHeaders = [],
-				dindex = 0;
-
-			mainHeader.size = 0;
-			mainHeader.offset = 0;
-
-			entryList.forEach(function (entry) {
-				// compress data and set local and entry header accordingly. Reason why is called first
-				var compressedData = entry.getCompressedData();
-				// data header
-				entry.header.offset = dindex;
-				var dataHeader = entry.header.dataHeaderToBinary();
-				var entryNameLen = entry.rawEntryName.length;
-				var extra = entry.extra.toString();
-				var postHeader = Buffer.alloc(entryNameLen + extra.length);
-				entry.rawEntryName.copy(postHeader, 0);
-				postHeader.fill(extra, entryNameLen);
-
-				var dataLength = dataHeader.length + postHeader.length + compressedData.length;
-
-				dindex += dataLength;
-
-				dataBlock.push(dataHeader);
-				dataBlock.push(postHeader);
-				dataBlock.push(compressedData);
-
-				var entryHeader = entry.packHeader();
-				entryHeaders.push(entryHeader);
-				mainHeader.size += entryHeader.length;
-				totalSize += (dataLength + entryHeader.length);
-			});
-
-			totalSize += mainHeader.mainHeaderSize; // also includes zip file comment length
-			// point to end of data and beginning of central directory first record
-			mainHeader.offset = dindex;
-
-			dindex = 0;
-			var outBuffer = Buffer.alloc(totalSize);
-			dataBlock.forEach(function (content) {
-				content.copy(outBuffer, dindex); // write data blocks
-				dindex += content.length;
-			});
-			entryHeaders.forEach(function (content) {
-				content.copy(outBuffer, dindex); // write central directory entries
-				dindex += content.length;
-			});
-
-			var mh = mainHeader.toBinary();
-			if (_comment) {
-				_comment.copy(mh, Utils.Constants.ENDHDR); // add zip file comment
-			}
-
-			mh.copy(outBuffer, dindex); // write main header
-
-			return outBuffer
-		},
-
-		toAsyncBuffer: function (/*Function*/onSuccess, /*Function*/onFail, /*Function*/onItemStart, /*Function*/onItemEnd) {
-			if (entryList.length > 1) {
-				entryList.sort(function (a, b) {
-					var nameA = a.entryName.toLowerCase();
-					var nameB = b.entryName.toLowerCase();
-					if (nameA > nameB) {
-						return -1
-					}
-					if (nameA < nameB) {
-						return 1
-					}
-					return 0;
-				});
-			}
-
-			var totalSize = 0,
-				dataBlock = [],
-				entryHeaders = [],
-				dindex = 0;
-
-			mainHeader.size = 0;
-			mainHeader.offset = 0;
-
-			var compress = function (entryList) {
-				var self = arguments.callee;
-				if (entryList.length) {
-					var entry = entryList.pop();
-					var name = entry.entryName + entry.extra.toString();
-					if (onItemStart) onItemStart(name);
-					entry.getCompressedDataAsync(function (compressedData) {
-						if (onItemEnd) onItemEnd(name);
-
-						entry.header.offset = dindex;
-						// data header
-						var dataHeader = entry.header.dataHeaderToBinary();
-						var postHeader;
-						try {
-							postHeader = Buffer.alloc(name.length, name);  // using alloc will work on node  5.x+
-						} catch(e){
-							postHeader = new Buffer(name); // use deprecated method if alloc fails...
-						}
-						var dataLength = dataHeader.length + postHeader.length + compressedData.length;
-
-						dindex += dataLength;
-
-						dataBlock.push(dataHeader);
-						dataBlock.push(postHeader);
-						dataBlock.push(compressedData);
-
-						var entryHeader = entry.packHeader();
-						entryHeaders.push(entryHeader);
-						mainHeader.size += entryHeader.length;
-						totalSize += (dataLength + entryHeader.length);
-
-						if (entryList.length) {
-							self(entryList);
-						} else {
-
-
-							totalSize += mainHeader.mainHeaderSize; // also includes zip file comment length
-							// point to end of data and beginning of central directory first record
-							mainHeader.offset = dindex;
-
-							dindex = 0;
-							var outBuffer = Buffer.alloc(totalSize);
-							dataBlock.forEach(function (content) {
-								content.copy(outBuffer, dindex); // write data blocks
-								dindex += content.length;
-							});
-							entryHeaders.forEach(function (content) {
-								content.copy(outBuffer, dindex); // write central directory entries
-								dindex += content.length;
-							});
-
-							var mh = mainHeader.toBinary();
-							if (_comment) {
-								_comment.copy(mh, Utils.Constants.ENDHDR); // add zip file comment
-							}
-
-							mh.copy(outBuffer, dindex); // write main header
-
-							onSuccess(outBuffer);
-						}
-					});
-				}
-			};
-
-			compress(entryList);
-		}
-	}
-};
 
 
 /***/ }),
@@ -8427,8 +8019,6 @@ var assert = __webpack_require__(357)
 var isAbsolute = __webpack_require__(681)
 var globSync = __webpack_require__(658)
 var common = __webpack_require__(856)
-var alphasort = common.alphasort
-var alphasorti = common.alphasorti
 var setopts = common.setopts
 var ownProp = common.ownProp
 var inflight = __webpack_require__(674)
@@ -9211,15 +8801,11 @@ const stream_1 = __webpack_require__(775);
 const sync_1 = __webpack_require__(78);
 const settings_1 = __webpack_require__(332);
 const utils = __webpack_require__(444);
-function FastGlob(source, options) {
-    try {
-        assertPatternsInput(source);
-    }
-    catch (error) {
-        return Promise.reject(error);
-    }
+async function FastGlob(source, options) {
+    assertPatternsInput(source);
     const works = getWorks(source, async_1.default, options);
-    return Promise.all(works).then(utils.array.flatten);
+    const result = await Promise.all(works);
+    return utils.array.flatten(result);
 }
 // https://github.com/typescript-eslint/typescript-eslint/issues/60
 // eslint-disable-next-line no-redeclare
@@ -9267,14 +8853,12 @@ function getWorks(source, _Provider, options) {
     const provider = new _Provider(settings);
     return tasks.map(provider.read, provider);
 }
-function assertPatternsInput(source) {
-    if ([].concat(source).every(isString)) {
-        return;
+function assertPatternsInput(input) {
+    const source = [].concat(input);
+    const isValidSource = source.every((item) => utils.string.isString(item) && !utils.string.isEmpty(item));
+    if (!isValidSource) {
+        throw new TypeError('Patterns must be a string (non empty) or an array of strings');
     }
-    throw new TypeError('Patterns must be a string or an array of strings');
-}
-function isString(source) {
-    return typeof source === 'string';
 }
 module.exports = FastGlob;
 
@@ -9304,7 +8888,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
@@ -9321,7 +8905,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ActionLib = exports.ActionToolRunner = void 0;
 const utils = __importStar(__webpack_require__(758));
 const core = __importStar(__webpack_require__(470));
+const corecommand = __importStar(__webpack_require__(431));
 const toolrunner = __importStar(__webpack_require__(9));
+const actionglob = __importStar(__webpack_require__(281));
 const ioutil = __importStar(__webpack_require__(672));
 const io = __importStar(__webpack_require__(1));
 const fs = __importStar(__webpack_require__(747));
@@ -9410,6 +8996,7 @@ function exec(commandPath, args, execOptions) {
             commandPath = escapeShArgument(commandPath);
         }
         args = args2;
+        core.info(`Running command '${commandPath}' with args '${args}' in current directory '${opts === null || opts === void 0 ? void 0 : opts.cwd}'.`);
         core.debug(`cp.spawn("${commandPath}", ${JSON.stringify(args)}, {cwd=${opts === null || opts === void 0 ? void 0 : opts.cwd}, shell=${opts === null || opts === void 0 ? void 0 : opts.shell}, path=${JSON.stringify((_a = opts === null || opts === void 0 ? void 0 : opts.env) === null || _a === void 0 ? void 0 : _a.PATH)}})`);
         return new Promise((resolve, reject) => {
             const child = cp.spawn(`${commandPath}`, args, opts);
@@ -9566,12 +9153,15 @@ class ActionToolRunner {
         }
         return args;
     }
-    ;
 }
 exports.ActionToolRunner = ActionToolRunner;
 class ActionLib {
     getInput(name, isRequired) {
-        const value = core.getInput(name, { required: isRequired });
+        let value = core.getInput(name, { required: isRequired });
+        if (!value && isRequired)
+            throw new Error(`Not existent input ${name}`);
+        else if (!value)
+            value = undefined;
         this.debug(`getInput(${name}, ${isRequired}) -> '${value}'`);
         return value;
     }
@@ -9582,27 +9172,29 @@ class ActionLib {
         return value;
     }
     getPathInput(name, isRequired, checkExists) {
-        const value = path.resolve(core.getInput(name, { required: isRequired }));
-        this.debug(`getPathInput(${name}) -> '${value}'`);
-        if (checkExists) {
+        let value = core.getInput(name, { required: isRequired });
+        if (!value && isRequired)
+            throw new Error(`not existent input '${name}'`);
+        else if (!value)
+            value = undefined;
+        if (checkExists && value) {
             if (!fs.existsSync(value))
                 throw new Error(`input path '${value}' for '${name}' does not exist.`);
+            value = path.resolve(value);
         }
+        this.debug(`getPathInput(${name}) -> '${value}'`);
         return value;
     }
-    isFilePathSupplied(name) {
-        var _a, _b;
-        // normalize paths
-        const pathValue = this.resolve((_a = this.getPathInput(name, false, false)) !== null && _a !== void 0 ? _a : '');
-        const repoRoot = this.resolve((_b = process.env.GITHUB_WORKSPACE) !== null && _b !== void 0 ? _b : '');
-        const isSupplied = pathValue !== repoRoot;
-        this.debug(`isFilePathSupplied(s file path=('${name}') -> '${isSupplied}'`);
-        return isSupplied;
-    }
-    getDelimitedInput(name, delim, required) {
-        const input = core.getInput(name, { required: required });
-        const inputs = input.split(delim);
-        this.debug(`getDelimitedInput(${name}, ${delim}, ${required}) -> '${inputs}'`);
+    getDelimitedInput(name, delim, isRequired) {
+        let value = core.getInput(name, { required: isRequired });
+        if (!value && isRequired)
+            throw new Error(`not existent input '${name}'`);
+        else if (!value)
+            value = undefined;
+        let inputs = [];
+        if (value)
+            inputs = value.split(delim);
+        this.debug(`getDelimitedInput(${name}, ${delim}, ${isRequired}) -> '${inputs}'`);
         return inputs;
     }
     // Set an environment variable, re-usable in subsequent actions.
@@ -9614,9 +9206,13 @@ class ActionLib {
         core.setOutput(name, value);
     }
     getVariable(name) {
-        var _a;
-        //?? Is it really fine to return an empty string in case of undefined variable?
-        return (_a = process.env[name]) !== null && _a !== void 0 ? _a : "";
+        return process.env[name];
+    }
+    setState(name, value) {
+        core.saveState(name, value);
+    }
+    getState(name) {
+        return core.getState(name);
     }
     debug(message) {
         core.debug(message);
@@ -9653,7 +9249,7 @@ class ActionLib {
         return __awaiter(this, void 0, void 0, function* () {
             core.debug(`"which(${name})<<`);
             const filePath = yield io.which(name, required);
-            console.log(`tool: ${filePath}`);
+            core.debug(`tool: ${filePath}`);
             core.debug(`"which(${name}) >> ${filePath}`);
             return filePath;
         });
@@ -9687,37 +9283,35 @@ class ActionLib {
         return ioutil.exists(path);
     }
     getBinDir() {
-        if (!process.env.GITHUB_WORKSPACE) {
-            throw new Error("GITHUB_WORKSPACE is not set.");
-        }
-        const binPath = utils.BaseUtilLib.normalizePath(path.join(process.env.GITHUB_WORKSPACE, "../b/"));
-        if (!fs.existsSync(binPath)) {
-            core.debug(`BinDir '${binPath}' does not exists, creating it...`);
-            fs.mkdirSync(binPath);
-        }
-        return binPath;
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!process.env.GITHUB_WORKSPACE) {
+                throw new Error("GITHUB_WORKSPACE is not set.");
+            }
+            const binPath = utils.BaseUtilLib.normalizePath(path.join(process.env.GITHUB_WORKSPACE, "../b/"));
+            yield this.mkdirP(binPath);
+            return binPath;
+        });
     }
     getSrcDir() {
-        if (!process.env.GITHUB_WORKSPACE) {
-            throw new Error("GITHUB_WORKSPACE env var is not set.");
-        }
-        const srcPath = utils.BaseUtilLib.normalizePath(process.env.GITHUB_WORKSPACE);
-        if (!fs.existsSync(srcPath)) {
-            throw new Error(`SourceDir '${srcPath}' does not exists.`);
-        }
-        return srcPath;
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!process.env.GITHUB_WORKSPACE) {
+                throw new Error("GITHUB_WORKSPACE env var is not set.");
+            }
+            const srcPath = utils.BaseUtilLib.normalizePath(process.env.GITHUB_WORKSPACE);
+            yield this.mkdirP(srcPath);
+            return srcPath;
+        });
     }
     getArtifactsDir() {
-        if (!process.env.GITHUB_WORKSPACE) {
-            throw new Error("GITHUB_WORKSPACE is not set.");
-        }
-        //?? HACK. How to get the value of '{{ runner.temp }}' in JS's action?
-        const artifactsPath = utils.BaseUtilLib.normalizePath(path.join(process.env.GITHUB_WORKSPACE, "../../_temp"));
-        if (!fs.existsSync(artifactsPath)) {
-            core.debug(`ArtifactsDir '${artifactsPath}' does not exists, creating it...`);
-            fs.mkdirSync(artifactsPath);
-        }
-        return artifactsPath;
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!process.env.GITHUB_WORKSPACE) {
+                throw new Error("GITHUB_WORKSPACE env var is not set.");
+            }
+            //?? HACK. How to get the value of '{{ runner.temp }}' in JS's action?
+            const artifactsPath = utils.BaseUtilLib.normalizePath(path.join(process.env.GITHUB_WORKSPACE, "../../_temp"));
+            yield this.mkdirP(artifactsPath);
+            return artifactsPath;
+        });
     }
     beginOperation(message) {
         core.startGroup(message);
@@ -9726,10 +9320,13 @@ class ActionLib {
         core.endGroup();
     }
     addMatcher(file) {
-        console.log(`::add-matcher::${file}`);
+        corecommand.issueCommand('add-matcher', {}, file);
     }
-    removeMatcher(file) {
-        console.log(`::remove-matcher::${file}`);
+    removeMatcher(owner) {
+        corecommand.issueCommand('remove-matcher', { owner: owner }, "");
+    }
+    hashFiles(fileGlob, options) {
+        return actionglob.hashFiles(fileGlob, options);
     }
 }
 exports.ActionLib = ActionLib;
@@ -9757,8 +9354,10 @@ module.exports = require("crypto");
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.removeLeadingDotSegment = exports.escape = exports.makeAbsolute = exports.unixify = void 0;
 const path = __webpack_require__(622);
-const UNESCAPED_GLOB_SYMBOLS_RE = /(\\?)([*?|(){}[\]]|^!|[@+!](?=\())/g;
+const LEADING_DOT_SEGMENT_CHARACTERS_COUNT = 2; // ./ or .\\
+const UNESCAPED_GLOB_SYMBOLS_RE = /(\\?)([()*?[\]{|}]|^!|[!+@](?=\())/g;
 /**
  * Designed to work only with simple paths: `dir\\file`.
  */
@@ -9774,6 +9373,18 @@ function escape(pattern) {
     return pattern.replace(UNESCAPED_GLOB_SYMBOLS_RE, '\\$2');
 }
 exports.escape = escape;
+function removeLeadingDotSegment(entry) {
+    // We do not use `startsWith` because this is 10x slower than current implementation for some cases.
+    // eslint-disable-next-line @typescript-eslint/prefer-string-starts-ends-with
+    if (entry.charAt(0) === '.') {
+        const secondCharactery = entry.charAt(1);
+        if (secondCharactery === '/' || secondCharactery === '\\') {
+            return entry.slice(LEADING_DOT_SEGMENT_CHARACTERS_COUNT);
+        }
+    }
+    return entry;
+}
+exports.removeLeadingDotSegment = removeLeadingDotSegment;
 
 
 /***/ }),
@@ -9861,6 +9472,89 @@ function escapeProperty(s) {
         .replace(/,/g, '%2C');
 }
 //# sourceMappingURL=command.js.map
+
+/***/ }),
+
+/***/ 432:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+// Copyright (c) 2019-2020-2021 Luca Cappa
+// Released under the term specified in file LICENSE.txt
+// SPDX short identifier: MIT
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.injectEnvVariables = void 0;
+const cmakeutil = __importStar(__webpack_require__(622));
+function injectEnvVariables(baseUtils, vcpkgRoot, args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Search for vcpkg tool and run it
+        let vcpkgPath = cmakeutil.join(vcpkgRoot, 'vcpkg');
+        if (baseUtils.isWin32()) {
+            vcpkgPath += '.exe';
+        }
+        const vcpkg = baseUtils.baseLib.tool(vcpkgPath);
+        for (const arg of args) {
+            vcpkg.arg(arg);
+        }
+        const options = {
+            cwd: vcpkgRoot,
+            failOnStdErr: false,
+            errStream: process.stdout,
+            outStream: process.stdout,
+            ignoreReturnCode: true,
+            silent: false,
+            windowsVerbatimArguments: false,
+            env: process.env
+        };
+        const output = yield vcpkg.execSync(options);
+        if (output.code !== 0) {
+            throw new Error(`${output.stdout}\n\n${output.stderr}`);
+        }
+        const map = baseUtils.parseVcpkgEnvOutput(output.stdout);
+        for (const key in map) {
+            if (baseUtils.isVariableStrippingPath(key))
+                continue;
+            if (key.toUpperCase() === "PATH") {
+                process.env[key] = process.env[key] + cmakeutil.delimiter + map[key];
+            }
+            else {
+                process.env[key] = map[key];
+            }
+            baseUtils.baseLib.debug(`set ${key}=${process.env[key]}`);
+        }
+    });
+}
+exports.injectEnvVariables = injectEnvVariables;
+//# sourceMappingURL=cmake-utils.js.map
 
 /***/ }),
 
@@ -10111,6 +9805,7 @@ __export(__webpack_require__(666));
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.string = exports.stream = exports.pattern = exports.path = exports.fs = exports.errno = exports.array = void 0;
 const array = __webpack_require__(453);
 exports.array = array;
 const errno = __webpack_require__(115);
@@ -10123,6 +9818,8 @@ const pattern = __webpack_require__(724);
 exports.pattern = pattern;
 const stream = __webpack_require__(42);
 exports.stream = stream;
+const string = __webpack_require__(884);
+exports.string = string;
 
 
 /***/ }),
@@ -10133,622 +9830,27 @@ exports.stream = stream;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.splitWhen = exports.flatten = void 0;
 function flatten(items) {
     return items.reduce((collection, item) => [].concat(collection, item), []);
 }
 exports.flatten = flatten;
-
-
-/***/ }),
-
-/***/ 454:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-// Copyright (c) 2019-2020-2021 Luca Cappa
-// Released under the term specified in file LICENSE.txt
-// SPDX short identifier: MIT
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
+function splitWhen(items, predicate) {
+    const result = [[]];
+    let groupIndex = 0;
+    for (const item of items) {
+        if (predicate(item)) {
+            groupIndex++;
+            result[groupIndex] = [];
+        }
+        else {
+            result[groupIndex].push(item);
+        }
+    }
     return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.CMakeSettingsJsonRunner = exports.parseConfigurations = exports.parseEnvironments = exports.PropertyEvaluator = exports.Configuration = exports.Environment = void 0;
-const baseutillib = __importStar(__webpack_require__(758));
-const crypto = __importStar(__webpack_require__(417));
-const path = __importStar(__webpack_require__(622));
-__webpack_require__(966);
-const ninjalib = __importStar(__webpack_require__(72));
-const globals = __importStar(__webpack_require__(330));
-const cmakerunner = __importStar(__webpack_require__(214));
-const cmakeutil = __importStar(__webpack_require__(233));
-const using_statement_1 = __webpack_require__(443);
-const strip_json_comments_1 = __importDefault(__webpack_require__(966));
-class CMakeGenerators {
 }
-CMakeGenerators.ARM64 = ["ARM64", "ARM64"];
-CMakeGenerators.ARM = ["ARM", "ARM"];
-CMakeGenerators.X64 = ["x64", "x64"];
-CMakeGenerators.WIN64 = ["Win64", "x64"];
-CMakeGenerators.WIN32 = ["Win32", "Win32"];
-class CMakeVariable {
-    constructor(name, value, type) {
-        this.name = name;
-        this.value = value;
-        this.type = type;
-        if (!type) {
-            this.type = 'string';
-        }
-        console.log(`Defining CMake variable: [name:'${name}', value='${value}', type='${type}'].`);
-    }
-    toString() {
-        return `-D${this.name}:${this.type}=${this.value}`;
-    }
-}
-class Variable {
-    constructor(name, value) {
-        this.name = name;
-        this.value = value;
-        // Nothing to do here.
-    }
-    toString() {
-        return `{var: '${this.name}'='${this.value}'}`;
-    }
-    addToEnvironment() {
-        process.env[this.stripNamespace(this.name)] = this.value;
-    }
-    stripNamespace(varName) {
-        return varName.substring(varName.indexOf('.') + 1);
-    }
-}
-class Environment {
-    constructor(name, theVariables) {
-        this.name = name;
-        this.theVariables = theVariables;
-        // Nothing to do.
-    }
-    addVariable(variable) {
-        this.theVariables.push(variable);
-    }
-    get variables() {
-        return this.theVariables;
-    }
-    toString() {
-        let varsString = "";
-        for (const variable of this.theVariables) {
-            varsString += String(variable) + ", ";
-        }
-        return `{env: '${this.name}', variables=${varsString}}`;
-    }
-}
-exports.Environment = Environment;
-class Configuration {
-    constructor(name, environments, buildDir, cmakeArgs, makeArgs, generator, type, workspaceRoot, cmakeSettingsJsonPath, cmakeToolchain, variables, inheritEnvironments) {
-        this.name = name;
-        this.environments = environments;
-        this.buildDir = buildDir;
-        this.cmakeArgs = cmakeArgs;
-        this.makeArgs = makeArgs;
-        this.generator = generator;
-        this.type = type;
-        this.workspaceRoot = workspaceRoot;
-        this.cmakeSettingsJsonPath = cmakeSettingsJsonPath;
-        this.cmakeToolchain = cmakeToolchain;
-        this.variables = variables;
-        this.inheritEnvironments = inheritEnvironments;
-        baseutillib.BaseUtilLib.throwIfUndefined(name, "name");
-        baseutillib.BaseUtilLib.throwIfUndefined(buildDir, "buildDir");
-        baseutillib.BaseUtilLib.throwIfUndefined(cmakeSettingsJsonPath, "cmakeSettingsJsonPath");
-        this.buildDir = path.normalize(buildDir);
-    }
-    /**
-     * Add to current process the environment variables defined in this configuration.
-     *
-     * @param {EnvironmentMap} globalEnvs The global environments (not defined in this configuration)
-     * @memberof Configuration
-     */
-    setEnvironment(globalEnvs) {
-        // Set all 'env' and unnamed environments and inherited environments.
-        for (const envName in globalEnvs) {
-            const environment = globalEnvs[envName];
-            const nameLowerCased = environment.name.toLowerCase();
-            // Unnamed environments (i.e. with no 'environment' property specified),
-            // empty string named (e.g. {"environment": "", ...} ), or ones called 'env' 
-            // are being set in the environment automatically. All others needs to be 
-            // explicitly inherited.
-            if (!nameLowerCased || "env" === nameLowerCased ||
-                Configuration.unnamedEnvironmentName === nameLowerCased) {
-                for (const variable of environment.variables) {
-                    variable.addToEnvironment();
-                }
-            }
-        }
-        // Set all inherited environments.
-        for (const envName of this.inheritEnvironments) {
-            const environment = globalEnvs[envName];
-            if (environment) {
-                for (const variable of environment.variables) {
-                    variable.addToEnvironment();
-                }
-            }
-        }
-        // Set all 'env' and unnamed environments.
-        for (const env in this.environments) {
-            for (const variable of this.environments[env].variables) {
-                variable.addToEnvironment();
-            }
-        }
-    }
-    evaluate(evaluator) {
-        const evaledVars = [];
-        for (const variable of this.variables) {
-            evaledVars.push(new CMakeVariable(variable.name, evaluator.evaluateExpression(variable.value), variable.type));
-        }
-        const conf = new Configuration(this.name, this.environments, evaluator.evaluateExpression(this.buildDir), evaluator.evaluateExpression(this.cmakeArgs), evaluator.evaluateExpression(this.makeArgs), evaluator.evaluateExpression(this.generator), evaluator.evaluateExpression(this.type), this.workspaceRoot, this.cmakeSettingsJsonPath, evaluator.evaluateExpression(this.cmakeToolchain), evaledVars, this.inheritEnvironments);
-        return conf;
-    }
-    getGeneratorBuildArgs() {
-        let generatorBuildArgs = "";
-        if (this.generator.includes("Visual Studio")) {
-            generatorBuildArgs = `--config ${this.type}`;
-        }
-        else if (this.generator.includes("Ninja Multi-Config")) {
-            generatorBuildArgs = `--config ${this.type}`;
-        }
-        return generatorBuildArgs;
-    }
-    getGeneratorArgs() {
-        let gen = this.generator;
-        let arch;
-        if (gen.includes("Visual Studio")) {
-            // for VS generators, add the -A value
-            let architectureParam = undefined;
-            const architectures = [
-                CMakeGenerators.X64,
-                CMakeGenerators.WIN32,
-                CMakeGenerators.WIN64,
-                CMakeGenerators.ARM64,
-                CMakeGenerators.ARM
-            ];
-            // Remove the platform
-            for (const architecture of architectures) {
-                if (gen.includes(architecture[0])) {
-                    gen = gen.replace(architecture[0], "");
-                    architectureParam = architecture[1];
-                }
-            }
-            gen = `-G${gen.trim()}`;
-            if (architectureParam) {
-                arch = `-A${architectureParam.trim()}`;
-            }
-        }
-        else {
-            // All non-VS generators are passed as is.
-            gen = `-G${gen.trim()}`;
-        }
-        return [gen, arch];
-    }
-    toString() {
-        return `{conf: ${this.name}:${this.type}}`;
-    }
-}
-exports.Configuration = Configuration;
-// Internal placeholder name for environment without a name
-Configuration.unnamedEnvironmentName = 'unnamed';
-class PropertyEvaluator {
-    constructor(config, globalEnvs, tl) {
-        this.config = config;
-        this.globalEnvs = globalEnvs;
-        this.tl = tl;
-        // Matches the variable name in "${variable.name}".
-        this.varExp = new RegExp("\\$\{([^\{\}]+)\}", "g");
-        this.localEnv = new Environment("", []);
-        this.createLocalVars();
-    }
-    addToLocalEnv(name, value) {
-        this.localEnv.addVariable(new Variable(name, value));
-    }
-    createLocalVars() {
-        const settingsPath = this.config.cmakeSettingsJsonPath;
-        this.addToLocalEnv('name', this.config.name);
-        this.addToLocalEnv('generator', this.config.generator);
-        this.addToLocalEnv('workspaceRoot', this.config.workspaceRoot);
-        this.addToLocalEnv('thisFile', settingsPath);
-        this.addToLocalEnv('projectFile', path.join(path.dirname(settingsPath), 'CMakeLists.txt'));
-        this.addToLocalEnv('projectDir', path.dirname(settingsPath));
-        this.addToLocalEnv('projectDirName', path.basename(path.dirname(settingsPath)));
-        this.addToLocalEnv('workspaceHash', crypto.createHash('md5')
-            .update(this.config.cmakeSettingsJsonPath)
-            .digest('hex'));
-    }
-    searchVariable(variable, env) {
-        var _a;
-        if (env != null) {
-            for (const v of env.variables) {
-                if (v.name === variable) {
-                    return (_a = v.value) !== null && _a !== void 0 ? _a : "";
-                }
-            }
-        }
-        return null;
-    }
-    evaluateVariable(variable) {
-        this.tl.debug(`Searching ${variable.name} in environment ${this.localEnv} ...`);
-        let res = this.searchVariable(variable.name, this.localEnv);
-        if (res !== null) {
-            return res;
-        }
-        for (const localName of this.config.inheritEnvironments) {
-            const env = this.config.environments[localName];
-            res = this.searchVariable(variable.name, env);
-            if (res !== null) {
-                return res;
-            }
-        }
-        let env = this.config.environments[Configuration.unnamedEnvironmentName];
-        res = this.searchVariable(variable.name, env);
-        if (res !== null) {
-            return res;
-        }
-        for (const localName of this.config.inheritEnvironments) {
-            const env = this.globalEnvs[localName];
-            res = this.searchVariable(variable.name, env);
-            if (res !== null)
-                return res;
-        }
-        env = this.globalEnvs[Configuration.unnamedEnvironmentName];
-        res = this.searchVariable(variable.name, env);
-        if (res !== null)
-            return res;
-        // Try to match an environment variable.
-        if (variable.name.startsWith("env.")) {
-            const envVarName = variable.name.substring(4);
-            const value = process.env[envVarName];
-            if (value) {
-                return value;
-            }
-        }
-        return null;
-    }
-    extractVariables(str) {
-        const variables = [];
-        while (true) {
-            const match = this.varExp.exec(str);
-            if (match === null)
-                break;
-            if (match.length > 1) {
-                const varname = match[1];
-                const variable = new Variable(varname, '');
-                variables.push(variable);
-            }
-        }
-        return variables;
-    }
-    evaluateExpression(expr) {
-        this.tl.debug(`evaluating expression: '${expr}' ...`);
-        let res = expr;
-        while (true) {
-            const variables = this.extractVariables(res);
-            if (variables !== null) {
-                let resolved;
-                resolved = false;
-                for (const variable of variables) {
-                    const resv = this.evaluateVariable(variable);
-                    if (resv !== null) {
-                        res = res.replace('${' + variable.name + '}', resv);
-                        this.tl.debug(`evaluated \$\{${variable.name}\} to '${resv}'`);
-                        resolved = true;
-                    }
-                    else {
-                        this.tl.debug(`Warning: could not evaluate '${variable.toString()}'`);
-                    }
-                }
-                if (resolved === false) {
-                    break;
-                }
-            }
-        }
-        this.tl.debug(`evalutated to: '${String(res)}'.`);
-        return res !== null && res !== void 0 ? res : '';
-    }
-}
-exports.PropertyEvaluator = PropertyEvaluator;
-function parseEnvironments(envsJson) {
-    const environments = {};
-    for (const env of envsJson) {
-        let namespace = 'env';
-        let name = Configuration.unnamedEnvironmentName;
-        const variables = [];
-        for (const envi in env) {
-            if (envi === 'environment') {
-                name = env[envi];
-            }
-            else if (envi === 'namespace') {
-                namespace = env[envi];
-            }
-            else {
-                let variableName = envi;
-                const variableValue = env[envi];
-                if (!variableName.includes('.')) {
-                    if (namespace && namespace.length > 0) {
-                        variableName = namespace + '.' + variableName;
-                    }
-                }
-                variables.push(new Variable(variableName, variableValue));
-            }
-        }
-        if (name in environments) {
-            // Append entries to existing environments' variables.
-            for (const variable of variables) {
-                environments[name].addVariable(variable);
-            }
-        }
-        else {
-            // Create a new environment.
-            const env = new Environment(name, variables);
-            environments[name] = env;
-        }
-    }
-    return environments;
-}
-exports.parseEnvironments = parseEnvironments;
-function parseConfigurations(configurationsJson, cmakeSettingsJson, sourceDir) {
-    // Parse all configurations.
-    const configurations = [];
-    for (const configuration of configurationsJson) {
-        // Parse variables.
-        const vars = [];
-        if (configuration.variables) {
-            for (const variable of configuration.variables) {
-                const data = new CMakeVariable(variable.name, variable.value, variable.type);
-                vars.push(data);
-            }
-            ;
-        }
-        // Parse inherited environments.
-        const inheritedEnvs = [];
-        if (configuration.inheritEnvironments) {
-            for (const env of configuration.inheritEnvironments) {
-                inheritedEnvs.push(env);
-            }
-        }
-        // Parse local environments.
-        let localEnvs = {};
-        if (configuration.environments) {
-            localEnvs = parseEnvironments(configuration.environments);
-        }
-        const newConfiguration = new Configuration(configuration.name, localEnvs, configuration.remoteMachineName ? configuration.remoteBuildRoot : configuration.buildRoot, configuration.cmakeCommandArgs, configuration.buildCommandArgs, configuration.generator, configuration.configurationType, 
-        // Set the workspace with the provided source directory.
-        sourceDir, 
-        // Set the Configuration.cmakeSettingsJsonPath field value with the one passed in.
-        cmakeSettingsJson, configuration.cmakeToolchain, vars, inheritedEnvs);
-        configurations.push(newConfiguration);
-    } //for
-    return configurations;
-}
-exports.parseConfigurations = parseConfigurations;
-class CMakeSettingsJsonRunner {
-    constructor(baseLib, cmakeSettingsJson, configurationFilter, appendedCMakeArgs, workspaceRoot, vcpkgTriplet, useVcpkgToolchain, doBuild, ninjaPath, ninjaDownloadUrl, sourceScript, buildDir) {
-        this.baseLib = baseLib;
-        this.cmakeSettingsJson = cmakeSettingsJson;
-        this.configurationFilter = configurationFilter;
-        this.appendedCMakeArgs = appendedCMakeArgs;
-        this.workspaceRoot = workspaceRoot;
-        this.vcpkgTriplet = vcpkgTriplet;
-        this.useVcpkgToolchain = useVcpkgToolchain;
-        this.doBuild = doBuild;
-        this.ninjaPath = ninjaPath;
-        this.ninjaDownloadUrl = ninjaDownloadUrl;
-        this.sourceScript = sourceScript;
-        this.buildDir = buildDir;
-        this.baseLib.debug(`CMakeSettingsJsonRunner()<<`);
-        this.configurationFilter = configurationFilter;
-        this.baseUtils = new baseutillib.BaseUtilLib(this.baseLib);
-        this.cmakeUtils = new cmakeutil.CMakeUtils(this.baseUtils);
-        this.ninjaLib = new ninjalib.NinjaProvider(this.baseLib);
-        this.baseLib.debug(`buildDir=${buildDir}`);
-        this.buildDir = baseutillib.BaseUtilLib.normalizePath(buildDir);
-        this.baseLib.debug(`normalized buildDir=${this.buildDir}`);
-        if (!this.baseLib.exist(cmakeSettingsJson)) {
-            throw new Error(`File '${cmakeSettingsJson}' does not exist.`);
-        }
-        this.baseLib.debug(`CMakeSettingsJsonRunner()>>`);
-    }
-    parseConfigurations(json) {
-        let configurations = [];
-        if (json.configurations) {
-            configurations = parseConfigurations(json.configurations, this.cmakeSettingsJson, this.baseLib.getSrcDir());
-        }
-        this.baseLib.debug(`CMakeSettings.json parsed configurations: '${String(configurations)}'.`);
-        return configurations;
-    }
-    static parseEnvironments(envsJson) {
-        return parseEnvironments(envsJson);
-    }
-    parseGlobalEnvironments(json) {
-        // Parse global environments
-        let globalEnvs = {};
-        if (json.environments != null) {
-            globalEnvs = CMakeSettingsJsonRunner.parseEnvironments(json.environments);
-        }
-        this.baseLib.debug("CMakeSettings.json parsed global environments.");
-        for (const envName in globalEnvs) {
-            this.baseLib.debug(`'${envName}'=${String(globalEnvs[envName])}`);
-        }
-        return globalEnvs;
-    }
-    run() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const [success, content] = this.baseUtils.readFile(this.cmakeSettingsJson);
-            if (!success) {
-                throw new Error(`Cannot read file: '${this.cmakeSettingsJson}'.`);
-            }
-            // Remove any potential BOM at the beginning.
-            const contentTrimmed = content.toString().trimLeft();
-            this.baseLib.debug(`Content of file CMakeSettings.json: '${contentTrimmed}'.`);
-            // Strip any comment out of the JSON content.
-            const cmakeSettingsJson = JSON.parse(strip_json_comments_1.default(contentTrimmed));
-            const configurations = this.parseConfigurations(cmakeSettingsJson);
-            const globalEnvs = this.parseGlobalEnvironments(cmakeSettingsJson);
-            const regex = new RegExp(this.configurationFilter);
-            const filteredConfigurations = configurations.filter(configuration => {
-                return regex.test(configuration.name);
-            });
-            this.baseLib.debug(`CMakeSettings.json filtered configurations: '${String(filteredConfigurations)}'."`);
-            if (filteredConfigurations.length === 0) {
-                throw new Error(`No matching configuration for filter: '${this.configurationFilter}'.`);
-            }
-            // Store and restore the PATH env var for each configuration, to prevent side effects among configurations.
-            const originalPath = process.env.PATH;
-            for (const configuration of filteredConfigurations) {
-                const msg = `Process configuration: '${configuration.name}'.`;
-                try {
-                    this.baseLib.beginOperation(msg);
-                    console.log(msg);
-                    let cmakeArgs = [];
-                    // Search for CMake tool and run it
-                    let cmake;
-                    if (this.sourceScript) {
-                        cmake = this.baseLib.tool(this.sourceScript);
-                        cmakeArgs.push(yield this.baseLib.which('cmake', true));
-                    }
-                    else {
-                        cmake = this.baseLib.tool(yield this.baseLib.which('cmake', true));
-                    }
-                    // Evaluate all variables in the configuration.
-                    const evaluator = new PropertyEvaluator(configuration, globalEnvs, this.baseLib);
-                    const evaledConf = configuration.evaluate(evaluator);
-                    // Set all variable in the configuration in the process environment.
-                    evaledConf.setEnvironment(globalEnvs);
-                    // The build directory value specified in CMakeSettings.json is ignored.
-                    // This is because:
-                    // 1. you want to build targeting an empty binary directory;
-                    // 2. the default location in CMakeSettings.json is under the source tree, whose content is not deleted upon each build run.
-                    // Instead if users did not provided a specific path, let's force it to
-                    // "$(Build.ArtifactStagingDirectory)/{name}" which should be empty.
-                    console.log(`Note: run-cmake always ignores the 'buildRoot' value specified in the CMakeSettings.json (buildRoot=${configuration.buildDir}). User can override the default value by setting the '${globals.buildDirectory}' input.`);
-                    const artifactsDir = yield this.baseLib.getArtifactsDir();
-                    if (baseutillib.BaseUtilLib.normalizePath(this.buildDir) === baseutillib.BaseUtilLib.normalizePath(artifactsDir)) {
-                        // The build directory goes into the artifact directory in a subdir
-                        // named with the configuration name.
-                        evaledConf.buildDir = path.join(artifactsDir, configuration.name);
-                    }
-                    else {
-                        // Append the configuration name to the user provided build directory. This is mandatory to have each 
-                        // build in a different directory.
-                        evaledConf.buildDir = path.join(this.buildDir, configuration.name);
-                    }
-                    console.log(`Overriding build directory to: '${evaledConf.buildDir}'`);
-                    cmakeArgs = cmakeArgs.concat(evaledConf.getGeneratorArgs().filter(this.notEmpty));
-                    if (this.baseUtils.isNinjaGenerator(cmakeArgs)) {
-                        const ninjaPath = yield this.ninjaLib.retrieveNinjaPath(this.ninjaPath, this.ninjaDownloadUrl);
-                        cmakeArgs.push(`-DCMAKE_MAKE_PROGRAM=${ninjaPath}`);
-                    }
-                    if (!this.isMultiConfigGenerator(evaledConf.generator)) {
-                        cmakeArgs.push(`-DCMAKE_BUILD_TYPE=${evaledConf.type}`);
-                    }
-                    for (const variable of evaledConf.variables) {
-                        cmakeArgs.push(variable.toString());
-                    }
-                    if (evaledConf.cmakeToolchain) {
-                        cmakeArgs.push(`-DCMAKE_TOOLCHAIN_FILE=${evaledConf.cmakeToolchain}`);
-                    }
-                    // Use vcpkg toolchain if requested.
-                    if (this.useVcpkgToolchain === true) {
-                        cmakeArgs = yield this.cmakeUtils.injectVcpkgToolchain(cmakeArgs, this.vcpkgTriplet, this.baseLib);
-                    }
-                    // Add the current args in the tool, add
-                    // custom args, and reset the args.
-                    for (const arg of cmakeArgs) {
-                        cmake.arg(arg);
-                    }
-                    cmakeArgs = [];
-                    // Add CMake args from CMakeSettings.json file.
-                    cmake.line(evaledConf.cmakeArgs);
-                    // Set the source directory.
-                    cmake.arg(path.dirname(this.cmakeSettingsJson));
-                    // Run CNake with the given arguments.
-                    if (!evaledConf.buildDir) {
-                        throw new Error("Build directory is not specified.");
-                    }
-                    // Append user provided CMake arguments.
-                    cmake.line(this.appendedCMakeArgs);
-                    yield this.baseLib.mkdirP(evaledConf.buildDir);
-                    const options = {
-                        cwd: evaledConf.buildDir,
-                        failOnStdErr: false,
-                        errStream: process.stdout,
-                        outStream: process.stdout,
-                        ignoreReturnCode: true,
-                        silent: false,
-                        windowsVerbatimArguments: false,
-                        env: process.env
-                    };
-                    this.baseLib.debug(`Generating project files with CMake in build directory '${options.cwd}' ...`);
-                    let code = -1;
-                    yield using_statement_1.using(baseutillib.Matcher.createMatcher('cmake', this.baseLib, this.cmakeSettingsJson), (matcher) => __awaiter(this, void 0, void 0, function* () {
-                        code = yield this.baseUtils.wrapOp("Generate project files with CMake", () => cmake.exec(options));
-                    }));
-                    if (code !== 0) {
-                        throw new Error(`"CMake failed with error code: '${code}'."`);
-                    }
-                    if (this.doBuild) {
-                        yield using_statement_1.using(baseutillib.Matcher.createMatcher(cmakerunner.CMakeRunner.getBuildMatcher(this.buildDir, this.baseLib), this.baseLib), (matcher) => __awaiter(this, void 0, void 0, function* () {
-                            yield this.baseUtils.wrapOp("Build with CMake", () => __awaiter(this, void 0, void 0, function* () {
-                                return yield cmakerunner.CMakeRunner.build(this.baseLib, evaledConf.buildDir, 
-                                // CMakeSettings.json contains in buildCommandArgs the arguments to the make program
-                                //only. They need to be put after '--', otherwise would be passed to directly to cmake.
-                                ` ${evaledConf.getGeneratorBuildArgs()} -- ${evaledConf.makeArgs}`, options);
-                            }));
-                        }));
-                    }
-                    // Restore the original PATH environment variable.
-                    process.env.PATH = originalPath;
-                }
-                finally {
-                    this.baseLib.endOperation();
-                }
-            }
-        });
-    }
-    notEmpty(value) {
-        return value !== null && value !== undefined;
-    }
-    isMultiConfigGenerator(generatorName) {
-        return generatorName.includes("Visual Studio") ||
-            generatorName.includes("Ninja Multi-Config");
-    }
-}
-exports.CMakeSettingsJsonRunner = CMakeSettingsJsonRunner;
-//# sourceMappingURL=cmakesettings-runner.js.map
+exports.splitWhen = splitWhen;
+
 
 /***/ }),
 
@@ -11135,298 +10237,81 @@ exports.getState = getState;
 
 /***/ }),
 
-/***/ 474:
+/***/ 486:
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
-module.exports = function (/*Buffer*/inbuf) {
+/*!
+ * is-glob <https://github.com/jonschlinkert/is-glob>
+ *
+ * Copyright (c) 2014-2017, Jon Schlinkert.
+ * Released under the MIT License.
+ */
 
-  var zlib = __webpack_require__(761);
-  
-  var opts = {chunkSize: (parseInt(inbuf.length / 1024) + 1) * 1024};
-  
-  return {
-    deflate: function () {
-      return zlib.deflateRawSync(inbuf, opts);
-    },
+var isExtglob = __webpack_require__(888);
+var chars = { '{': '}', '(': ')', '[': ']'};
+var strictRegex = /\\(.)|(^!|\*|[\].+)]\?|\[[^\\\]]+\]|\{[^\\}]+\}|\(\?[:!=][^\\)]+\)|\([^|]+\|[^\\)]+\))/;
+var relaxedRegex = /\\(.)|(^!|[*?{}()[\]]|\(\?)/;
 
-    deflateAsync: function (/*Function*/callback) {
-      var tmp = zlib.createDeflateRaw(opts), parts = [], total = 0;
-      tmp.on('data', function (data) {
-        parts.push(data);
-        total += data.length;
-      });
-      tmp.on('end', function () {
-        var buf = Buffer.alloc(total), written = 0;
-        buf.fill(0);
-        for (var i = 0; i < parts.length; i++) {
-          var part = parts[i];
-          part.copy(buf, written);
-          written += part.length;
-        }
-        callback && callback(buf);
-      });
-      tmp.end(inbuf);
-    }
+module.exports = function isGlob(str, options) {
+  if (typeof str !== 'string' || str === '') {
+    return false;
   }
+
+  if (isExtglob(str)) {
+    return true;
+  }
+
+  var regex = strictRegex;
+  var match;
+
+  // optionally relax regex
+  if (options && options.strict === false) {
+    regex = relaxedRegex;
+  }
+
+  while ((match = regex.exec(str))) {
+    if (match[2]) return true;
+    var idx = match.index + match[0].length;
+
+    // if an open bracket/brace/paren is escaped,
+    // set the index to the next closing character
+    var open = match[1];
+    var close = open ? chars[open] : null;
+    if (open && close) {
+      var n = str.indexOf(close, idx);
+      if (n !== -1) {
+        idx = n + 1;
+      }
+    }
+
+    str = str.slice(idx);
+  }
+  return false;
 };
 
 
 /***/ }),
 
-/***/ 486:
-/***/ (function(module, __unusedexports, __webpack_require__) {
+/***/ 496:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
-
-/**
- * This is the common logic for both the Node.js and web browser
- * implementations of `debug()`.
- */
-function setup(env) {
-  createDebug.debug = createDebug;
-  createDebug.default = createDebug;
-  createDebug.coerce = coerce;
-  createDebug.disable = disable;
-  createDebug.enable = enable;
-  createDebug.enabled = enabled;
-  createDebug.humanize = __webpack_require__(317);
-  Object.keys(env).forEach(function (key) {
-    createDebug[key] = env[key];
-  });
-  /**
-  * Active `debug` instances.
-  */
-
-  createDebug.instances = [];
-  /**
-  * The currently active debug mode names, and names to skip.
-  */
-
-  createDebug.names = [];
-  createDebug.skips = [];
-  /**
-  * Map of special "%n" handling functions, for the debug "format" argument.
-  *
-  * Valid key names are a single, lower or upper-case letter, i.e. "n" and "N".
-  */
-
-  createDebug.formatters = {};
-  /**
-  * Selects a color for a debug namespace
-  * @param {String} namespace The namespace string for the for the debug instance to be colored
-  * @return {Number|String} An ANSI color code for the given namespace
-  * @api private
-  */
-
-  function selectColor(namespace) {
-    var hash = 0;
-
-    for (var i = 0; i < namespace.length; i++) {
-      hash = (hash << 5) - hash + namespace.charCodeAt(i);
-      hash |= 0; // Convert to 32bit integer
-    }
-
-    return createDebug.colors[Math.abs(hash) % createDebug.colors.length];
-  }
-
-  createDebug.selectColor = selectColor;
-  /**
-  * Create a debugger with the given `namespace`.
-  *
-  * @param {String} namespace
-  * @return {Function}
-  * @api public
-  */
-
-  function createDebug(namespace) {
-    var prevTime;
-
-    function debug() {
-      // Disabled?
-      if (!debug.enabled) {
-        return;
-      }
-
-      for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-        args[_key] = arguments[_key];
-      }
-
-      var self = debug; // Set `diff` timestamp
-
-      var curr = Number(new Date());
-      var ms = curr - (prevTime || curr);
-      self.diff = ms;
-      self.prev = prevTime;
-      self.curr = curr;
-      prevTime = curr;
-      args[0] = createDebug.coerce(args[0]);
-
-      if (typeof args[0] !== 'string') {
-        // Anything else let's inspect with %O
-        args.unshift('%O');
-      } // Apply any `formatters` transformations
-
-
-      var index = 0;
-      args[0] = args[0].replace(/%([a-zA-Z%])/g, function (match, format) {
-        // If we encounter an escaped % then don't increase the array index
-        if (match === '%%') {
-          return match;
-        }
-
-        index++;
-        var formatter = createDebug.formatters[format];
-
-        if (typeof formatter === 'function') {
-          var val = args[index];
-          match = formatter.call(self, val); // Now we need to remove `args[index]` since it's inlined in the `format`
-
-          args.splice(index, 1);
-          index--;
-        }
-
-        return match;
-      }); // Apply env-specific formatting (colors, etc.)
-
-      createDebug.formatArgs.call(self, args);
-      var logFn = self.log || createDebug.log;
-      logFn.apply(self, args);
-    }
-
-    debug.namespace = namespace;
-    debug.enabled = createDebug.enabled(namespace);
-    debug.useColors = createDebug.useColors();
-    debug.color = selectColor(namespace);
-    debug.destroy = destroy;
-    debug.extend = extend; // Debug.formatArgs = formatArgs;
-    // debug.rawLog = rawLog;
-    // env-specific initialization logic for debug instances
-
-    if (typeof createDebug.init === 'function') {
-      createDebug.init(debug);
-    }
-
-    createDebug.instances.push(debug);
-    return debug;
-  }
-
-  function destroy() {
-    var index = createDebug.instances.indexOf(this);
-
-    if (index !== -1) {
-      createDebug.instances.splice(index, 1);
-      return true;
-    }
-
-    return false;
-  }
-
-  function extend(namespace, delimiter) {
-    return createDebug(this.namespace + (typeof delimiter === 'undefined' ? ':' : delimiter) + namespace);
-  }
-  /**
-  * Enables a debug mode by namespaces. This can include modes
-  * separated by a colon and wildcards.
-  *
-  * @param {String} namespaces
-  * @api public
-  */
-
-
-  function enable(namespaces) {
-    createDebug.save(namespaces);
-    createDebug.names = [];
-    createDebug.skips = [];
-    var i;
-    var split = (typeof namespaces === 'string' ? namespaces : '').split(/[\s,]+/);
-    var len = split.length;
-
-    for (i = 0; i < len; i++) {
-      if (!split[i]) {
-        // ignore empty strings
-        continue;
-      }
-
-      namespaces = split[i].replace(/\*/g, '.*?');
-
-      if (namespaces[0] === '-') {
-        createDebug.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
-      } else {
-        createDebug.names.push(new RegExp('^' + namespaces + '$'));
-      }
-    }
-
-    for (i = 0; i < createDebug.instances.length; i++) {
-      var instance = createDebug.instances[i];
-      instance.enabled = createDebug.enabled(instance.namespace);
-    }
-  }
-  /**
-  * Disable debug output.
-  *
-  * @api public
-  */
-
-
-  function disable() {
-    createDebug.enable('');
-  }
-  /**
-  * Returns true if the given mode name is enabled, false otherwise.
-  *
-  * @param {String} name
-  * @return {Boolean}
-  * @api public
-  */
-
-
-  function enabled(name) {
-    if (name[name.length - 1] === '*') {
-      return true;
-    }
-
-    var i;
-    var len;
-
-    for (i = 0, len = createDebug.skips.length; i < len; i++) {
-      if (createDebug.skips[i].test(name)) {
-        return false;
-      }
-    }
-
-    for (i = 0, len = createDebug.names.length; i < len; i++) {
-      if (createDebug.names[i].test(name)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-  /**
-  * Coerce `val`.
-  *
-  * @param {Mixed} val
-  * @return {Mixed}
-  * @api private
-  */
-
-
-  function coerce(val) {
-    if (val instanceof Error) {
-      return val.stack || val.message;
-    }
-
-    return val;
-  }
-
-  createDebug.enable(createDebug.load());
-  return createDebug;
-}
-
-module.exports = setup;
-
-
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(__webpack_require__(848), exports);
+__exportStar(__webpack_require__(95), exports);
+__exportStar(__webpack_require__(722), exports);
+//# sourceMappingURL=index.js.map
 
 /***/ }),
 
@@ -11699,7 +10584,8 @@ const depth = token => {
 /**
  * Quickly scans a glob pattern and returns an object with a handful of
  * useful properties, like `isGlob`, `path` (the leading non-glob, if it exists),
- * `glob` (the actual pattern), and `negated` (true if the path starts with `!`).
+ * `glob` (the actual pattern), `negated` (true if the path starts with `!` but not
+ * with `!(`) and `negatedExtglob` (true if the path starts with `!(`).
  *
  * ```js
  * const pm = require('picomatch');
@@ -11733,6 +10619,7 @@ const scan = (input, options) => {
   let braceEscaped = false;
   let backslashes = false;
   let negated = false;
+  let negatedExtglob = false;
   let finished = false;
   let braces = 0;
   let prev;
@@ -11844,6 +10731,9 @@ const scan = (input, options) => {
         isGlob = token.isGlob = true;
         isExtglob = token.isExtglob = true;
         finished = true;
+        if (code === CHAR_EXCLAMATION_MARK && index === start) {
+          negatedExtglob = true;
+        }
 
         if (scanToEnd === true) {
           while (eos() !== true && (code = advance())) {
@@ -11898,13 +10788,15 @@ const scan = (input, options) => {
           isBracket = token.isBracket = true;
           isGlob = token.isGlob = true;
           finished = true;
-
-          if (scanToEnd === true) {
-            continue;
-          }
           break;
         }
       }
+
+      if (scanToEnd === true) {
+        continue;
+      }
+
+      break;
     }
 
     if (opts.nonegate !== true && code === CHAR_EXCLAMATION_MARK && index === start) {
@@ -11914,23 +10806,24 @@ const scan = (input, options) => {
     }
 
     if (opts.noparen !== true && code === CHAR_LEFT_PARENTHESES) {
-      while (eos() !== true && (code = advance())) {
-        if (code === CHAR_BACKWARD_SLASH) {
-          backslashes = token.backslashes = true;
-          code = advance();
-          continue;
-        }
+      isGlob = token.isGlob = true;
 
-        if (code === CHAR_RIGHT_PARENTHESES) {
-          isGlob = token.isGlob = true;
-          finished = true;
-
-          if (scanToEnd === true) {
+      if (scanToEnd === true) {
+        while (eos() !== true && (code = advance())) {
+          if (code === CHAR_LEFT_PARENTHESES) {
+            backslashes = token.backslashes = true;
+            code = advance();
             continue;
           }
-          break;
+
+          if (code === CHAR_RIGHT_PARENTHESES) {
+            finished = true;
+            break;
+          }
         }
+        continue;
       }
+      break;
     }
 
     if (isGlob === true) {
@@ -11994,7 +10887,8 @@ const scan = (input, options) => {
     isGlob,
     isExtglob,
     isGlobstar,
-    negated
+    negated,
+    negatedExtglob
   };
 
   if (opts.tokens === true) {
@@ -12163,506 +11057,6 @@ function pauseStreams (streams, options) {
   return streams
 }
 
-
-/***/ }),
-
-/***/ 549:
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-var url = __webpack_require__(835);
-var URL = url.URL;
-var http = __webpack_require__(605);
-var https = __webpack_require__(211);
-var assert = __webpack_require__(357);
-var Writable = __webpack_require__(413).Writable;
-var debug = __webpack_require__(784)("follow-redirects");
-
-// RFC7231§4.2.1: Of the request methods defined by this specification,
-// the GET, HEAD, OPTIONS, and TRACE methods are defined to be safe.
-var SAFE_METHODS = { GET: true, HEAD: true, OPTIONS: true, TRACE: true };
-
-// Create handlers that pass events from native requests
-var eventHandlers = Object.create(null);
-["abort", "aborted", "connect", "error", "socket", "timeout"].forEach(function (event) {
-  eventHandlers[event] = function (arg1, arg2, arg3) {
-    this._redirectable.emit(event, arg1, arg2, arg3);
-  };
-});
-
-// An HTTP(S) request that can be redirected
-function RedirectableRequest(options, responseCallback) {
-  // Initialize the request
-  Writable.call(this);
-  this._sanitizeOptions(options);
-  this._options = options;
-  this._ended = false;
-  this._ending = false;
-  this._redirectCount = 0;
-  this._redirects = [];
-  this._requestBodyLength = 0;
-  this._requestBodyBuffers = [];
-
-  // Attach a callback if passed
-  if (responseCallback) {
-    this.on("response", responseCallback);
-  }
-
-  // React to responses of native requests
-  var self = this;
-  this._onNativeResponse = function (response) {
-    self._processResponse(response);
-  };
-
-  // Perform the first request
-  this._performRequest();
-}
-RedirectableRequest.prototype = Object.create(Writable.prototype);
-
-// Writes buffered data to the current native request
-RedirectableRequest.prototype.write = function (data, encoding, callback) {
-  // Writing is not allowed if end has been called
-  if (this._ending) {
-    throw new Error("write after end");
-  }
-
-  // Validate input and shift parameters if necessary
-  if (!(typeof data === "string" || typeof data === "object" && ("length" in data))) {
-    throw new Error("data should be a string, Buffer or Uint8Array");
-  }
-  if (typeof encoding === "function") {
-    callback = encoding;
-    encoding = null;
-  }
-
-  // Ignore empty buffers, since writing them doesn't invoke the callback
-  // https://github.com/nodejs/node/issues/22066
-  if (data.length === 0) {
-    if (callback) {
-      callback();
-    }
-    return;
-  }
-  // Only write when we don't exceed the maximum body length
-  if (this._requestBodyLength + data.length <= this._options.maxBodyLength) {
-    this._requestBodyLength += data.length;
-    this._requestBodyBuffers.push({ data: data, encoding: encoding });
-    this._currentRequest.write(data, encoding, callback);
-  }
-  // Error when we exceed the maximum body length
-  else {
-    this.emit("error", new Error("Request body larger than maxBodyLength limit"));
-    this.abort();
-  }
-};
-
-// Ends the current native request
-RedirectableRequest.prototype.end = function (data, encoding, callback) {
-  // Shift parameters if necessary
-  if (typeof data === "function") {
-    callback = data;
-    data = encoding = null;
-  }
-  else if (typeof encoding === "function") {
-    callback = encoding;
-    encoding = null;
-  }
-
-  // Write data if needed and end
-  if (!data) {
-    this._ended = this._ending = true;
-    this._currentRequest.end(null, null, callback);
-  }
-  else {
-    var self = this;
-    var currentRequest = this._currentRequest;
-    this.write(data, encoding, function () {
-      self._ended = true;
-      currentRequest.end(null, null, callback);
-    });
-    this._ending = true;
-  }
-};
-
-// Sets a header value on the current native request
-RedirectableRequest.prototype.setHeader = function (name, value) {
-  this._options.headers[name] = value;
-  this._currentRequest.setHeader(name, value);
-};
-
-// Clears a header value on the current native request
-RedirectableRequest.prototype.removeHeader = function (name) {
-  delete this._options.headers[name];
-  this._currentRequest.removeHeader(name);
-};
-
-// Global timeout for all underlying requests
-RedirectableRequest.prototype.setTimeout = function (msecs, callback) {
-  if (callback) {
-    this.once("timeout", callback);
-  }
-
-  if (this.socket) {
-    startTimer(this, msecs);
-  }
-  else {
-    var self = this;
-    this._currentRequest.once("socket", function () {
-      startTimer(self, msecs);
-    });
-  }
-
-  this.once("response", clearTimer);
-  this.once("error", clearTimer);
-
-  return this;
-};
-
-function startTimer(request, msecs) {
-  clearTimeout(request._timeout);
-  request._timeout = setTimeout(function () {
-    request.emit("timeout");
-  }, msecs);
-}
-
-function clearTimer() {
-  clearTimeout(this._timeout);
-}
-
-// Proxy all other public ClientRequest methods
-[
-  "abort", "flushHeaders", "getHeader",
-  "setNoDelay", "setSocketKeepAlive",
-].forEach(function (method) {
-  RedirectableRequest.prototype[method] = function (a, b) {
-    return this._currentRequest[method](a, b);
-  };
-});
-
-// Proxy all public ClientRequest properties
-["aborted", "connection", "socket"].forEach(function (property) {
-  Object.defineProperty(RedirectableRequest.prototype, property, {
-    get: function () { return this._currentRequest[property]; },
-  });
-});
-
-RedirectableRequest.prototype._sanitizeOptions = function (options) {
-  // Ensure headers are always present
-  if (!options.headers) {
-    options.headers = {};
-  }
-
-  // Since http.request treats host as an alias of hostname,
-  // but the url module interprets host as hostname plus port,
-  // eliminate the host property to avoid confusion.
-  if (options.host) {
-    // Use hostname if set, because it has precedence
-    if (!options.hostname) {
-      options.hostname = options.host;
-    }
-    delete options.host;
-  }
-
-  // Complete the URL object when necessary
-  if (!options.pathname && options.path) {
-    var searchPos = options.path.indexOf("?");
-    if (searchPos < 0) {
-      options.pathname = options.path;
-    }
-    else {
-      options.pathname = options.path.substring(0, searchPos);
-      options.search = options.path.substring(searchPos);
-    }
-  }
-};
-
-
-// Executes the next native request (initial or redirect)
-RedirectableRequest.prototype._performRequest = function () {
-  // Load the native protocol
-  var protocol = this._options.protocol;
-  var nativeProtocol = this._options.nativeProtocols[protocol];
-  if (!nativeProtocol) {
-    this.emit("error", new Error("Unsupported protocol " + protocol));
-    return;
-  }
-
-  // If specified, use the agent corresponding to the protocol
-  // (HTTP and HTTPS use different types of agents)
-  if (this._options.agents) {
-    var scheme = protocol.substr(0, protocol.length - 1);
-    this._options.agent = this._options.agents[scheme];
-  }
-
-  // Create the native request
-  var request = this._currentRequest =
-        nativeProtocol.request(this._options, this._onNativeResponse);
-  this._currentUrl = url.format(this._options);
-
-  // Set up event handlers
-  request._redirectable = this;
-  for (var event in eventHandlers) {
-    /* istanbul ignore else */
-    if (event) {
-      request.on(event, eventHandlers[event]);
-    }
-  }
-
-  // End a redirected request
-  // (The first request must be ended explicitly with RedirectableRequest#end)
-  if (this._isRedirect) {
-    // Write the request entity and end.
-    var i = 0;
-    var self = this;
-    var buffers = this._requestBodyBuffers;
-    (function writeNext(error) {
-      // Only write if this request has not been redirected yet
-      /* istanbul ignore else */
-      if (request === self._currentRequest) {
-        // Report any write errors
-        /* istanbul ignore if */
-        if (error) {
-          self.emit("error", error);
-        }
-        // Write the next buffer if there are still left
-        else if (i < buffers.length) {
-          var buffer = buffers[i++];
-          /* istanbul ignore else */
-          if (!request.finished) {
-            request.write(buffer.data, buffer.encoding, writeNext);
-          }
-        }
-        // End the request if `end` has been called on us
-        else if (self._ended) {
-          request.end();
-        }
-      }
-    }());
-  }
-};
-
-// Processes a response from the current native request
-RedirectableRequest.prototype._processResponse = function (response) {
-  // Store the redirected response
-  var statusCode = response.statusCode;
-  if (this._options.trackRedirects) {
-    this._redirects.push({
-      url: this._currentUrl,
-      headers: response.headers,
-      statusCode: statusCode,
-    });
-  }
-
-  // RFC7231§6.4: The 3xx (Redirection) class of status code indicates
-  // that further action needs to be taken by the user agent in order to
-  // fulfill the request. If a Location header field is provided,
-  // the user agent MAY automatically redirect its request to the URI
-  // referenced by the Location field value,
-  // even if the specific status code is not understood.
-  var location = response.headers.location;
-  if (location && this._options.followRedirects !== false &&
-      statusCode >= 300 && statusCode < 400) {
-    // Abort the current request
-    this._currentRequest.removeAllListeners();
-    this._currentRequest.on("error", noop);
-    this._currentRequest.abort();
-    // Discard the remainder of the response to avoid waiting for data
-    response.destroy();
-
-    // RFC7231§6.4: A client SHOULD detect and intervene
-    // in cyclical redirections (i.e., "infinite" redirection loops).
-    if (++this._redirectCount > this._options.maxRedirects) {
-      this.emit("error", new Error("Max redirects exceeded."));
-      return;
-    }
-
-    // RFC7231§6.4: Automatic redirection needs to done with
-    // care for methods not known to be safe […],
-    // since the user might not wish to redirect an unsafe request.
-    // RFC7231§6.4.7: The 307 (Temporary Redirect) status code indicates
-    // that the target resource resides temporarily under a different URI
-    // and the user agent MUST NOT change the request method
-    // if it performs an automatic redirection to that URI.
-    var header;
-    var headers = this._options.headers;
-    if (statusCode !== 307 && !(this._options.method in SAFE_METHODS)) {
-      this._options.method = "GET";
-      // Drop a possible entity and headers related to it
-      this._requestBodyBuffers = [];
-      for (header in headers) {
-        if (/^content-/i.test(header)) {
-          delete headers[header];
-        }
-      }
-    }
-
-    // Drop the Host header, as the redirect might lead to a different host
-    if (!this._isRedirect) {
-      for (header in headers) {
-        if (/^host$/i.test(header)) {
-          delete headers[header];
-        }
-      }
-    }
-
-    // Perform the redirected request
-    var redirectUrl = url.resolve(this._currentUrl, location);
-    debug("redirecting to", redirectUrl);
-    Object.assign(this._options, url.parse(redirectUrl));
-    if (typeof this._options.beforeRedirect === "function") {
-      try {
-        this._options.beforeRedirect.call(null, this._options);
-      }
-      catch (err) {
-        this.emit("error", err);
-        return;
-      }
-      this._sanitizeOptions(this._options);
-    }
-    this._isRedirect = true;
-    this._performRequest();
-  }
-  else {
-    // The response is not a redirect; return it as-is
-    response.responseUrl = this._currentUrl;
-    response.redirects = this._redirects;
-    this.emit("response", response);
-
-    // Clean up
-    this._requestBodyBuffers = [];
-  }
-};
-
-// Wraps the key/value object of protocols with redirect functionality
-function wrap(protocols) {
-  // Default settings
-  var exports = {
-    maxRedirects: 21,
-    maxBodyLength: 10 * 1024 * 1024,
-  };
-
-  // Wrap each protocol
-  var nativeProtocols = {};
-  Object.keys(protocols).forEach(function (scheme) {
-    var protocol = scheme + ":";
-    var nativeProtocol = nativeProtocols[protocol] = protocols[scheme];
-    var wrappedProtocol = exports[scheme] = Object.create(nativeProtocol);
-
-    // Executes a request, following redirects
-    wrappedProtocol.request = function (input, options, callback) {
-      // Parse parameters
-      if (typeof input === "string") {
-        var urlStr = input;
-        try {
-          input = urlToOptions(new URL(urlStr));
-        }
-        catch (err) {
-          /* istanbul ignore next */
-          input = url.parse(urlStr);
-        }
-      }
-      else if (URL && (input instanceof URL)) {
-        input = urlToOptions(input);
-      }
-      else {
-        callback = options;
-        options = input;
-        input = { protocol: protocol };
-      }
-      if (typeof options === "function") {
-        callback = options;
-        options = null;
-      }
-
-      // Set defaults
-      options = Object.assign({
-        maxRedirects: exports.maxRedirects,
-        maxBodyLength: exports.maxBodyLength,
-      }, input, options);
-      options.nativeProtocols = nativeProtocols;
-
-      assert.equal(options.protocol, protocol, "protocol mismatch");
-      debug("options", options);
-      return new RedirectableRequest(options, callback);
-    };
-
-    // Executes a GET request, following redirects
-    wrappedProtocol.get = function (input, options, callback) {
-      var request = wrappedProtocol.request(input, options, callback);
-      request.end();
-      return request;
-    };
-  });
-  return exports;
-}
-
-/* istanbul ignore next */
-function noop() { /* empty */ }
-
-// from https://github.com/nodejs/node/blob/master/lib/internal/url.js
-function urlToOptions(urlObject) {
-  var options = {
-    protocol: urlObject.protocol,
-    hostname: urlObject.hostname.startsWith("[") ?
-      /* istanbul ignore next */
-      urlObject.hostname.slice(1, -1) :
-      urlObject.hostname,
-    hash: urlObject.hash,
-    search: urlObject.search,
-    pathname: urlObject.pathname,
-    path: urlObject.pathname + urlObject.search,
-    href: urlObject.href,
-  };
-  if (urlObject.port !== "") {
-    options.port = Number(urlObject.port);
-  }
-  return options;
-}
-
-// Exports
-module.exports = wrap({ http: http, https: https });
-module.exports.wrap = wrap;
-
-
-/***/ }),
-
-/***/ 553:
-/***/ (function(module) {
-
-module.exports = {
-    /* Header error messages */
-    "INVALID_LOC" : "Invalid LOC header (bad signature)",
-    "INVALID_CEN" : "Invalid CEN header (bad signature)",
-    "INVALID_END" : "Invalid END header (bad signature)",
-
-    /* ZipEntry error messages*/
-    "NO_DATA" : "Nothing to decompress",
-    "BAD_CRC" : "CRC32 checksum failed",
-    "FILE_IN_THE_WAY" : "There is a file in the way: %s",
-    "UNKNOWN_METHOD" : "Invalid/unsupported compression method",
-
-    /* Inflater error messages */
-    "AVAIL_DATA" : "inflate::Available inflate data did not terminate",
-    "INVALID_DISTANCE" : "inflate::Invalid literal/length or distance code in fixed or dynamic block",
-    "TO_MANY_CODES" : "inflate::Dynamic block code description: too many length or distance codes",
-    "INVALID_REPEAT_LEN" : "inflate::Dynamic block code description: repeat more than specified lengths",
-    "INVALID_REPEAT_FIRST" : "inflate::Dynamic block code description: repeat lengths with no first length",
-    "INCOMPLETE_CODES" : "inflate::Dynamic block code description: code lengths codes incomplete",
-    "INVALID_DYN_DISTANCE": "inflate::Dynamic block code description: invalid distance code lengths",
-    "INVALID_CODES_LEN": "inflate::Dynamic block code description: invalid literal/length code lengths",
-    "INVALID_STORE_BLOCK" : "inflate::Stored block length did not match one's complement",
-    "INVALID_BLOCK_TYPE" : "inflate::Invalid block type (type == 3)",
-
-    /* ADM-ZIP error messages */
-    "CANT_EXTRACT_FILE" : "Could not extract the file",
-    "CANT_OVERRIDE" : "Target file already exists",
-    "NO_ZIP" : "No zip file was loaded",
-    "NO_ENTRY" : "Entry doesn't exist",
-    "DIRECTORY_CONTENT_ERROR" : "A directory cannot have content",
-    "FILE_NOT_FOUND" : "File not found: %s",
-    "NOT_IMPLEMENTED" : "Not implemented",
-    "INVALID_FILENAME" : "Invalid filename",
-    "INVALID_FORMAT" : "Invalid or unsupported zip format. No END header found"
-};
 
 /***/ }),
 
@@ -12835,8 +11229,6 @@ const fixWinEPERM = (p, options, er, cb) => {
   assert(p)
   assert(options)
   assert(typeof cb === 'function')
-  if (er)
-    assert(er instanceof Error)
 
   options.chmod(p, 0o666, er2 => {
     if (er2)
@@ -12856,8 +11248,6 @@ const fixWinEPERM = (p, options, er, cb) => {
 const fixWinEPERMSync = (p, options, er) => {
   assert(p)
   assert(options)
-  if (er)
-    assert(er instanceof Error)
 
   try {
     options.chmodSync(p, 0o666)
@@ -12887,8 +11277,6 @@ const fixWinEPERMSync = (p, options, er) => {
 const rmdir = (p, options, originalEr, cb) => {
   assert(p)
   assert(options)
-  if (originalEr)
-    assert(originalEr instanceof Error)
   assert(typeof cb === 'function')
 
   // try to rmdir first, and only readdir on ENOTEMPTY or EEXIST (SunOS)
@@ -12994,8 +11382,6 @@ const rimrafSync = (p, options) => {
 const rmdirSync = (p, options, originalEr) => {
   assert(p)
   assert(options)
-  if (originalEr)
-    assert(originalEr instanceof Error)
 
   try {
     options.rmdirSync(p)
@@ -13059,22 +11445,30 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.main = void 0;
 const libaction = __webpack_require__(778);
 const runcmakelib = __webpack_require__(832);
 const core = __webpack_require__(470);
+const configurePresetCmdStringInput = "CONFIGUREPRESETCMDSTRING";
+const buildPresetCmdStringInput = "BUILDPRESETCMDSTRING";
+const testPresetCmdStringInput = "TESTPRESETCMDSTRING";
+const runVcpkgEnvFormatStringInput = "RUNVCPKGENVFORMATSTRING";
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
+        const actionLib = new libaction.ActionLib();
         try {
-            const actionLib = new libaction.ActionLib();
-            const runner = new runcmakelib.CMakeRunner(actionLib);
-            yield runner.run();
-            core.info('run-cmake action execution succeeded');
+            const configurePresetCmdStringFormat = actionLib.getInput(configurePresetCmdStringInput, false);
+            const buildPresetCmdStringFormat = actionLib.getInput(buildPresetCmdStringInput, false);
+            const testPresetCmdStringFormat = actionLib.getInput(testPresetCmdStringInput, false);
+            const runVcpkgEnvFormatString = actionLib.getInput(runVcpkgEnvFormatStringInput, false);
+            yield runcmakelib.CMakeRunner.run(actionLib, configurePresetCmdStringFormat, buildPresetCmdStringFormat, testPresetCmdStringFormat, runVcpkgEnvFormatString);
+            actionLib.info('run-cmake action execution succeeded');
             process.exitCode = 0;
         }
         catch (err) {
             const error = err;
             if (error === null || error === void 0 ? void 0 : error.stack) {
-                core.info(error.stack);
+                actionLib.info(error.stack);
             }
             const errorAsString = (err !== null && err !== void 0 ? err : "undefined error").toString();
             core.setFailed(`run-cmake action execution failed: '${errorAsString}'`);
@@ -13082,101 +11476,9 @@ function main() {
         }
     });
 }
-// Main entry point of the task.
-main().catch(error => console.error("main() failed!", error));
+exports.main = main;
 
 //# sourceMappingURL=cmake-action.js.map
-
-
-/***/ }),
-
-/***/ 591:
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-var fs = __webpack_require__(307).require(),
-    pth = __webpack_require__(622);
-	
-fs.existsSync = fs.existsSync || pth.existsSync;
-
-module.exports = function(/*String*/path) {
-
-    var _path = path || "",
-        _permissions = 0,
-        _obj = newAttr(),
-        _stat = null;
-
-    function newAttr() {
-        return {
-            directory : false,
-            readonly : false,
-            hidden : false,
-            executable : false,
-            mtime : 0,
-            atime : 0
-        }
-    }
-
-    if (_path && fs.existsSync(_path)) {
-        _stat = fs.statSync(_path);
-        _obj.directory = _stat.isDirectory();
-        _obj.mtime = _stat.mtime;
-        _obj.atime = _stat.atime;
-        _obj.executable = !!(1 & parseInt ((_stat.mode & parseInt ("777", 8)).toString (8)[0]));
-        _obj.readonly = !!(2 & parseInt ((_stat.mode & parseInt ("777", 8)).toString (8)[0]));
-        _obj.hidden = pth.basename(_path)[0] === ".";
-    } else {
-        console.warn("Invalid path: " + _path)
-    }
-
-    return {
-
-        get directory () {
-            return _obj.directory;
-        },
-
-        get readOnly () {
-            return _obj.readonly;
-        },
-
-        get hidden () {
-            return _obj.hidden;
-        },
-
-        get mtime () {
-            return _obj.mtime;
-        },
-
-        get atime () {
-           return _obj.atime;
-        },
-
-
-        get executable () {
-            return _obj.executable;
-        },
-
-        decodeAttributes : function(val) {
-
-        },
-
-        encodeAttributes : function (val) {
-
-        },
-
-        toString : function() {
-           return '{\n' +
-               '\t"path" : "' + _path + ",\n" +
-               '\t"isDirectory" : ' + _obj.directory + ",\n" +
-               '\t"isReadOnly" : ' + _obj.readonly + ",\n" +
-               '\t"isHidden" : ' + _obj.hidden + ",\n" +
-               '\t"isExecutable" : ' + _obj.executable + ",\n" +
-               '\t"mTime" : ' + _obj.mtime + "\n" +
-               '\t"aTime" : ' + _obj.atime + "\n" +
-           '}';
-        }
-    }
-
-};
 
 
 /***/ }),
@@ -13208,6 +11510,107 @@ function read(path, settings) {
 }
 exports.read = read;
 
+
+/***/ }),
+
+/***/ 597:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.partialMatch = exports.match = exports.getSearchPaths = void 0;
+const pathHelper = __importStar(__webpack_require__(972));
+const internal_match_kind_1 = __webpack_require__(327);
+const IS_WINDOWS = process.platform === 'win32';
+/**
+ * Given an array of patterns, returns an array of paths to search.
+ * Duplicates and paths under other included paths are filtered out.
+ */
+function getSearchPaths(patterns) {
+    // Ignore negate patterns
+    patterns = patterns.filter(x => !x.negate);
+    // Create a map of all search paths
+    const searchPathMap = {};
+    for (const pattern of patterns) {
+        const key = IS_WINDOWS
+            ? pattern.searchPath.toUpperCase()
+            : pattern.searchPath;
+        searchPathMap[key] = 'candidate';
+    }
+    const result = [];
+    for (const pattern of patterns) {
+        // Check if already included
+        const key = IS_WINDOWS
+            ? pattern.searchPath.toUpperCase()
+            : pattern.searchPath;
+        if (searchPathMap[key] === 'included') {
+            continue;
+        }
+        // Check for an ancestor search path
+        let foundAncestor = false;
+        let tempKey = key;
+        let parent = pathHelper.dirname(tempKey);
+        while (parent !== tempKey) {
+            if (searchPathMap[parent]) {
+                foundAncestor = true;
+                break;
+            }
+            tempKey = parent;
+            parent = pathHelper.dirname(tempKey);
+        }
+        // Include the search pattern in the result
+        if (!foundAncestor) {
+            result.push(pattern.searchPath);
+            searchPathMap[key] = 'included';
+        }
+    }
+    return result;
+}
+exports.getSearchPaths = getSearchPaths;
+/**
+ * Matches the patterns against the path
+ */
+function match(patterns, itemPath) {
+    let result = internal_match_kind_1.MatchKind.None;
+    for (const pattern of patterns) {
+        if (pattern.negate) {
+            result &= ~pattern.match(itemPath);
+        }
+        else {
+            result |= pattern.match(itemPath);
+        }
+    }
+    return result;
+}
+exports.match = match;
+/**
+ * Checks whether to descend further into the directory
+ */
+function partialMatch(patterns, itemPath) {
+    return patterns.some(x => !x.negate && x.partialMatch(itemPath));
+}
+exports.partialMatch = partialMatch;
+//# sourceMappingURL=internal-pattern-helper.js.map
 
 /***/ }),
 
@@ -13564,96 +11967,65 @@ function retry () {
 
 /***/ }),
 
-/***/ 602:
-/***/ (function(module, __unusedexports, __webpack_require__) {
+/***/ 601:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
-var Utils = __webpack_require__(643),
-    Constants = Utils.Constants;
+"use strict";
 
-/* The entries in the end of central directory */
-module.exports = function () {
-    var _volumeEntries = 0,
-        _totalEntries = 0,
-        _size = 0,
-        _offset = 0,
-        _commentLength = 0;
-
-    return {
-        get diskEntries () { return _volumeEntries },
-        set diskEntries (/*Number*/val) { _volumeEntries = _totalEntries = val; },
-
-        get totalEntries () { return _totalEntries },
-        set totalEntries (/*Number*/val) { _totalEntries = _volumeEntries = val; },
-
-        get size () { return _size },
-        set size (/*Number*/val) { _size = val; },
-
-        get offset () { return _offset },
-        set offset (/*Number*/val) { _offset = val; },
-
-        get commentLength () { return _commentLength },
-        set commentLength (/*Number*/val) { _commentLength = val; },
-
-        get mainHeaderSize () {
-            return Constants.ENDHDR + _commentLength;
-        },
-
-        loadFromBinary : function(/*Buffer*/data) {
-            // data should be 22 bytes and start with "PK 05 06"
-            if (data.length !== Constants.ENDHDR || data.readUInt32LE(0) !== Constants.ENDSIG)
-                throw Utils.Errors.INVALID_END;
-
-            // number of entries on this volume
-            _volumeEntries = data.readUInt16LE(Constants.ENDSUB);
-            // total number of entries
-            _totalEntries = data.readUInt16LE(Constants.ENDTOT);
-            // central directory size in bytes
-            _size = data.readUInt32LE(Constants.ENDSIZ);
-            // offset of first CEN header
-            _offset = data.readUInt32LE(Constants.ENDOFF);
-            // zip file comment length
-            _commentLength = data.readUInt16LE(Constants.ENDCOM);
-        },
-
-        toBinary : function() {
-           var b = Buffer.alloc(Constants.ENDHDR + _commentLength);
-            // "PK 05 06" signature
-            b.writeUInt32LE(Constants.ENDSIG, 0);
-            b.writeUInt32LE(0, 4);
-            // number of entries on this volume
-            b.writeUInt16LE(_volumeEntries, Constants.ENDSUB);
-            // total number of entries
-            b.writeUInt16LE(_totalEntries, Constants.ENDTOT);
-            // central directory size in bytes
-            b.writeUInt32LE(_size, Constants.ENDSIZ);
-            // offset of first CEN header
-            b.writeUInt32LE(_offset, Constants.ENDOFF);
-            // zip file comment length
-            b.writeUInt16LE(_commentLength, Constants.ENDCOM);
-            // fill comment memory with spaces so no garbage is left there
-            b.fill(" ", Constants.ENDHDR);
-
-            return b;
-        },
-
-        toString : function() {
-            return '{\n' +
-                '\t"diskEntries" : ' + _volumeEntries + ",\n" +
-                '\t"totalEntries" : ' + _totalEntries + ",\n" +
-                '\t"size" : ' + _size + " bytes,\n" +
-                '\t"offset" : 0x' + _offset.toString(16).toUpperCase() + ",\n" +
-                '\t"commentLength" : 0x' + _commentLength + "\n" +
-            '}';
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getOptions = void 0;
+const core = __importStar(__webpack_require__(470));
+/**
+ * Returns a copy with defaults filled in.
+ */
+function getOptions(copy) {
+    const result = {
+        followSymbolicLinks: true,
+        implicitDescendants: true,
+        matchDirectories: true,
+        omitBrokenSymbolicLinks: true
+    };
+    if (copy) {
+        if (typeof copy.followSymbolicLinks === 'boolean') {
+            result.followSymbolicLinks = copy.followSymbolicLinks;
+            core.debug(`followSymbolicLinks '${result.followSymbolicLinks}'`);
+        }
+        if (typeof copy.implicitDescendants === 'boolean') {
+            result.implicitDescendants = copy.implicitDescendants;
+            core.debug(`implicitDescendants '${result.implicitDescendants}'`);
+        }
+        if (typeof copy.matchDirectories === 'boolean') {
+            result.matchDirectories = copy.matchDirectories;
+            core.debug(`matchDirectories '${result.matchDirectories}'`);
+        }
+        if (typeof copy.omitBrokenSymbolicLinks === 'boolean') {
+            result.omitBrokenSymbolicLinks = copy.omitBrokenSymbolicLinks;
+            core.debug(`omitBrokenSymbolicLinks '${result.omitBrokenSymbolicLinks}'`);
         }
     }
-};
-
-/***/ }),
-
-/***/ 605:
-/***/ (function(module) {
-
-module.exports = require("http");
+    return result;
+}
+exports.getOptions = getOptions;
+//# sourceMappingURL=internal-glob-options-helper.js.map
 
 /***/ }),
 
@@ -14060,797 +12432,10 @@ module.exports.gitignore = gitignore;
 
 /***/ }),
 
-/***/ 626:
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-var fs = __webpack_require__(307).require(),
-    pth = __webpack_require__(622);
-
-fs.existsSync = fs.existsSync || pth.existsSync;
-
-module.exports = (function() {
-
-    var crcTable = [],
-        Constants = __webpack_require__(799),
-        Errors = __webpack_require__(553),
-
-        PATH_SEPARATOR = pth.sep;
-
-
-    function mkdirSync(/*String*/path) {
-        var resolvedPath = path.split(PATH_SEPARATOR)[0];
-        path.split(PATH_SEPARATOR).forEach(function(name) {
-            if (!name || name.substr(-1,1) === ":") return;
-            resolvedPath += PATH_SEPARATOR + name;
-            var stat;
-            try {
-                stat = fs.statSync(resolvedPath);
-            } catch (e) {
-                fs.mkdirSync(resolvedPath);
-            }
-            if (stat && stat.isFile())
-                throw Errors.FILE_IN_THE_WAY.replace("%s", resolvedPath);
-        });
-    }
-
-    function findSync(/*String*/dir, /*RegExp*/pattern, /*Boolean*/recoursive) {
-        if (typeof pattern === 'boolean') {
-            recoursive = pattern;
-            pattern = undefined;
-        }
-        var files = [];
-        fs.readdirSync(dir).forEach(function(file) {
-            var path = pth.join(dir, file);
-
-            if (fs.statSync(path).isDirectory() && recoursive)
-                files = files.concat(findSync(path, pattern, recoursive));
-
-            if (!pattern || pattern.test(path)) {
-                files.push(pth.normalize(path) + (fs.statSync(path).isDirectory() ? PATH_SEPARATOR : ""));
-            }
-
-        });
-        return files;
-    }
-
-    return {
-        makeDir : function(/*String*/path) {
-            mkdirSync(path);
-        },
-
-        crc32 : function(buf) {
-            if (typeof buf === 'string') {
-                buf = Buffer.alloc(buf.length, buf);
-            }
-            var b = Buffer.alloc(4);
-            if (!crcTable.length) {
-                for (var n = 0; n < 256; n++) {
-                    var c = n;
-                    for (var k = 8; --k >= 0;)  //
-                        if ((c & 1) !== 0)  { c = 0xedb88320 ^ (c >>> 1); } else { c = c >>> 1; }
-                    if (c < 0) {
-                        b.writeInt32LE(c, 0);
-                        c = b.readUInt32LE(0);
-                    }
-                    crcTable[n] = c;
-                }
-            }
-            var crc = 0, off = 0, len = buf.length, c1 = ~crc;
-            while(--len >= 0) c1 = crcTable[(c1 ^ buf[off++]) & 0xff] ^ (c1 >>> 8);
-            crc = ~c1;
-            b.writeInt32LE(crc & 0xffffffff, 0);
-            return b.readUInt32LE(0);
-        },
-
-        methodToString : function(/*Number*/method) {
-            switch (method) {
-                case Constants.STORED:
-                    return 'STORED (' + method + ')';
-                case Constants.DEFLATED:
-                    return 'DEFLATED (' + method + ')';
-                default:
-                    return 'UNSUPPORTED (' + method + ')';
-            }
-
-        },
-
-        writeFileTo : function(/*String*/path, /*Buffer*/content, /*Boolean*/overwrite, /*Number*/attr) {
-            if (fs.existsSync(path)) {
-                if (!overwrite)
-                    return false; // cannot overwrite
-
-                var stat = fs.statSync(path);
-                if (stat.isDirectory()) {
-                    return false;
-                }
-            }
-            var folder = pth.dirname(path);
-            if (!fs.existsSync(folder)) {
-                mkdirSync(folder);
-            }
-
-            var fd;
-            try {
-                fd = fs.openSync(path, 'w', 438); // 0666
-            } catch(e) {
-                fs.chmodSync(path, 438);
-                fd = fs.openSync(path, 'w', 438);
-            }
-            if (fd) {
-                try {
-                    fs.writeSync(fd, content, 0, content.length, 0);
-                }
-                catch (e){
-                    throw e;
-                }
-                finally {
-                    fs.closeSync(fd);
-                }
-            }
-            fs.chmodSync(path, attr || 438);
-            return true;
-        },
-
-        writeFileToAsync : function(/*String*/path, /*Buffer*/content, /*Boolean*/overwrite, /*Number*/attr, /*Function*/callback) {
-            if(typeof attr === 'function') {
-                callback = attr;
-                attr = undefined;
-            }
-
-            fs.exists(path, function(exists) {
-                if(exists && !overwrite)
-                    return callback(false);
-
-                fs.stat(path, function(err, stat) {
-                    if(exists &&stat.isDirectory()) {
-                        return callback(false);
-                    }
-
-                    var folder = pth.dirname(path);
-                    fs.exists(folder, function(exists) {
-                        if(!exists)
-                            mkdirSync(folder);
-
-                        fs.open(path, 'w', 438, function(err, fd) {
-                            if(err) {
-                                fs.chmod(path, 438, function() {
-                                    fs.open(path, 'w', 438, function(err, fd) {
-                                        fs.write(fd, content, 0, content.length, 0, function() {
-                                            fs.close(fd, function() {
-                                                fs.chmod(path, attr || 438, function() {
-                                                    callback(true);
-                                                })
-                                            });
-                                        });
-                                    });
-                                })
-                            } else {
-                                if(fd) {
-                                    fs.write(fd, content, 0, content.length, 0, function() {
-                                        fs.close(fd, function() {
-                                            fs.chmod(path, attr || 438, function() {
-                                                callback(true);
-                                            })
-                                        });
-                                    });
-                                } else {
-                                    fs.chmod(path, attr || 438, function() {
-                                        callback(true);
-                                    })
-                                }
-                            }
-                        });
-                    })
-                })
-            })
-        },
-
-        findFiles : function(/*String*/path) {
-            return findSync(path, true);
-        },
-
-        getAttributes : function(/*String*/path) {
-
-        },
-
-        setAttributes : function(/*String*/path) {
-
-        },
-
-        toBuffer : function(input) {
-            if (Buffer.isBuffer(input)) {
-                return input;
-            } else {
-                if (input.length === 0) {
-                    return Buffer.alloc(0)
-                }
-                return Buffer.from(input, 'utf8');
-            }
-        },
-
-        Constants : Constants,
-        Errors : Errors
-    }
-})();
-
-
-/***/ }),
-
 /***/ 630:
 /***/ (function(module) {
 
 module.exports = require("perf_hooks");
-
-/***/ }),
-
-/***/ 639:
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-var Utils = __webpack_require__(643);
-var fs = Utils.FileSystem.require(),
-	pth = __webpack_require__(622);
-
-fs.existsSync = fs.existsSync || pth.existsSync;
-
-var ZipEntry = __webpack_require__(352),
-	ZipFile = __webpack_require__(385);
-
-var isWin = /^win/.test(process.platform);
-
-
-module.exports = function (/*String*/input) {
-	var _zip = undefined,
-		_filename = "";
-
-	if (input && typeof input === "string") { // load zip file
-		if (fs.existsSync(input)) {
-			_filename = input;
-			_zip = new ZipFile(input, Utils.Constants.FILE);
-		} else {
-			throw Utils.Errors.INVALID_FILENAME;
-		}
-	} else if (input && Buffer.isBuffer(input)) { // load buffer
-		_zip = new ZipFile(input, Utils.Constants.BUFFER);
-	} else { // create new zip file
-		_zip = new ZipFile(null, Utils.Constants.NONE);
-	}
-
-	function sanitize(prefix, name) {
-		prefix = pth.resolve(pth.normalize(prefix));
-		var parts = name.split('/');
-		for (var i = 0, l = parts.length; i < l; i++) {
-			var path = pth.normalize(pth.join(prefix, parts.slice(i, l).join(pth.sep)));
-			if (path.indexOf(prefix) === 0) {
-				return path;
-			}
-		}
-		return pth.normalize(pth.join(prefix, pth.basename(name)));
-	}
-
-	function getEntry(/*Object*/entry) {
-		if (entry && _zip) {
-			var item;
-			// If entry was given as a file name
-			if (typeof entry === "string")
-				item = _zip.getEntry(entry);
-			// if entry was given as a ZipEntry object
-			if (typeof entry === "object" && typeof entry.entryName !== "undefined" && typeof entry.header !== "undefined")
-				item = _zip.getEntry(entry.entryName);
-
-			if (item) {
-				return item;
-			}
-		}
-		return null;
-	}
-
-	return {
-		/**
-		 * Extracts the given entry from the archive and returns the content as a Buffer object
-		 * @param entry ZipEntry object or String with the full path of the entry
-		 *
-		 * @return Buffer or Null in case of error
-		 */
-		readFile: function (/*Object*/entry) {
-			var item = getEntry(entry);
-			return item && item.getData() || null;
-		},
-
-		/**
-		 * Asynchronous readFile
-		 * @param entry ZipEntry object or String with the full path of the entry
-		 * @param callback
-		 *
-		 * @return Buffer or Null in case of error
-		 */
-		readFileAsync: function (/*Object*/entry, /*Function*/callback) {
-			var item = getEntry(entry);
-			if (item) {
-				item.getDataAsync(callback);
-			} else {
-				callback(null, "getEntry failed for:" + entry)
-			}
-		},
-
-		/**
-		 * Extracts the given entry from the archive and returns the content as plain text in the given encoding
-		 * @param entry ZipEntry object or String with the full path of the entry
-		 * @param encoding Optional. If no encoding is specified utf8 is used
-		 *
-		 * @return String
-		 */
-		readAsText: function (/*Object*/entry, /*String - Optional*/encoding) {
-			var item = getEntry(entry);
-			if (item) {
-				var data = item.getData();
-				if (data && data.length) {
-					return data.toString(encoding || "utf8");
-				}
-			}
-			return "";
-		},
-
-		/**
-		 * Asynchronous readAsText
-		 * @param entry ZipEntry object or String with the full path of the entry
-		 * @param callback
-		 * @param encoding Optional. If no encoding is specified utf8 is used
-		 *
-		 * @return String
-		 */
-		readAsTextAsync: function (/*Object*/entry, /*Function*/callback, /*String - Optional*/encoding) {
-			var item = getEntry(entry);
-			if (item) {
-				item.getDataAsync(function (data, err) {
-					if (err) {
-						callback(data, err);
-						return;
-					}
-
-					if (data && data.length) {
-						callback(data.toString(encoding || "utf8"));
-					} else {
-						callback("");
-					}
-				})
-			} else {
-				callback("");
-			}
-		},
-
-		/**
-		 * Remove the entry from the file or the entry and all it's nested directories and files if the given entry is a directory
-		 *
-		 * @param entry
-		 */
-		deleteFile: function (/*Object*/entry) { // @TODO: test deleteFile
-			var item = getEntry(entry);
-			if (item) {
-				_zip.deleteEntry(item.entryName);
-			}
-		},
-
-		/**
-		 * Adds a comment to the zip. The zip must be rewritten after adding the comment.
-		 *
-		 * @param comment
-		 */
-		addZipComment: function (/*String*/comment) { // @TODO: test addZipComment
-			_zip.comment = comment;
-		},
-
-		/**
-		 * Returns the zip comment
-		 *
-		 * @return String
-		 */
-		getZipComment: function () {
-			return _zip.comment || '';
-		},
-
-		/**
-		 * Adds a comment to a specified zipEntry. The zip must be rewritten after adding the comment
-		 * The comment cannot exceed 65535 characters in length
-		 *
-		 * @param entry
-		 * @param comment
-		 */
-		addZipEntryComment: function (/*Object*/entry, /*String*/comment) {
-			var item = getEntry(entry);
-			if (item) {
-				item.comment = comment;
-			}
-		},
-
-		/**
-		 * Returns the comment of the specified entry
-		 *
-		 * @param entry
-		 * @return String
-		 */
-		getZipEntryComment: function (/*Object*/entry) {
-			var item = getEntry(entry);
-			if (item) {
-				return item.comment || '';
-			}
-			return ''
-		},
-
-		/**
-		 * Updates the content of an existing entry inside the archive. The zip must be rewritten after updating the content
-		 *
-		 * @param entry
-		 * @param content
-		 */
-		updateFile: function (/*Object*/entry, /*Buffer*/content) {
-			var item = getEntry(entry);
-			if (item) {
-				item.setData(content);
-			}
-		},
-
-		/**
-		 * Adds a file from the disk to the archive
-		 *
-		 * @param localPath File to add to zip
-		 * @param zipPath Optional path inside the zip
-		 * @param zipName Optional name for the file
-		 */
-		addLocalFile: function (/*String*/localPath, /*String*/zipPath, /*String*/zipName) {
-			if (fs.existsSync(localPath)) {
-				if (zipPath) {
-					zipPath = zipPath.split("\\").join("/");
-					if (zipPath.charAt(zipPath.length - 1) !== "/") {
-						zipPath += "/";
-					}
-				} else {
-					zipPath = "";
-				}
-				var p = localPath.split("\\").join("/").split("/").pop();
-
-				if (zipName) {
-					this.addFile(zipPath + zipName, fs.readFileSync(localPath), "", 0)
-				} else {
-					this.addFile(zipPath + p, fs.readFileSync(localPath), "", 0)
-				}
-			} else {
-				throw Utils.Errors.FILE_NOT_FOUND.replace("%s", localPath);
-			}
-		},
-
-		/**
-		 * Adds a local directory and all its nested files and directories to the archive
-		 *
-		 * @param localPath
-		 * @param zipPath optional path inside zip
-		 * @param filter optional RegExp or Function if files match will
-		 *               be included.
-		 */
-		addLocalFolder: function (/*String*/localPath, /*String*/zipPath, /*RegExp|Function*/filter) {
-			if (filter === undefined) {
-				filter = function () {
-					return true;
-				};
-			} else if (filter instanceof RegExp) {
-				filter = function (filter) {
-					return function (filename) {
-						return filter.test(filename);
-					}
-				}(filter);
-			}
-
-			if (zipPath) {
-				zipPath = zipPath.split("\\").join("/");
-				if (zipPath.charAt(zipPath.length - 1) !== "/") {
-					zipPath += "/";
-				}
-			} else {
-				zipPath = "";
-			}
-			// normalize the path first
-			localPath = pth.normalize(localPath);
-			localPath = localPath.split("\\").join("/"); //windows fix
-			if (localPath.charAt(localPath.length - 1) !== "/")
-				localPath += "/";
-
-			if (fs.existsSync(localPath)) {
-
-				var items = Utils.findFiles(localPath),
-					self = this;
-
-				if (items.length) {
-					items.forEach(function (path) {
-						var p = path.split("\\").join("/").replace(new RegExp(localPath.replace(/(\(|\))/g, '\\$1'), 'i'), ""); //windows fix
-						if (filter(p)) {
-							if (p.charAt(p.length - 1) !== "/") {
-								self.addFile(zipPath + p, fs.readFileSync(path), "", 0)
-							} else {
-								self.addFile(zipPath + p, Buffer.alloc(0), "", 0)
-							}
-						}
-					});
-				}
-			} else {
-				throw Utils.Errors.FILE_NOT_FOUND.replace("%s", localPath);
-			}
-		},
-
-		/**
-		 * Allows you to create a entry (file or directory) in the zip file.
-		 * If you want to create a directory the entryName must end in / and a null buffer should be provided.
-		 * Comment and attributes are optional
-		 *
-		 * @param entryName
-		 * @param content
-		 * @param comment
-		 * @param attr
-		 */
-		addFile: function (/*String*/entryName, /*Buffer*/content, /*String*/comment, /*Number*/attr) {
-			var entry = new ZipEntry();
-			entry.entryName = entryName;
-			entry.comment = comment || "";
-
-			if (!attr) {
-				if (entry.isDirectory) {
-					attr = (0o40755 << 16) | 0x10; // (permissions drwxr-xr-x) + (MS-DOS directory flag)
-				} else {
-					attr = 0o644 << 16; // permissions -r-wr--r--
-				}
-			}
-
-			entry.attr = attr;
-
-			entry.setData(content);
-			_zip.setEntry(entry);
-		},
-
-		/**
-		 * Returns an array of ZipEntry objects representing the files and folders inside the archive
-		 *
-		 * @return Array
-		 */
-		getEntries: function () {
-			if (_zip) {
-				return _zip.entries;
-			} else {
-				return [];
-			}
-		},
-
-		/**
-		 * Returns a ZipEntry object representing the file or folder specified by ``name``.
-		 *
-		 * @param name
-		 * @return ZipEntry
-		 */
-		getEntry: function (/*String*/name) {
-			return getEntry(name);
-		},
-
-		/**
-		 * Extracts the given entry to the given targetPath
-		 * If the entry is a directory inside the archive, the entire directory and it's subdirectories will be extracted
-		 *
-		 * @param entry ZipEntry object or String with the full path of the entry
-		 * @param targetPath Target folder where to write the file
-		 * @param maintainEntryPath If maintainEntryPath is true and the entry is inside a folder, the entry folder
-		 *                          will be created in targetPath as well. Default is TRUE
-		 * @param overwrite If the file already exists at the target path, the file will be overwriten if this is true.
-		 *                  Default is FALSE
-		 *
-		 * @return Boolean
-		 */
-		extractEntryTo: function (/*Object*/entry, /*String*/targetPath, /*Boolean*/maintainEntryPath, /*Boolean*/overwrite) {
-			overwrite = overwrite || false;
-			maintainEntryPath = typeof maintainEntryPath === "undefined" ? true : maintainEntryPath;
-
-			var item = getEntry(entry);
-			if (!item) {
-				throw Utils.Errors.NO_ENTRY;
-			}
-
-			var entryName = item.entryName;
-
-			var target = sanitize(targetPath, maintainEntryPath ? entryName : pth.basename(entryName));
-
-			if (item.isDirectory) {
-				target = pth.resolve(target, "..");
-				var children = _zip.getEntryChildren(item);
-				children.forEach(function (child) {
-					if (child.isDirectory) return;
-					var content = child.getData();
-					if (!content) {
-						throw Utils.Errors.CANT_EXTRACT_FILE;
-					}
-					var childName = sanitize(targetPath, maintainEntryPath ? child.entryName : pth.basename(child.entryName));
-
-					Utils.writeFileTo(childName, content, overwrite);
-				});
-				return true;
-			}
-
-			var content = item.getData();
-			if (!content) throw Utils.Errors.CANT_EXTRACT_FILE;
-
-			if (fs.existsSync(target) && !overwrite) {
-				throw Utils.Errors.CANT_OVERRIDE;
-			}
-			Utils.writeFileTo(target, content, overwrite);
-
-			return true;
-		},
-
-		/**
-		 * Test the archive
-		 *
-		 */
-		test: function () {
-			if (!_zip) {
-				return false;
-			}
-
-			for (var entry in _zip.entries) {
-				try {
-					if (entry.isDirectory) {
-						continue;
-					}
-					var content = _zip.entries[entry].getData();
-					if (!content) {
-						return false;
-					}
-				} catch (err) {
-					return false;
-				}
-			}
-			return true;
-		},
-
-		/**
-		 * Extracts the entire archive to the given location
-		 *
-		 * @param targetPath Target location
-		 * @param overwrite If the file already exists at the target path, the file will be overwriten if this is true.
-		 *                  Default is FALSE
-		 */
-		extractAllTo: function (/*String*/targetPath, /*Boolean*/overwrite) {
-			overwrite = overwrite || false;
-			if (!_zip) {
-				throw Utils.Errors.NO_ZIP;
-			}
-			_zip.entries.forEach(function (entry) {
-				var entryName = sanitize(targetPath, entry.entryName.toString());
-				if (entry.isDirectory) {
-					Utils.makeDir(entryName);
-					return;
-				}
-				var content = entry.getData();
-				if (!content) {
-					throw Utils.Errors.CANT_EXTRACT_FILE;
-				}
-				Utils.writeFileTo(entryName, content, overwrite);
-				try {
-					fs.utimesSync(entryName, entry.header.time, entry.header.time)
-				} catch (err) {
-					throw Utils.Errors.CANT_EXTRACT_FILE;
-				}
-			})
-		},
-
-		/**
-		 * Asynchronous extractAllTo
-		 *
-		 * @param targetPath Target location
-		 * @param overwrite If the file already exists at the target path, the file will be overwriten if this is true.
-		 *                  Default is FALSE
-		 * @param callback
-		 */
-		extractAllToAsync: function (/*String*/targetPath, /*Boolean*/overwrite, /*Function*/callback) {
-			if (!callback) {
-				callback = function() {}
-			}
-			overwrite = overwrite || false;
-			if (!_zip) {
-				callback(new Error(Utils.Errors.NO_ZIP));
-				return;
-			}
-
-			var entries = _zip.entries;
-			var i = entries.length;
-			entries.forEach(function (entry) {
-				if (i <= 0) return; // Had an error already
-
-				var entryName = pth.normalize(entry.entryName.toString());
-
-				if (entry.isDirectory) {
-					Utils.makeDir(sanitize(targetPath, entryName));
-					if (--i === 0)
-						callback(undefined);
-					return;
-				}
-				entry.getDataAsync(function (content, err) {
-					if (i <= 0) return;
-					if (err) {
-						callback(new Error(err));
-						return;
-					}
-					if (!content) {
-						i = 0;
-						callback(new Error(Utils.Errors.CANT_EXTRACT_FILE));
-						return;
-					}
-
-					Utils.writeFileToAsync(sanitize(targetPath, entryName), content, overwrite, function (succ) {
-						try {
-							fs.utimesSync(pth.resolve(targetPath, entryName), entry.header.time, entry.header.time);
-						} catch (err) {
-							callback(new Error('Unable to set utimes'));
-						}
-						if (i <= 0) return;
-						if (!succ) {
-							i = 0;
-							callback(new Error('Unable to write'));
-							return;
-						}
-						if (--i === 0)
-							callback(undefined);
-					});
-				});
-			})
-		},
-
-		/**
-		 * Writes the newly created zip file to disk at the specified location or if a zip was opened and no ``targetFileName`` is provided, it will overwrite the opened zip
-		 *
-		 * @param targetFileName
-		 * @param callback
-		 */
-		writeZip: function (/*String*/targetFileName, /*Function*/callback) {
-			if (arguments.length === 1) {
-				if (typeof targetFileName === "function") {
-					callback = targetFileName;
-					targetFileName = "";
-				}
-			}
-
-			if (!targetFileName && _filename) {
-				targetFileName = _filename;
-			}
-			if (!targetFileName) return;
-
-			var zipData = _zip.compressToBuffer();
-			if (zipData) {
-				var ok = Utils.writeFileTo(targetFileName, zipData, true);
-				if (typeof callback === 'function') callback(!ok ? new Error("failed") : null, "");
-			}
-		},
-
-		/**
-		 * Returns the content of the entire zip file as a Buffer object
-		 *
-		 * @return Buffer
-		 */
-		toBuffer: function (/*Function*/onSuccess, /*Function*/onFail, /*Function*/onItemStart, /*Function*/onItemEnd) {
-			this.valueOf = 2;
-			if (typeof onSuccess === "function") {
-				_zip.toAsyncBuffer(onSuccess, onFail, onItemStart, onItemEnd);
-				return null;
-			}
-			return _zip.compressToBuffer()
-		}
-	}
-};
-
-
-/***/ }),
-
-/***/ 643:
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-module.exports = __webpack_require__(626);
-module.exports.FileSystem = __webpack_require__(307);
-module.exports.Constants = __webpack_require__(799);
-module.exports.Errors = __webpack_require__(553);
-module.exports.FileAttr = __webpack_require__(591);
 
 /***/ }),
 
@@ -14870,8 +12455,6 @@ var path = __webpack_require__(622)
 var assert = __webpack_require__(357)
 var isAbsolute = __webpack_require__(681)
 var common = __webpack_require__(856)
-var alphasort = common.alphasort
-var alphasorti = common.alphasorti
 var setopts = common.setopts
 var ownProp = common.ownProp
 var childrenIgnored = common.childrenIgnored
@@ -15820,20 +13403,21 @@ class EntryFilter {
         return (entry) => this._filter(entry, positiveRe, negativeRe);
     }
     _filter(entry, positiveRe, negativeRe) {
-        if (this._settings.unique) {
-            if (this._isDuplicateEntry(entry)) {
-                return false;
-            }
-            this._createIndexRecord(entry);
+        if (this._settings.unique && this._isDuplicateEntry(entry)) {
+            return false;
         }
         if (this._onlyFileFilter(entry) || this._onlyDirectoryFilter(entry)) {
             return false;
         }
-        if (this._isSkippedByAbsoluteNegativePatterns(entry, negativeRe)) {
+        if (this._isSkippedByAbsoluteNegativePatterns(entry.path, negativeRe)) {
             return false;
         }
         const filepath = this._settings.baseNameMatch ? entry.name : entry.path;
-        return this._isMatchToPatterns(filepath, positiveRe) && !this._isMatchToPatterns(entry.path, negativeRe);
+        const isMatched = this._isMatchToPatterns(filepath, positiveRe) && !this._isMatchToPatterns(entry.path, negativeRe);
+        if (this._settings.unique && isMatched) {
+            this._createIndexRecord(entry);
+        }
+        return isMatched;
     }
     _isDuplicateEntry(entry) {
         return this.index.has(entry.path);
@@ -15847,14 +13431,15 @@ class EntryFilter {
     _onlyDirectoryFilter(entry) {
         return this._settings.onlyDirectories && !entry.dirent.isDirectory();
     }
-    _isSkippedByAbsoluteNegativePatterns(entry, negativeRe) {
+    _isSkippedByAbsoluteNegativePatterns(entryPath, patternsRe) {
         if (!this._settings.absolute) {
             return false;
         }
-        const fullpath = utils.path.makeAbsolute(this._settings.cwd, entry.path);
-        return this._isMatchToPatterns(fullpath, negativeRe);
+        const fullpath = utils.path.makeAbsolute(this._settings.cwd, entryPath);
+        return utils.pattern.matchAny(fullpath, patternsRe);
     }
-    _isMatchToPatterns(filepath, patternsRe) {
+    _isMatchToPatterns(entryPath, patternsRe) {
+        const filepath = utils.path.removeLeadingDotSegment(entryPath);
         return utils.pattern.matchAny(filepath, patternsRe);
     }
 }
@@ -15863,11 +13448,84 @@ exports.default = EntryFilter;
 
 /***/ }),
 
-/***/ 708:
-/***/ (function() {
+/***/ 722:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
-eval("require")("original-fs");
+"use strict";
 
+// Copyright (c) 2020-2021 Luca Cappa
+// Released under the term specified in file LICENSE.txt
+// SPDX short identifier: MIT
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getDefaultVcpkgCacheDirectory = exports.getDefaultVcpkgInstallDirectory = exports.getDefaultVcpkgDirectory = exports.getOrdinaryCachedPaths = void 0;
+const path = __importStar(__webpack_require__(622));
+/**
+ *
+ * @param vcpkgRootDir The VCPKG_ROOT directory.
+ * @returns The list of paths to cache, and the ones to not cache (with the prefix exclamation mark).
+ */
+function getOrdinaryCachedPaths(vcpkgRootDir) {
+    const pathsToCache = [
+        vcpkgRootDir,
+        path.normalize(`!${path.join(vcpkgRootDir, 'installed')}`),
+        path.normalize(`!${path.join(vcpkgRootDir, 'vcpkg_installed')}`),
+        path.normalize(`!${path.join(vcpkgRootDir, 'packages')}`),
+        path.normalize(`!${path.join(vcpkgRootDir, 'buildtrees')}`),
+        path.normalize(`!${path.join(vcpkgRootDir, 'downloads')}`)
+    ];
+    return pathsToCache;
+}
+exports.getOrdinaryCachedPaths = getOrdinaryCachedPaths;
+function getDefaultVcpkgDirectory(baseLib) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return fwSlash(path.join(yield baseLib.getBinDir(), 'vcpkg'));
+    });
+}
+exports.getDefaultVcpkgDirectory = getDefaultVcpkgDirectory;
+function getDefaultVcpkgInstallDirectory(baseLib) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return fwSlash(path.join(yield baseLib.getBinDir(), 'vcpkg_installed'));
+    });
+}
+exports.getDefaultVcpkgInstallDirectory = getDefaultVcpkgInstallDirectory;
+function getDefaultVcpkgCacheDirectory(baseLib) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return fwSlash(path.join(yield baseLib.getBinDir(), 'vcpkg_cache'));
+    });
+}
+exports.getDefaultVcpkgCacheDirectory = getDefaultVcpkgCacheDirectory;
+function fwSlash(p) {
+    return p.replace(/\\/g, '/');
+}
+//# sourceMappingURL=vcpkg-utils.js.map
 
 /***/ }),
 
@@ -15877,6 +13535,7 @@ eval("require")("original-fs");
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.matchAny = exports.convertPatternsToRe = exports.makeRe = exports.getPatternParts = exports.expandBraceExpansion = exports.expandPatternsWithBraceExpansion = exports.isAffectDepthOfReadingPattern = exports.endsWithSlashGlobStar = exports.hasGlobStar = exports.getBaseDirectory = exports.isPatternRelatedToParentDirectory = exports.getPatternsOutsideCurrentDirectory = exports.getPatternsInsideCurrentDirectory = exports.getPositivePatterns = exports.getNegativePatterns = exports.isPositivePattern = exports.isNegativePattern = exports.convertToNegativePattern = exports.convertToPositivePattern = exports.isDynamicPattern = exports.isStaticPattern = void 0;
 const path = __webpack_require__(622);
 const globParent = __webpack_require__(763);
 const micromatch = __webpack_require__(74);
@@ -15884,14 +13543,22 @@ const GLOBSTAR = '**';
 const ESCAPE_SYMBOL = '\\';
 const COMMON_GLOB_SYMBOLS_RE = /[*?]|^!/;
 const REGEX_CHARACTER_CLASS_SYMBOLS_RE = /\[.*]/;
-const REGEX_GROUP_SYMBOLS_RE = /(?:^|[^@!*?+])\(.*\|.*\)/;
-const GLOB_EXTENSION_SYMBOLS_RE = /[@!*?+]\(.*\)/;
+const REGEX_GROUP_SYMBOLS_RE = /(?:^|[^!*+?@])\(.*\|.*\)/;
+const GLOB_EXTENSION_SYMBOLS_RE = /[!*+?@]\(.*\)/;
 const BRACE_EXPANSIONS_SYMBOLS_RE = /{.*(?:,|\.\.).*}/;
 function isStaticPattern(pattern, options = {}) {
     return !isDynamicPattern(pattern, options);
 }
 exports.isStaticPattern = isStaticPattern;
 function isDynamicPattern(pattern, options = {}) {
+    /**
+     * A special case with an empty string is necessary for matching patterns that start with a forward slash.
+     * An empty string cannot be a dynamic pattern.
+     * For example, the pattern `/lib/*` will be spread into parts: '', 'lib', '*'.
+     */
+    if (pattern === '') {
+        return false;
+    }
     /**
      * When the `caseSensitiveMatch` option is disabled, all patterns must be marked as dynamic, because we cannot check
      * filepath directly (without read directory).
@@ -15935,6 +13602,32 @@ function getPositivePatterns(patterns) {
     return patterns.filter(isPositivePattern);
 }
 exports.getPositivePatterns = getPositivePatterns;
+/**
+ * Returns patterns that can be applied inside the current directory.
+ *
+ * @example
+ * // ['./*', '*', 'a/*']
+ * getPatternsInsideCurrentDirectory(['./*', '*', 'a/*', '../*', './../*'])
+ */
+function getPatternsInsideCurrentDirectory(patterns) {
+    return patterns.filter((pattern) => !isPatternRelatedToParentDirectory(pattern));
+}
+exports.getPatternsInsideCurrentDirectory = getPatternsInsideCurrentDirectory;
+/**
+ * Returns patterns to be expanded relative to (outside) the current directory.
+ *
+ * @example
+ * // ['../*', './../*']
+ * getPatternsInsideCurrentDirectory(['./*', '*', 'a/*', '../*', './../*'])
+ */
+function getPatternsOutsideCurrentDirectory(patterns) {
+    return patterns.filter(isPatternRelatedToParentDirectory);
+}
+exports.getPatternsOutsideCurrentDirectory = getPatternsOutsideCurrentDirectory;
+function isPatternRelatedToParentDirectory(pattern) {
+    return pattern.startsWith('..') || pattern.startsWith('./..');
+}
+exports.isPatternRelatedToParentDirectory = isPatternRelatedToParentDirectory;
 function getBaseDirectory(pattern) {
     return globParent(pattern, { flipBackslashes: false });
 }
@@ -15952,28 +13645,39 @@ function isAffectDepthOfReadingPattern(pattern) {
     return endsWithSlashGlobStar(pattern) || isStaticPattern(basename);
 }
 exports.isAffectDepthOfReadingPattern = isAffectDepthOfReadingPattern;
-function getNaiveDepth(pattern) {
-    const base = getBaseDirectory(pattern);
-    const patternDepth = pattern.split('/').length;
-    const patternBaseDepth = base.split('/').length;
+function expandPatternsWithBraceExpansion(patterns) {
+    return patterns.reduce((collection, pattern) => {
+        return collection.concat(expandBraceExpansion(pattern));
+    }, []);
+}
+exports.expandPatternsWithBraceExpansion = expandPatternsWithBraceExpansion;
+function expandBraceExpansion(pattern) {
+    return micromatch.braces(pattern, {
+        expand: true,
+        nodupes: true
+    });
+}
+exports.expandBraceExpansion = expandBraceExpansion;
+function getPatternParts(pattern, options) {
+    let { parts } = micromatch.scan(pattern, Object.assign(Object.assign({}, options), { parts: true }));
     /**
-     * This is a hack for pattern that has no base directory.
-     *
-     * This is related to the `*\something\*` pattern.
+     * The scan method returns an empty array in some cases.
+     * See micromatch/picomatch#58 for more details.
      */
-    if (base === '.') {
-        return patternDepth - patternBaseDepth;
+    if (parts.length === 0) {
+        parts = [pattern];
     }
-    return patternDepth - patternBaseDepth - 1;
+    /**
+     * The scan method does not return an empty part for the pattern with a forward slash.
+     * This is another part of micromatch/picomatch#58.
+     */
+    if (parts[0].startsWith('/')) {
+        parts[0] = parts[0].slice(1);
+        parts.unshift('');
+    }
+    return parts;
 }
-exports.getNaiveDepth = getNaiveDepth;
-function getMaxNaivePatternsDepth(patterns) {
-    return patterns.reduce((max, pattern) => {
-        const depth = getNaiveDepth(pattern);
-        return depth > max ? depth : max;
-    }, 0);
-}
-exports.getMaxNaivePatternsDepth = getMaxNaivePatternsDepth;
+exports.getPatternParts = getPatternParts;
 function makeRe(pattern, options) {
     return micromatch.makeRe(pattern, options);
 }
@@ -15983,8 +13687,7 @@ function convertPatternsToRe(patterns, options) {
 }
 exports.convertPatternsToRe = convertPatternsToRe;
 function matchAny(entry, patternsRe) {
-    const filepath = entry.replace(/^\.[\\/]/, '');
-    return patternsRe.some((patternRe) => patternRe.test(filepath));
+    return patternsRe.some((patternRe) => patternRe.test(entry));
 }
 exports.matchAny = matchAny;
 
@@ -16307,18 +14010,11 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
     o[k2] = m[k];
 }));
 var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(__webpack_require__(928), exports);
+__exportStar(__webpack_require__(344), exports);
 //# sourceMappingURL=index.js.map
-
-/***/ }),
-
-/***/ 761:
-/***/ (function(module) {
-
-module.exports = require("zlib");
 
 /***/ }),
 
@@ -16328,20 +14024,21 @@ module.exports = require("zlib");
 "use strict";
 
 
-var isGlob = __webpack_require__(846);
+var isGlob = __webpack_require__(486);
 var pathPosixDirname = __webpack_require__(622).posix.dirname;
 var isWin32 = __webpack_require__(87).platform() === 'win32';
 
 var slash = '/';
 var backslash = /\\/g;
-var enclosure = /[\{\[].*[\/]*.*[\}\]]$/;
+var enclosure = /[\{\[].*[\}\]]$/;
 var globby = /(^|[^\\])([\{\[]|\([^\)]+$)/;
-var escaped = /\\([\*\?\|\[\]\(\)\{\}])/g;
+var escaped = /\\([\!\*\?\|\[\]\(\)\{\}])/g;
 
 /**
  * @param {string} str
  * @param {Object} opts
  * @param {boolean} [opts.flipBackslashes=true]
+ * @returns {string}
  */
 module.exports = function globParent(str, opts) {
   var options = Object.assign({ flipBackslashes: true }, opts);
@@ -16461,11 +14158,112 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
     o[k2] = m[k];
 }));
 var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(__webpack_require__(411), exports);
 //# sourceMappingURL=index.js.map
+
+/***/ }),
+
+/***/ 782:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.hashFiles = void 0;
+const crypto = __importStar(__webpack_require__(417));
+const core = __importStar(__webpack_require__(470));
+const fs = __importStar(__webpack_require__(747));
+const stream = __importStar(__webpack_require__(413));
+const util = __importStar(__webpack_require__(669));
+const path = __importStar(__webpack_require__(622));
+function hashFiles(globber) {
+    var e_1, _a;
+    var _b;
+    return __awaiter(this, void 0, void 0, function* () {
+        let hasMatch = false;
+        const githubWorkspace = (_b = process.env['GITHUB_WORKSPACE']) !== null && _b !== void 0 ? _b : process.cwd();
+        const result = crypto.createHash('sha256');
+        let count = 0;
+        try {
+            for (var _c = __asyncValues(globber.globGenerator()), _d; _d = yield _c.next(), !_d.done;) {
+                const file = _d.value;
+                core.debug(file);
+                if (!file.startsWith(`${githubWorkspace}${path.sep}`)) {
+                    core.debug(`Ignore '${file}' since it is not under GITHUB_WORKSPACE.`);
+                    continue;
+                }
+                if (fs.statSync(file).isDirectory()) {
+                    core.debug(`Skip directory '${file}'.`);
+                    continue;
+                }
+                const hash = crypto.createHash('sha256');
+                const pipeline = util.promisify(stream.pipeline);
+                yield pipeline(fs.createReadStream(file), hash);
+                result.write(hash.digest());
+                count++;
+                if (!hasMatch) {
+                    hasMatch = true;
+                }
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (_d && !_d.done && (_a = _c.return)) yield _a.call(_c);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        result.end();
+        if (hasMatch) {
+            core.debug(`Found ${count} files to hash.`);
+            return result.digest('hex');
+        }
+        else {
+            core.debug(`No matches found for glob`);
+            return '';
+        }
+    });
+}
+exports.hashFiles = hashFiles;
+//# sourceMappingURL=internal-hash-files.js.map
 
 /***/ }),
 
@@ -16643,26 +14441,6 @@ braces.create = (input, options = {}) => {
  */
 
 module.exports = braces;
-
-
-/***/ }),
-
-/***/ 784:
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-"use strict";
-
-
-/**
- * Detect Electron renderer / nwjs process, which is node, but we should
- * treat as a browser.
- */
-if (typeof process === 'undefined' || process.type === 'renderer' || process.browser === true || process.__nwjs) {
-  module.exports = __webpack_require__(794);
-} else {
-  module.exports = __webpack_require__(81);
-}
-
 
 
 /***/ }),
@@ -16963,194 +14741,6 @@ module.exports = toRegexRange;
 
 /***/ }),
 
-/***/ 794:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-/* eslint-env browser */
-
-/**
- * This is the web browser implementation of `debug()`.
- */
-exports.log = log;
-exports.formatArgs = formatArgs;
-exports.save = save;
-exports.load = load;
-exports.useColors = useColors;
-exports.storage = localstorage();
-/**
- * Colors.
- */
-
-exports.colors = ['#0000CC', '#0000FF', '#0033CC', '#0033FF', '#0066CC', '#0066FF', '#0099CC', '#0099FF', '#00CC00', '#00CC33', '#00CC66', '#00CC99', '#00CCCC', '#00CCFF', '#3300CC', '#3300FF', '#3333CC', '#3333FF', '#3366CC', '#3366FF', '#3399CC', '#3399FF', '#33CC00', '#33CC33', '#33CC66', '#33CC99', '#33CCCC', '#33CCFF', '#6600CC', '#6600FF', '#6633CC', '#6633FF', '#66CC00', '#66CC33', '#9900CC', '#9900FF', '#9933CC', '#9933FF', '#99CC00', '#99CC33', '#CC0000', '#CC0033', '#CC0066', '#CC0099', '#CC00CC', '#CC00FF', '#CC3300', '#CC3333', '#CC3366', '#CC3399', '#CC33CC', '#CC33FF', '#CC6600', '#CC6633', '#CC9900', '#CC9933', '#CCCC00', '#CCCC33', '#FF0000', '#FF0033', '#FF0066', '#FF0099', '#FF00CC', '#FF00FF', '#FF3300', '#FF3333', '#FF3366', '#FF3399', '#FF33CC', '#FF33FF', '#FF6600', '#FF6633', '#FF9900', '#FF9933', '#FFCC00', '#FFCC33'];
-/**
- * Currently only WebKit-based Web Inspectors, Firefox >= v31,
- * and the Firebug extension (any Firefox version) are known
- * to support "%c" CSS customizations.
- *
- * TODO: add a `localStorage` variable to explicitly enable/disable colors
- */
-// eslint-disable-next-line complexity
-
-function useColors() {
-  // NB: In an Electron preload script, document will be defined but not fully
-  // initialized. Since we know we're in Chrome, we'll just detect this case
-  // explicitly
-  if (typeof window !== 'undefined' && window.process && (window.process.type === 'renderer' || window.process.__nwjs)) {
-    return true;
-  } // Internet Explorer and Edge do not support colors.
-
-
-  if (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/(edge|trident)\/(\d+)/)) {
-    return false;
-  } // Is webkit? http://stackoverflow.com/a/16459606/376773
-  // document is undefined in react-native: https://github.com/facebook/react-native/pull/1632
-
-
-  return typeof document !== 'undefined' && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance || // Is firebug? http://stackoverflow.com/a/398120/376773
-  typeof window !== 'undefined' && window.console && (window.console.firebug || window.console.exception && window.console.table) || // Is firefox >= v31?
-  // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
-  typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31 || // Double check webkit in userAgent just in case we are in a worker
-  typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/);
-}
-/**
- * Colorize log arguments if enabled.
- *
- * @api public
- */
-
-
-function formatArgs(args) {
-  args[0] = (this.useColors ? '%c' : '') + this.namespace + (this.useColors ? ' %c' : ' ') + args[0] + (this.useColors ? '%c ' : ' ') + '+' + module.exports.humanize(this.diff);
-
-  if (!this.useColors) {
-    return;
-  }
-
-  var c = 'color: ' + this.color;
-  args.splice(1, 0, c, 'color: inherit'); // The final "%c" is somewhat tricky, because there could be other
-  // arguments passed either before or after the %c, so we need to
-  // figure out the correct index to insert the CSS into
-
-  var index = 0;
-  var lastC = 0;
-  args[0].replace(/%[a-zA-Z%]/g, function (match) {
-    if (match === '%%') {
-      return;
-    }
-
-    index++;
-
-    if (match === '%c') {
-      // We only are interested in the *last* %c
-      // (the user may have provided their own)
-      lastC = index;
-    }
-  });
-  args.splice(lastC, 0, c);
-}
-/**
- * Invokes `console.log()` when available.
- * No-op when `console.log` is not a "function".
- *
- * @api public
- */
-
-
-function log() {
-  var _console;
-
-  // This hackery is required for IE8/9, where
-  // the `console.log` function doesn't have 'apply'
-  return (typeof console === "undefined" ? "undefined" : _typeof(console)) === 'object' && console.log && (_console = console).log.apply(_console, arguments);
-}
-/**
- * Save `namespaces`.
- *
- * @param {String} namespaces
- * @api private
- */
-
-
-function save(namespaces) {
-  try {
-    if (namespaces) {
-      exports.storage.setItem('debug', namespaces);
-    } else {
-      exports.storage.removeItem('debug');
-    }
-  } catch (error) {// Swallow
-    // XXX (@Qix-) should we be logging these?
-  }
-}
-/**
- * Load `namespaces`.
- *
- * @return {String} returns the previously persisted debug modes
- * @api private
- */
-
-
-function load() {
-  var r;
-
-  try {
-    r = exports.storage.getItem('debug');
-  } catch (error) {} // Swallow
-  // XXX (@Qix-) should we be logging these?
-  // If debug isn't set in LS, and we're in Electron, try to load $DEBUG
-
-
-  if (!r && typeof process !== 'undefined' && 'env' in process) {
-    r = process.env.DEBUG;
-  }
-
-  return r;
-}
-/**
- * Localstorage attempts to return the localstorage.
- *
- * This is necessary because safari throws
- * when a user disables cookies/localstorage
- * and you attempt to access it.
- *
- * @return {LocalStorage}
- * @api private
- */
-
-
-function localstorage() {
-  try {
-    // TVMLKit (Apple TV JS Runtime) does not have a window object, just localStorage in the global context
-    // The Browser also has localStorage in the global context.
-    return localStorage;
-  } catch (error) {// Swallow
-    // XXX (@Qix-) should we be logging these?
-  }
-}
-
-module.exports = __webpack_require__(486)(exports);
-var formatters = module.exports.formatters;
-/**
- * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
- */
-
-formatters.j = function (v) {
-  try {
-    return JSON.stringify(v);
-  } catch (error) {
-    return '[UnexpectedJSONParseError]: ' + error.message;
-  }
-};
-
-
-
-/***/ }),
-
 /***/ 798:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -17185,128 +14775,6 @@ class StreamProvider {
     }
 }
 exports.default = StreamProvider;
-
-
-/***/ }),
-
-/***/ 799:
-/***/ (function(module) {
-
-module.exports = {
-    /* The local file header */
-    LOCHDR           : 30, // LOC header size
-    LOCSIG           : 0x04034b50, // "PK\003\004"
-    LOCVER           : 4,	// version needed to extract
-    LOCFLG           : 6, // general purpose bit flag
-    LOCHOW           : 8, // compression method
-    LOCTIM           : 10, // modification time (2 bytes time, 2 bytes date)
-    LOCCRC           : 14, // uncompressed file crc-32 value
-    LOCSIZ           : 18, // compressed size
-    LOCLEN           : 22, // uncompressed size
-    LOCNAM           : 26, // filename length
-    LOCEXT           : 28, // extra field length
-
-    /* The Data descriptor */
-    EXTSIG           : 0x08074b50, // "PK\007\008"
-    EXTHDR           : 16, // EXT header size
-    EXTCRC           : 4, // uncompressed file crc-32 value
-    EXTSIZ           : 8, // compressed size
-    EXTLEN           : 12, // uncompressed size
-
-    /* The central directory file header */
-    CENHDR           : 46, // CEN header size
-    CENSIG           : 0x02014b50, // "PK\001\002"
-    CENVEM           : 4, // version made by
-    CENVER           : 6, // version needed to extract
-    CENFLG           : 8, // encrypt, decrypt flags
-    CENHOW           : 10, // compression method
-    CENTIM           : 12, // modification time (2 bytes time, 2 bytes date)
-    CENCRC           : 16, // uncompressed file crc-32 value
-    CENSIZ           : 20, // compressed size
-    CENLEN           : 24, // uncompressed size
-    CENNAM           : 28, // filename length
-    CENEXT           : 30, // extra field length
-    CENCOM           : 32, // file comment length
-    CENDSK           : 34, // volume number start
-    CENATT           : 36, // internal file attributes
-    CENATX           : 38, // external file attributes (host system dependent)
-    CENOFF           : 42, // LOC header offset
-
-    /* The entries in the end of central directory */
-    ENDHDR           : 22, // END header size
-    ENDSIG           : 0x06054b50, // "PK\005\006"
-    ENDSUB           : 8, // number of entries on this disk
-    ENDTOT           : 10, // total number of entries
-    ENDSIZ           : 12, // central directory size in bytes
-    ENDOFF           : 16, // offset of first CEN header
-    ENDCOM           : 20, // zip file comment length
-
-    /* Compression methods */
-    STORED           : 0, // no compression
-    SHRUNK           : 1, // shrunk
-    REDUCED1         : 2, // reduced with compression factor 1
-    REDUCED2         : 3, // reduced with compression factor 2
-    REDUCED3         : 4, // reduced with compression factor 3
-    REDUCED4         : 5, // reduced with compression factor 4
-    IMPLODED         : 6, // imploded
-    // 7 reserved
-    DEFLATED         : 8, // deflated
-    ENHANCED_DEFLATED: 9, // enhanced deflated
-    PKWARE           : 10,// PKWare DCL imploded
-    // 11 reserved
-    BZIP2            : 12, //  compressed using BZIP2
-    // 13 reserved
-    LZMA             : 14, // LZMA
-    // 15-17 reserved
-    IBM_TERSE        : 18, // compressed using IBM TERSE
-    IBM_LZ77         : 19, //IBM LZ77 z
-
-    /* General purpose bit flag */
-    FLG_ENC          : 0,  // encripted file
-    FLG_COMP1        : 1,  // compression option
-    FLG_COMP2        : 2,  // compression option
-    FLG_DESC         : 4,  // data descriptor
-    FLG_ENH          : 8,  // enhanced deflation
-    FLG_STR          : 16, // strong encryption
-    FLG_LNG          : 1024, // language encoding
-    FLG_MSK          : 4096, // mask header values
-
-    /* Load type */
-    FILE             : 0,
-    BUFFER           : 1,
-    NONE             : 2,
-
-    /* 4.5 Extensible data fields */
-    EF_ID            : 0,
-    EF_SIZE          : 2,
-
-    /* Header IDs */
-    ID_ZIP64         : 0x0001,
-    ID_AVINFO        : 0x0007,
-    ID_PFS           : 0x0008,
-    ID_OS2           : 0x0009,
-    ID_NTFS          : 0x000a,
-    ID_OPENVMS       : 0x000c,
-    ID_UNIX          : 0x000d,
-    ID_FORK          : 0x000e,
-    ID_PATCH         : 0x000f,
-    ID_X509_PKCS7    : 0x0014,
-    ID_X509_CERTID_F : 0x0015,
-    ID_X509_CERTID_C : 0x0016,
-    ID_STRONGENC     : 0x0017,
-    ID_RECORD_MGT    : 0x0018,
-    ID_X509_PKCS7_RL : 0x0019,
-    ID_IBM1          : 0x0065,
-    ID_IBM2          : 0x0066,
-    ID_POSZIP        : 0x4690,
-
-    EF_ZIP64_OR_32   : 0xffffffff,
-    EF_ZIP64_OR_16   : 0xffff,
-    EF_ZIP64_SUNCOMP : 0,
-    EF_ZIP64_SCOMP   : 8,
-    EF_ZIP64_RHO     : 16,
-    EF_ZIP64_DSN     : 24
-};
 
 
 /***/ }),
@@ -17534,7 +15002,7 @@ const parse = (input, options) => {
     START_ANCHOR
   } = PLATFORM_CHARS;
 
-  const globstar = (opts) => {
+  const globstar = opts => {
     return `(${capture}(?:(?!${START_ANCHOR}${opts.dot ? DOTS_SLASH : DOT_LITERAL}).)*?)`;
   };
 
@@ -17584,12 +15052,13 @@ const parse = (input, options) => {
 
   const eos = () => state.index === len - 1;
   const peek = state.peek = (n = 1) => input[state.index + n];
-  const advance = state.advance = () => input[++state.index];
+  const advance = state.advance = () => input[++state.index] || '';
   const remaining = () => input.slice(state.index + 1);
   const consume = (value = '', num = 0) => {
     state.consumed += value;
     state.index += num;
   };
+
   const append = token => {
     state.output += token.output != null ? token.output : token.value;
     consume(token.value);
@@ -17645,7 +15114,7 @@ const parse = (input, options) => {
       }
     }
 
-    if (extglobs.length && tok.type !== 'paren' && !EXTGLOB_CHARS[tok.value]) {
+    if (extglobs.length && tok.type !== 'paren') {
       extglobs[extglobs.length - 1].inner += tok.value;
     }
 
@@ -17670,8 +15139,6 @@ const parse = (input, options) => {
     const output = (opts.capture ? '(' : '') + token.open;
 
     increment('parens');
-
-
     push({ type, value, output: state.output ? '' : ONE_CHAR });
     push({ type: 'paren', extglob: true, value: advance(), output });
     extglobs.push(token);
@@ -17679,6 +15146,7 @@ const parse = (input, options) => {
 
   const extglobClose = token => {
     let output = token.close + (opts.capture ? ')' : '');
+    let rest;
 
     if (token.type === 'negate') {
       let extglobStar = star;
@@ -17691,7 +15159,11 @@ const parse = (input, options) => {
         output = token.close = `)$))${extglobStar}`;
       }
 
-      if (token.prev.type === 'bos' && eos()) {
+      if (token.inner.includes('*') && (rest = remaining()) && /^\.[^\\/.]+$/.test(rest)) {
+        output = token.close = `)${rest})${extglobStar})`;
+      }
+
+      if (token.prev.type === 'bos') {
         state.negatedExtglob = true;
       }
     }
@@ -17800,9 +15272,9 @@ const parse = (input, options) => {
       }
 
       if (opts.unescape === true) {
-        value = advance() || '';
+        value = advance();
       } else {
-        value += advance() || '';
+        value += advance();
       }
 
       if (state.brackets === 0) {
@@ -18027,7 +15499,7 @@ const parse = (input, options) => {
         const out = state.output.slice(0, brace.outputIndex);
         const toks = state.tokens.slice(brace.tokensIndex);
         brace.value = brace.output = '\\{';
-        value = output = `\\}`;
+        value = output = '\\}';
         state.output = out;
         for (const t of toks) {
           state.output += (t.output || t.value);
@@ -18466,7 +15938,7 @@ parse.fastpaths = (input, options) => {
     star = `(${star})`;
   }
 
-  const globstar = (opts) => {
+  const globstar = opts => {
     if (opts.noglobstar === true) return star;
     return `(${capture}(?:(?!${START_ANCHOR}${opts.dot ? DOTS_SLASH : DOT_LITERAL}).)*?)`;
   };
@@ -18794,13 +16266,11 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
     o[k2] = m[k];
 }));
 var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(__webpack_require__(330), exports);
 __exportStar(__webpack_require__(214), exports);
-__exportStar(__webpack_require__(454), exports);
-__exportStar(__webpack_require__(72), exports);
 //# sourceMappingURL=index.js.map
 
 /***/ }),
@@ -18827,73 +16297,28 @@ exports.default = SyncProvider;
 
 /***/ }),
 
-/***/ 835:
-/***/ (function(module) {
+/***/ 848:
+/***/ (function(__unusedmodule, exports) {
 
-module.exports = require("url");
+"use strict";
 
-/***/ }),
-
-/***/ 846:
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-/*!
- * is-glob <https://github.com/jonschlinkert/is-glob>
- *
- * Copyright (c) 2014-2017, Jon Schlinkert.
- * Released under the MIT License.
- */
-
-var isExtglob = __webpack_require__(888);
-var chars = { '{': '}', '(': ')', '[': ']'};
-var strictRegex = /\\(.)|(^!|\*|[\].+)]\?|\[[^\\\]]+\]|\{[^\\}]+\}|\(\?[:!=][^\\)]+\)|\([^|]+\|[^\\)]+\))/;
-var relaxedRegex = /\\(.)|(^!|[*?{}()[\]]|\(\?)/;
-
-module.exports = function isGlob(str, options) {
-  if (typeof str !== 'string' || str === '') {
-    return false;
-  }
-
-  if (isExtglob(str)) {
-    return true;
-  }
-
-  var regex = strictRegex;
-  var match;
-
-  // optionally relax regex
-  if (options && options.strict === false) {
-    regex = relaxedRegex;
-  }
-
-  while ((match = regex.exec(str))) {
-    if (match[2]) return true;
-    var idx = match.index + match[0].length;
-
-    // if an open bracket/brace/paren is escaped,
-    // set the index to the next closing character
-    var open = match[1];
-    var close = open ? chars[open] : null;
-    if (open && close) {
-      var n = str.indexOf(close, idx);
-      if (n !== -1) {
-        idx = n + 1;
-      }
-    }
-
-    str = str.slice(idx);
-  }
-  return false;
-};
-
+// Copyright (c) 2019-2020-2021 Luca Cappa
+// Released under the term specified in file LICENSE.txt
+// SPDX short identifier: MIT
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.VCPKGDEFAULTTRIPLET = exports.VCPKGROOT = exports.vcpkgLastBuiltCommitId = exports.RUNVCPKG_VCPKG_DEFAULT_TRIPLET = exports.RUNVCPKG_VCPKG_ROOT = void 0;
+exports.RUNVCPKG_VCPKG_ROOT = "RUNVCPKG_VCPKG_ROOT";
+exports.RUNVCPKG_VCPKG_DEFAULT_TRIPLET = "RUNVCPKG_VCPKG_DEFAULT_TRIPLET";
+exports.vcpkgLastBuiltCommitId = 'vcpkgLastBuiltCommitId';
+exports.VCPKGROOT = 'VCPKG_ROOT';
+exports.VCPKGDEFAULTTRIPLET = "VCPKG_DEFAULT_TRIPLET";
+//# sourceMappingURL=vcpkg-globals.js.map
 
 /***/ }),
 
 /***/ 856:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
-exports.alphasort = alphasort
-exports.alphasorti = alphasorti
 exports.setopts = setopts
 exports.ownProp = ownProp
 exports.makeAbs = makeAbs
@@ -18911,12 +16336,8 @@ var minimatch = __webpack_require__(93)
 var isAbsolute = __webpack_require__(681)
 var Minimatch = minimatch.Minimatch
 
-function alphasorti (a, b) {
-  return a.toLowerCase().localeCompare(b.toLowerCase())
-}
-
 function alphasort (a, b) {
-  return a.localeCompare(b)
+  return a.localeCompare(b, 'en')
 }
 
 function setupIgnores (self, options) {
@@ -19044,7 +16465,7 @@ function finish (self) {
     all = Object.keys(all)
 
   if (!self.nosort)
-    all = all.sort(self.nocase ? alphasorti : alphasort)
+    all = all.sort(alphasort)
 
   // at *some* point we statted all of these
   if (self.mark) {
@@ -19136,13 +16557,6 @@ function childrenIgnored (self, path) {
 
 /***/ }),
 
-/***/ 867:
-/***/ (function(module) {
-
-module.exports = require("tty");
-
-/***/ }),
-
 /***/ 872:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -19193,11 +16607,22 @@ exports.createFileSystemAdapter = createFileSystemAdapter;
 
 /***/ }),
 
-/***/ 880:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
+/***/ 884:
+/***/ (function(__unusedmodule, exports) {
 
-exports.Deflater = __webpack_require__(474);
-exports.Inflater = __webpack_require__(937);
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isEmpty = exports.isString = void 0;
+function isString(input) {
+    return typeof input === 'string';
+}
+exports.isString = isString;
+function isEmpty(input) {
+    return input === '';
+}
+exports.isEmpty = isEmpty;
+
 
 /***/ }),
 
@@ -19263,53 +16688,62 @@ function runParallel (tasks, cb) {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const utils = __webpack_require__(444);
+const partial_1 = __webpack_require__(75);
 class DeepFilter {
     constructor(_settings, _micromatchOptions) {
         this._settings = _settings;
         this._micromatchOptions = _micromatchOptions;
     }
     getFilter(basePath, positive, negative) {
-        const maxPatternDepth = this._getMaxPatternDepth(positive);
+        const matcher = this._getMatcher(positive);
         const negativeRe = this._getNegativePatternsRe(negative);
-        return (entry) => this._filter(basePath, entry, negativeRe, maxPatternDepth);
+        return (entry) => this._filter(basePath, entry, matcher, negativeRe);
     }
-    _getMaxPatternDepth(patterns) {
-        const globstar = patterns.some(utils.pattern.hasGlobStar);
-        return globstar ? Infinity : utils.pattern.getMaxNaivePatternsDepth(patterns);
+    _getMatcher(patterns) {
+        return new partial_1.default(patterns, this._settings, this._micromatchOptions);
     }
     _getNegativePatternsRe(patterns) {
         const affectDepthOfReadingPatterns = patterns.filter(utils.pattern.isAffectDepthOfReadingPattern);
         return utils.pattern.convertPatternsToRe(affectDepthOfReadingPatterns, this._micromatchOptions);
     }
-    _filter(basePath, entry, negativeRe, maxPatternDepth) {
-        const depth = this._getEntryDepth(basePath, entry.path);
-        if (this._isSkippedByDeep(depth)) {
-            return false;
-        }
-        if (this._isSkippedByMaxPatternDepth(depth, maxPatternDepth)) {
+    _filter(basePath, entry, matcher, negativeRe) {
+        if (this._isSkippedByDeep(basePath, entry.path)) {
             return false;
         }
         if (this._isSkippedSymbolicLink(entry)) {
             return false;
         }
-        return this._isSkippedByNegativePatterns(entry, negativeRe);
+        const filepath = utils.path.removeLeadingDotSegment(entry.path);
+        if (this._isSkippedByPositivePatterns(filepath, matcher)) {
+            return false;
+        }
+        return this._isSkippedByNegativePatterns(filepath, negativeRe);
     }
-    _getEntryDepth(basePath, entryPath) {
-        const basePathDepth = basePath.split('/').length;
+    _isSkippedByDeep(basePath, entryPath) {
+        /**
+         * Avoid unnecessary depth calculations when it doesn't matter.
+         */
+        if (this._settings.deep === Infinity) {
+            return false;
+        }
+        return this._getEntryLevel(basePath, entryPath) >= this._settings.deep;
+    }
+    _getEntryLevel(basePath, entryPath) {
         const entryPathDepth = entryPath.split('/').length;
-        return entryPathDepth - (basePath === '' ? 0 : basePathDepth);
-    }
-    _isSkippedByDeep(entryDepth) {
-        return entryDepth >= this._settings.deep;
-    }
-    _isSkippedByMaxPatternDepth(entryDepth, maxPatternDepth) {
-        return !this._settings.baseNameMatch && maxPatternDepth !== Infinity && entryDepth > maxPatternDepth;
+        if (basePath === '') {
+            return entryPathDepth;
+        }
+        const basePathDepth = basePath.split('/').length;
+        return entryPathDepth - basePathDepth;
     }
     _isSkippedSymbolicLink(entry) {
         return !this._settings.followSymbolicLinks && entry.dirent.isSymbolicLink();
     }
-    _isSkippedByNegativePatterns(entry, negativeRe) {
-        return !utils.pattern.matchAny(entry.path, negativeRe);
+    _isSkippedByPositivePatterns(entryPath, matcher) {
+        return !this._settings.baseNameMatch && !matcher.match(entryPath);
+    }
+    _isSkippedByNegativePatterns(entryPath, patternsRe) {
+        return !utils.pattern.matchAny(entryPath, patternsRe);
     }
 }
 exports.default = DeepFilter;
@@ -19447,40 +16881,6 @@ var isArray = Array.isArray || function (xs) {
 
 /***/ }),
 
-/***/ 912:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const utils = __webpack_require__(444);
-class EntryTransformer {
-    constructor(_settings) {
-        this._settings = _settings;
-    }
-    getTransformer() {
-        return (entry) => this._transform(entry);
-    }
-    _transform(entry) {
-        let filepath = entry.path;
-        if (this._settings.absolute) {
-            filepath = utils.path.makeAbsolute(this._settings.cwd, filepath);
-            filepath = utils.path.unixify(filepath);
-        }
-        if (this._settings.markDirectories && entry.dirent.isDirectory()) {
-            filepath += '/';
-        }
-        if (!this._settings.objectMode) {
-            return filepath;
-        }
-        return Object.assign(Object.assign({}, entry), { path: filepath });
-    }
-}
-exports.default = EntryTransformer;
-
-
-/***/ }),
-
 /***/ 914:
 /***/ (function(module) {
 
@@ -19507,14 +16907,11 @@ module.exports = function(num) {
 
 /***/ }),
 
-/***/ 928:
+/***/ 923:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
-// Copyright (c) 2019-2020-2021 Luca Cappa
-// Released under the term specified in file LICENSE.txt
-// SPDX short identifier: MIT
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
@@ -19534,535 +16931,241 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.dumpFile = exports.LogFileCollector = exports.dumpError = exports.Matcher = exports.BaseUtilLib = void 0;
-const fs = __importStar(__webpack_require__(747));
+exports.Pattern = void 0;
 const os = __importStar(__webpack_require__(87));
 const path = __importStar(__webpack_require__(622));
-const adm_zip_1 = __importDefault(__webpack_require__(639));
-const http = __importStar(__webpack_require__(549));
-const del = __importStar(__webpack_require__(245));
-const perf_hooks_1 = __webpack_require__(630);
-class BaseUtilLib {
-    constructor(baseLib) {
-        this.baseLib = baseLib;
-    }
-    isVcpkgSubmodule(gitPath, fullVcpkgPath) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const options = {
-                    cwd: process.env.BUILD_SOURCESDIRECTORY,
-                    failOnStdErr: false,
-                    errStream: process.stdout,
-                    outStream: process.stdout,
-                    ignoreReturnCode: true,
-                    silent: false,
-                    windowsVerbatimArguments: false,
-                    env: process.env
-                };
-                const res = yield this.baseLib.execSync(gitPath, ['submodule', 'status', fullVcpkgPath], options);
-                let isSubmodule = false;
-                if (res.error !== null) {
-                    isSubmodule = res.code == 0;
-                    let msg;
-                    msg = `'git submodule ${fullVcpkgPath}': exit code='${res.code}' `;
-                    // If not null or undefined.
-                    if (res.stdout) {
-                        msg += `, stdout='${res.stdout.trim()}'`;
-                    }
-                    // If not null or undefined.
-                    if (res.stderr) {
-                        msg += `, stderr='${res.stderr.trim()}'`;
-                    }
-                    msg += '.';
-                    this.baseLib.debug(msg);
-                }
-                return isSubmodule;
+const pathHelper = __importStar(__webpack_require__(972));
+const assert_1 = __importDefault(__webpack_require__(357));
+const minimatch_1 = __webpack_require__(93);
+const internal_match_kind_1 = __webpack_require__(327);
+const internal_path_1 = __webpack_require__(383);
+const IS_WINDOWS = process.platform === 'win32';
+class Pattern {
+    constructor(patternOrNegate, isImplicitPattern = false, segments, homedir) {
+        /**
+         * Indicates whether matches should be excluded from the result set
+         */
+        this.negate = false;
+        // Pattern overload
+        let pattern;
+        if (typeof patternOrNegate === 'string') {
+            pattern = patternOrNegate.trim();
+        }
+        // Segments overload
+        else {
+            // Convert to pattern
+            segments = segments || [];
+            assert_1.default(segments.length, `Parameter 'segments' must not empty`);
+            const root = Pattern.getLiteral(segments[0]);
+            assert_1.default(root && pathHelper.hasAbsoluteRoot(root), `Parameter 'segments' first element must be a root path`);
+            pattern = new internal_path_1.Path(segments).toString().trim();
+            if (patternOrNegate) {
+                pattern = `!${pattern}`;
             }
-            catch (error) {
-                this.baseLib.warning(`ïsVcpkgSubmodule() failed: ${error}`);
-                return false;
+        }
+        // Negate
+        while (pattern.startsWith('!')) {
+            this.negate = !this.negate;
+            pattern = pattern.substr(1).trim();
+        }
+        // Normalize slashes and ensures absolute root
+        pattern = Pattern.fixupPattern(pattern, homedir);
+        // Segments
+        this.segments = new internal_path_1.Path(pattern).segments;
+        // Trailing slash indicates the pattern should only match directories, not regular files
+        this.trailingSeparator = pathHelper
+            .normalizeSeparators(pattern)
+            .endsWith(path.sep);
+        pattern = pathHelper.safeTrimTrailingSeparator(pattern);
+        // Search path (literal path prior to the first glob segment)
+        let foundGlob = false;
+        const searchSegments = this.segments
+            .map(x => Pattern.getLiteral(x))
+            .filter(x => !foundGlob && !(foundGlob = x === ''));
+        this.searchPath = new internal_path_1.Path(searchSegments).toString();
+        // Root RegExp (required when determining partial match)
+        this.rootRegExp = new RegExp(Pattern.regExpEscape(searchSegments[0]), IS_WINDOWS ? 'i' : '');
+        this.isImplicitPattern = isImplicitPattern;
+        // Create minimatch
+        const minimatchOptions = {
+            dot: true,
+            nobrace: true,
+            nocase: IS_WINDOWS,
+            nocomment: true,
+            noext: true,
+            nonegate: true
+        };
+        pattern = IS_WINDOWS ? pattern.replace(/\\/g, '/') : pattern;
+        this.minimatch = new minimatch_1.Minimatch(pattern, minimatchOptions);
+    }
+    /**
+     * Matches the pattern against the specified path
+     */
+    match(itemPath) {
+        // Last segment is globstar?
+        if (this.segments[this.segments.length - 1] === '**') {
+            // Normalize slashes
+            itemPath = pathHelper.normalizeSeparators(itemPath);
+            // Append a trailing slash. Otherwise Minimatch will not match the directory immediately
+            // preceding the globstar. For example, given the pattern `/foo/**`, Minimatch returns
+            // false for `/foo` but returns true for `/foo/`. Append a trailing slash to handle that quirk.
+            if (!itemPath.endsWith(path.sep) && this.isImplicitPattern === false) {
+                // Note, this is safe because the constructor ensures the pattern has an absolute root.
+                // For example, formats like C: and C:foo on Windows are resolved to an absolute root.
+                itemPath = `${itemPath}${path.sep}`;
             }
-        });
-    }
-    throwIfErrorCode(errorCode) {
-        if (errorCode !== 0) {
-            const errMsg = `Last command execution failed with error code '${errorCode}'.`;
-            this.baseLib.error(errMsg);
-            throw new Error(errMsg);
-        }
-    }
-    isWin32() {
-        return os.platform().toLowerCase() === 'win32';
-    }
-    isMacos() {
-        return os.platform().toLowerCase() === 'darwin';
-    }
-    // freeBSD or openBSD
-    isBSD() {
-        return os.platform().toLowerCase().indexOf("bsd") != -1;
-    }
-    isLinux() {
-        return os.platform().toLowerCase() === 'linux';
-    }
-    isDarwin() {
-        return os.platform().toLowerCase() === 'darwin';
-    }
-    getVcpkgExePath(vcpkgRoot) {
-        const vcpkgExe = this.isWin32() ? "vcpkg.exe" : "vcpkg";
-        const vcpkgExePath = path.join(vcpkgRoot, vcpkgExe);
-        return vcpkgExePath;
-    }
-    directoryExists(path) {
-        try {
-            return this.baseLib.stats(path).isDirectory();
-        }
-        catch (error) {
-            this.baseLib.debug(`directoryExists(${path}): ${"" + error}`);
-            return false;
-        }
-    }
-    fileExists(path) {
-        try {
-            return this.baseLib.stats(path).isFile();
-        }
-        catch (error) {
-            this.baseLib.debug(`fileExists(${path}): ${"" + error}`);
-            return false;
-        }
-    }
-    readFile(path) {
-        try {
-            const readString = fs.readFileSync(path, { encoding: 'utf8', flag: 'r' });
-            this.baseLib.debug(`readFile(${path})='${readString}'.`);
-            return [true, readString];
-        }
-        catch (error) {
-            this.baseLib.debug(`readFile(${path}): ${"" + error}`);
-            return [false, error];
-        }
-    }
-    writeFile(file, content) {
-        this.baseLib.debug(`Writing to file '${file}' content '${content}'.`);
-        this.baseLib.writeFile(file, content);
-    }
-    getDefaultTriplet() {
-        const envVar = process.env["VCPKG_DEFAULT_TRIPLET"];
-        if (envVar) {
-            return envVar;
         }
         else {
-            if (this.isWin32()) {
-                return "x86-windows";
-            }
-            else if (this.isLinux()) {
-                return "x64-linux";
-            }
-            else if (this.isMacos()) {
-                return "x64-osx";
-            }
-            else if (this.isBSD()) {
-                return "x64-freebsd";
-            }
+            // Normalize slashes and trim unnecessary trailing slash
+            itemPath = pathHelper.safeTrimTrailingSeparator(itemPath);
         }
-        return "";
+        // Match
+        if (this.minimatch.match(itemPath)) {
+            return this.trailingSeparator ? internal_match_kind_1.MatchKind.Directory : internal_match_kind_1.MatchKind.All;
+        }
+        return internal_match_kind_1.MatchKind.None;
     }
-    static extractTriplet(args, readFile) {
-        let triplet = null;
-        // Split string on any 'whitespace' character
-        const argsSplitted = args.split(/\s/).filter((a) => a.length != 0);
-        let index = 0;
-        for (; index < argsSplitted.length; index++) {
-            let arg = argsSplitted[index].trim();
-            // remove all whitespace characters (e.g. newlines, tabs, blanks)
-            arg = arg.replace(/\s/, '');
-            if (arg === "--triplet") {
-                index++;
-                if (index < argsSplitted.length) {
-                    triplet = argsSplitted[index];
-                    return triplet.trim();
-                }
+    /**
+     * Indicates whether the pattern may match descendants of the specified path
+     */
+    partialMatch(itemPath) {
+        // Normalize slashes and trim unnecessary trailing slash
+        itemPath = pathHelper.safeTrimTrailingSeparator(itemPath);
+        // matchOne does not handle root path correctly
+        if (pathHelper.dirname(itemPath) === itemPath) {
+            return this.rootRegExp.test(itemPath);
+        }
+        return this.minimatch.matchOne(itemPath.split(IS_WINDOWS ? /\\+/ : /\/+/), this.minimatch.set[0], true);
+    }
+    /**
+     * Escapes glob patterns within a path
+     */
+    static globEscape(s) {
+        return (IS_WINDOWS ? s : s.replace(/\\/g, '\\\\')) // escape '\' on Linux/macOS
+            .replace(/(\[)(?=[^/]+\])/g, '[[]') // escape '[' when ']' follows within the path segment
+            .replace(/\?/g, '[?]') // escape '?'
+            .replace(/\*/g, '[*]'); // escape '*'
+    }
+    /**
+     * Normalizes slashes and ensures absolute root
+     */
+    static fixupPattern(pattern, homedir) {
+        // Empty
+        assert_1.default(pattern, 'pattern cannot be empty');
+        // Must not contain `.` segment, unless first segment
+        // Must not contain `..` segment
+        const literalSegments = new internal_path_1.Path(pattern).segments.map(x => Pattern.getLiteral(x));
+        assert_1.default(literalSegments.every((x, i) => (x !== '.' || i === 0) && x !== '..'), `Invalid pattern '${pattern}'. Relative pathing '.' and '..' is not allowed.`);
+        // Must not contain globs in root, e.g. Windows UNC path \\foo\b*r
+        assert_1.default(!pathHelper.hasRoot(pattern) || literalSegments[0], `Invalid pattern '${pattern}'. Root segment must not contain globs.`);
+        // Normalize slashes
+        pattern = pathHelper.normalizeSeparators(pattern);
+        // Replace leading `.` segment
+        if (pattern === '.' || pattern.startsWith(`.${path.sep}`)) {
+            pattern = Pattern.globEscape(process.cwd()) + pattern.substr(1);
+        }
+        // Replace leading `~` segment
+        else if (pattern === '~' || pattern.startsWith(`~${path.sep}`)) {
+            homedir = homedir || os.homedir();
+            assert_1.default(homedir, 'Unable to determine HOME directory');
+            assert_1.default(pathHelper.hasAbsoluteRoot(homedir), `Expected HOME directory to be a rooted path. Actual '${homedir}'`);
+            pattern = Pattern.globEscape(homedir) + pattern.substr(1);
+        }
+        // Replace relative drive root, e.g. pattern is C: or C:foo
+        else if (IS_WINDOWS &&
+            (pattern.match(/^[A-Z]:$/i) || pattern.match(/^[A-Z]:[^\\]/i))) {
+            let root = pathHelper.ensureAbsoluteRoot('C:\\dummy-root', pattern.substr(0, 2));
+            if (pattern.length > 2 && !root.endsWith('\\')) {
+                root += '\\';
             }
-            if (arg.startsWith("@")) {
-                const [ok, content] = readFile(arg.substring(1));
-                if (ok) {
-                    const t = BaseUtilLib.extractTriplet(content, readFile);
-                    if (t) {
-                        return t.trim();
+            pattern = Pattern.globEscape(root) + pattern.substr(2);
+        }
+        // Replace relative root, e.g. pattern is \ or \foo
+        else if (IS_WINDOWS && (pattern === '\\' || pattern.match(/^\\[^\\]/))) {
+            let root = pathHelper.ensureAbsoluteRoot('C:\\dummy-root', '\\');
+            if (!root.endsWith('\\')) {
+                root += '\\';
+            }
+            pattern = Pattern.globEscape(root) + pattern.substr(1);
+        }
+        // Otherwise ensure absolute root
+        else {
+            pattern = pathHelper.ensureAbsoluteRoot(Pattern.globEscape(process.cwd()), pattern);
+        }
+        return pathHelper.normalizeSeparators(pattern);
+    }
+    /**
+     * Attempts to unescape a pattern segment to create a literal path segment.
+     * Otherwise returns empty string.
+     */
+    static getLiteral(segment) {
+        let literal = '';
+        for (let i = 0; i < segment.length; i++) {
+            const c = segment[i];
+            // Escape
+            if (c === '\\' && !IS_WINDOWS && i + 1 < segment.length) {
+                literal += segment[++i];
+                continue;
+            }
+            // Wildcard
+            else if (c === '*' || c === '?') {
+                return '';
+            }
+            // Character set
+            else if (c === '[' && i + 1 < segment.length) {
+                let set = '';
+                let closed = -1;
+                for (let i2 = i + 1; i2 < segment.length; i2++) {
+                    const c2 = segment[i2];
+                    // Escape
+                    if (c2 === '\\' && !IS_WINDOWS && i2 + 1 < segment.length) {
+                        set += segment[++i2];
+                        continue;
+                    }
+                    // Closed
+                    else if (c2 === ']') {
+                        closed = i2;
+                        break;
+                    }
+                    // Otherwise
+                    else {
+                        set += c2;
                     }
                 }
-            }
-        }
-        return triplet;
-    }
-    resolveArguments(args, readFile) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let resolvedArguments = "";
-            // Split string on any 'whitespace' character
-            const argsSplitted = args.split(/\s/).filter((a) => a.length != 0);
-            let index = 0;
-            for (; index < argsSplitted.length; index++) {
-                let arg = argsSplitted[index].trim();
-                // remove all whitespace characters (e.g. newlines, tabs, blanks)
-                arg = arg.replace(/\s/, '');
-                let isResponseFile = false;
-                if (arg.startsWith("@")) {
-                    const resolvedFilePath = BaseUtilLib.normalizePath(arg);
-                    if (yield this.baseLib.exist(resolvedFilePath)) {
-                        const [ok, content] = readFile(resolvedFilePath);
-                        if (ok && content) {
-                            isResponseFile = true;
-                            resolvedArguments += content;
-                        }
+                // Closed?
+                if (closed >= 0) {
+                    // Cannot convert
+                    if (set.length > 1) {
+                        return '';
+                    }
+                    // Convert to literal
+                    if (set) {
+                        literal += set;
+                        i = closed;
+                        continue;
                     }
                 }
-                if (!isResponseFile) {
-                    resolvedArguments += arg;
-                }
+                // Otherwise fall thru
             }
-            return resolvedArguments;
-        });
-    }
-    // Force 'name' env variable to have value of 'value'.
-    setEnvVar(name, value) {
-        // Set variable both as env var and as step variable, which might be re-used in subseqeunt steps.  
-        process.env[name] = value;
-        this.baseLib.setVariable(name, value);
-        this.baseLib.debug(`Set variable and the env variable '${name}' to value '${value}'.`);
-    }
-    trimString(value) {
-        var _a;
-        return (_a = value === null || value === void 0 ? void 0 : value.trim()) !== null && _a !== void 0 ? _a : "";
-    }
-    wrapOp(name, fn) {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.baseLib.beginOperation(name);
-            let result;
-            const startTime = perf_hooks_1.performance.now();
-            try {
-                result = yield fn();
-            }
-            finally {
-                this.baseLib.endOperation();
-                this.baseLib.info(`⏱ elapsed: ${((perf_hooks_1.performance.now() - startTime) / 1000.).toFixed(3)} seconds`);
-            }
-            return result;
-        });
-    }
-    wrapOpSync(name, fn) {
-        this.baseLib.beginOperation(name);
-        let result;
-        const startTime = perf_hooks_1.performance.now();
-        try {
-            result = fn();
+            // Append
+            literal += c;
         }
-        finally {
-            this.baseLib.endOperation();
-            this.baseLib.info(`⏱ elapsed: ${((perf_hooks_1.performance.now() - startTime) / 1000.).toFixed(3)} seconds`);
-        }
-        return result;
+        return literal;
     }
     /**
-     * Check whether the current generator selected in the command line
-     * is -G Ninja or -G Ninja Multi-Config.
-     * @export
-     * @param {string} commandLineString The command line as string
-     * @returns {boolean}
+     * Escapes regexp special characters
+     * https://javascript.info/regexp-escaping
      */
-    isNinjaGenerator(args) {
-        for (const arg of args) {
-            if (/-G[\s]*(?:\"Ninja.*\"|Ninja.*)/.test(arg))
-                return true;
-        }
-        return false;
-    }
-    isMakeProgram(args) {
-        for (const arg of args) {
-            if (/-DCMAKE_MAKE_PROGRAM/.test(arg))
-                return true;
-        }
-        return false;
-    }
-    isToolchainFile(args) {
-        for (const arg of args) {
-            if (/-DCMAKE_TOOLCHAIN_FILE/.test(arg))
-                return true;
-        }
-        return false;
-    }
-    getToolchainFile(args) {
-        this.baseLib.debug(`getToolchainFile(${JSON.stringify(args)})<<`);
-        for (const arg of args) {
-            const matches = /-DCMAKE_TOOLCHAIN_FILE(?::[^\s]*)?=([^\s]*)/.exec(arg);
-            if (matches != null) {
-                if (matches.length > 1) {
-                    this.baseLib.debug(`match found=${matches[1]}`);
-                    return matches[1];
-                }
-            }
-        }
-        return undefined;
-    }
-    removeToolchainFile(args) {
-        return args.filter(a => !/-DCMAKE_TOOLCHAIN_FILE(:[A-Za-z]+)?=[^\s]+/.test(a));
-    }
-    mkdir(target, options) {
-        fs.mkdirSync(target, options);
-    }
-    rm(target) {
-        del.sync(target);
-    }
-    test(aPath) {
-        const result = fs.existsSync(aPath);
-        return result;
-    }
-    downloadFile(url) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const downloadsDirName = "dl";
-            // validate parameters
-            if (!url) {
-                throw new Error('downloadFile: Parameter "url" must be set.');
-            }
-            const downloadsDirectory = path.join(yield this.baseLib.getBinDir(), downloadsDirName);
-            const scrubbedUrl = url.replace(/[/\:?]/g, '_');
-            const targetPath = path.join(downloadsDirectory, scrubbedUrl);
-            const marker = targetPath + '.completed';
-            // skip if already downloaded
-            if (this.test(marker)) {
-                console.log(`Found downloaded file at: ${targetPath}`);
-                return Promise.resolve(targetPath);
-            }
-            else {
-                console.log(`Downloading url '${url}' to file '${targetPath}'.`);
-                // delete any previous partial attempt
-                if (this.test(targetPath)) {
-                    this.rm(targetPath);
-                }
-                // download the file
-                this.mkdir(downloadsDirectory, { recursive: true });
-                const file = fs.createWriteStream(targetPath, { autoClose: true });
-                return new Promise((resolve, reject) => {
-                    const request = http.https.get(url, (response) => {
-                        response.pipe(file).on('finish', () => {
-                            this.baseLib.debug(`statusCode: ${response.statusCode}.`);
-                            this.baseLib.debug(`headers: ${response.headers}.`);
-                            console.log(`'${url}' downloaded to: '${targetPath}'`);
-                            fs.writeFileSync(marker, '');
-                            request.end();
-                            resolve(targetPath);
-                        }).on('error', (error) => reject(new Error(`statusCode='${response.statusCode}', error='${error.toString()}'.`)));
-                    });
-                });
-            }
-        });
-    }
-    /**
-     * Downloads and extracts an archive file.
-     * @returns The path to the extracted content.
-     */
-    downloadArchive(url) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!url) {
-                throw new Error('downloadArchive: url must be provided!');
-            }
-            try {
-                const targetFileName = url.replace(/[\/\\:?]/g, '_');
-                // 'x' for extracted content.
-                const targetPath = path.join(yield this.baseLib.getBinDir(), 'x', targetFileName);
-                const marker = targetPath + '.completed';
-                if (!this.test(marker)) {
-                    // download the whole archive.
-                    const archivePath = yield this.downloadFile(url);
-                    // extract the archive overwriting anything.
-                    console.log(`Extracting archive '${archivePath}' ...`);
-                    this.mkdir(targetPath, { recursive: true });
-                    const zip = new adm_zip_1.default(archivePath);
-                    zip.extractAllTo(targetPath, true);
-                    // write the completed file marker.
-                    fs.writeFileSync(marker, '');
-                }
-                return targetPath;
-            }
-            catch (exception) {
-                throw new Error(`Failed to download the Ninja executable: '${exception}'.`);
-            }
-        });
-    }
-    /**
-     * Get a set of commands to be run in the shell of the host OS.
-     * @export
-     * @param {string[]} args
-     * @returns {(trm.ToolRunner | undefined)}
-     */
-    getScriptCommand(args) {
-        var _a;
-        return __awaiter(this, void 0, void 0, function* () {
-            let tool;
-            if (this.isWin32()) {
-                const cmdExe = (_a = process.env.COMSPEC) !== null && _a !== void 0 ? _a : "cmd.exe";
-                const cmdPath = yield this.baseLib.which(cmdExe, true);
-                tool = this.baseLib.tool(cmdPath);
-                tool.arg('/c');
-                tool.line(args);
-            }
-            else {
-                const shPath = yield this.baseLib.which('sh', true);
-                tool = this.baseLib.tool(shPath);
-                tool.arg('-c');
-                tool.arg(args);
-                return tool;
-            }
-        });
-    }
-    isVariableStrippingPath(variableName) {
-        // Avoid that the PATH is minimized by MSBuild props:
-        // https://github.com/lukka/run-cmake/issues/8#issuecomment-606956604
-        return (variableName.toUpperCase() === "__VSCMD_PREINIT_PATH");
-    }
-    parseVcpkgEnvOutput(data) {
-        const map = {};
-        const regex = {
-            param: /^\s*([^=]+?)\s*=\s*(.*?)\s*$/,
-        };
-        const lines = data.split(/[\r\n]+/);
-        for (const line of lines) {
-            if (regex.param.test(line)) {
-                const match = line.match(regex.param);
-                if (match) {
-                    map[match[1]] = match[2];
-                }
-            }
-        }
-        return map;
-    }
-    /**
-     * Normalize a filesystem path with path.normalize(), then remove any trailing space.
-     *
-     * @export
-     * @param {string} aPath The string representing a filesystem path.
-     * @returns {string} The normalized path without trailing slash.
-     */
-    static normalizePath(aPath) {
-        aPath = path.normalize(aPath);
-        if (/[\\\/]$/.test(aPath) && aPath.length > 1)
-            aPath = aPath.slice(0, -1);
-        return aPath;
-    }
-    static throwIfUndefined(obj, name) {
-        if (obj === undefined)
-            throw new Error(`Agument '${name}' is undefined`);
-    }
-    static isValidSHA1(text) {
-        return /^[a-fA-F0-9]{40}$/.test(text);
+    static regExpEscape(s) {
+        return s.replace(/[[\\^$.|?*+()]/g, '\\$&');
     }
 }
-exports.BaseUtilLib = BaseUtilLib;
-BaseUtilLib.cachingFormatEnvName = 'AZP_CACHING_CONTENT_FORMAT';
-class Matcher {
-    constructor(name, baseLib, fromPath) {
-        this.name = name;
-        this.baseLib = baseLib;
-        this.fromPath = fromPath;
-        const matcherFilePath = path.join(__dirname, `${name}.json`);
-        fromPath;
-        this.baseLib.addMatcher(matcherFilePath);
-    }
-    dispose() {
-        this.baseLib.removeMatcher(path.join(__dirname, `${this.name}.json`));
-    }
-    static createMatcher(name, baseLib, fromPath) {
-        return new Matcher(name, baseLib, fromPath);
-    }
-}
-exports.Matcher = Matcher;
-function dumpError(baseLib, err) {
-    const error = err;
-    const errorAsString = (error !== null && error !== void 0 ? error : "undefined error").toString();
-    baseLib.debug(errorAsString);
-    if (error === null || error === void 0 ? void 0 : error.stack) {
-        baseLib.debug(error.stack);
-    }
-}
-exports.dumpError = dumpError;
-class LogFileCollector {
-    constructor(baseLib, regExps, func) {
-        this.baseLib = baseLib;
-        this.func = func;
-        this.regExps = [];
-        this.bufferString = "";
-        for (const s of regExps) {
-            this.regExps.push(new RegExp(s, "g"));
-        }
-    }
-    appendBuffer(buffer) {
-        this.bufferString += buffer.toString();
-    }
-    limitBuffer(consumeUntil) {
-        if (consumeUntil && consumeUntil > 0)
-            this.bufferString = this.bufferString.slice(consumeUntil);
-        const len = this.bufferString.length;
-        if (len > LogFileCollector.MAXLEN)
-            this.bufferString = this.bufferString.slice(len - LogFileCollector.MAXLEN);
-    }
-    handleOutput(buffer) {
-        this.appendBuffer(buffer);
-        this.baseLib.debug(`\n\nappending: ${buffer}\n\n`);
-        this.baseLib.debug(`\n\nbuffer: ${this.bufferString}\n\n`);
-        let consumedUntil = -1;
-        for (const re of this.regExps) {
-            re.lastIndex = 0;
-            try {
-                if (re.test(this.bufferString)) {
-                    re.lastIndex = 0;
-                    const matches = re.exec(this.bufferString);
-                    if (matches) {
-                        consumedUntil = Math.max(consumedUntil, re.lastIndex);
-                        this.baseLib.debug(`\n\nmatched expression: ${re}\n\n`);
-                        this.func(matches[1]);
-                    }
-                }
-            }
-            catch (err) {
-                dumpError(this.baseLib, err);
-            }
-        }
-        this.limitBuffer(consumedUntil);
-        this.baseLib.debug(`\n\nremaining: ${this.bufferString}\n\n`);
-    }
-}
-exports.LogFileCollector = LogFileCollector;
-LogFileCollector.MAXLEN = 1024;
-function dumpFile(baseLib, filePath) {
-    try {
-        if (filePath && fs.existsSync(filePath)) {
-            const content = fs.readFileSync(filePath);
-            if (content) {
-                baseLib.info(`[LogCollection][Start]File:'${filePath}':\n${content}\n[LogCollection][End]File:'${filePath}'.`);
-            }
-            else
-                baseLib.warning(`[LogCollection][Warn]File empty:'${filePath}'.`);
-        }
-        else
-            baseLib.warning(`[LogCollection][Warn]File not found:'${filePath}'.`);
-    }
-    catch (err) {
-        dumpError(baseLib, err);
-    }
-}
-exports.dumpFile = dumpFile;
-//# sourceMappingURL=utils.js.map
+exports.Pattern = Pattern;
+//# sourceMappingURL=internal-pattern.js.map
 
 /***/ }),
 
@@ -20074,42 +17177,6 @@ exports.dumpFile = dumpFile;
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs = __webpack_require__(210);
 exports.fs = fs;
-
-
-/***/ }),
-
-/***/ 937:
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-module.exports = function (/*Buffer*/inbuf) {
-
-  var zlib = __webpack_require__(761);
-
-  return {
-    inflate: function () {
-      return zlib.inflateRawSync(inbuf);
-    },
-
-    inflateAsync: function (/*Function*/callback) {
-      var tmp = zlib.createInflateRaw(), parts = [], total = 0;
-      tmp.on('data', function (data) {
-        parts.push(data);
-        total += data.length;
-      });
-      tmp.on('end', function () {
-        var buf = Buffer.alloc(total), written = 0;
-        buf.fill(0);
-        for (var i = 0; i < parts.length; i++) {
-          var part = parts[i];
-          part.copy(buf, written);
-          written += part.length;
-        }
-        callback && callback(buf);
-      });
-      tmp.end(inbuf);
-    }
-  }
-};
 
 
 /***/ }),
@@ -20138,33 +17205,6 @@ function clone (obj) {
   return copy
 }
 
-
-/***/ }),
-
-/***/ 946:
-/***/ (function(__unusedmodule, exports) {
-
-"use strict";
-
-// Copyright (c) 2019-2020-2021 Luca Cappa
-// Released under the term specified in file LICENSE.txt
-// SPDX short identifier: MIT
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.setupOnly = exports.vcpkgRoot = exports.doNotUpdateVcpkg = exports.cleanAfterBuild = exports.vcpkgLastBuiltCommitId = exports.vcpkgArtifactIgnoreEntries = exports.vcpkgDirectory = exports.vcpkgTriplet = exports.outVcpkgTriplet = exports.outVcpkgRootPath = exports.vcpkgCommitId = exports.vcpkgGitURL = exports.vcpkgArguments = void 0;
-exports.vcpkgArguments = 'vcpkgArguments';
-exports.vcpkgGitURL = 'vcpkgGitURL';
-exports.vcpkgCommitId = 'vcpkgGitCommitId';
-exports.outVcpkgRootPath = "RUNVCPKG_VCPKG_ROOT";
-exports.outVcpkgTriplet = "RUNVCPKG_VCPKG_TRIPLET";
-exports.vcpkgTriplet = "vcpkgTriplet";
-exports.vcpkgDirectory = "vcpkgDirectory";
-exports.vcpkgArtifactIgnoreEntries = "vcpkgArtifactIgnoreEntries";
-exports.vcpkgLastBuiltCommitId = 'vcpkgLastBuiltCommitId';
-exports.cleanAfterBuild = 'cleanAfterBuild';
-exports.doNotUpdateVcpkg = 'doNotUpdateVcpkg';
-exports.vcpkgRoot = 'VCPKG_ROOT';
-exports.setupOnly = 'setupOnly';
-//# sourceMappingURL=vcpkg-globals.js.map
 
 /***/ }),
 
@@ -20228,88 +17268,226 @@ exports.default = Reader;
 
 /***/ }),
 
-/***/ 966:
-/***/ (function(module) {
+/***/ 972:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
-const singleComment = Symbol('singleComment');
-const multiComment = Symbol('multiComment');
-const stripWithoutWhitespace = () => '';
-const stripWithWhitespace = (string, start, end) => string.slice(start, end).replace(/\S/g, ' ');
-
-const isEscaped = (jsonString, quotePosition) => {
-	let index = quotePosition - 1;
-	let backslashCount = 0;
-
-	while (jsonString[index] === '\\') {
-		index -= 1;
-		backslashCount += 1;
-	}
-
-	return Boolean(backslashCount % 2);
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
 };
-
-module.exports = (jsonString, options = {}) => {
-	if (typeof jsonString !== 'string') {
-		throw new TypeError(`Expected argument \`jsonString\` to be a \`string\`, got \`${typeof jsonString}\``);
-	}
-
-	const strip = options.whitespace === false ? stripWithoutWhitespace : stripWithWhitespace;
-
-	let insideString = false;
-	let insideComment = false;
-	let offset = 0;
-	let result = '';
-
-	for (let i = 0; i < jsonString.length; i++) {
-		const currentCharacter = jsonString[i];
-		const nextCharacter = jsonString[i + 1];
-
-		if (!insideComment && currentCharacter === '"') {
-			const escaped = isEscaped(jsonString, i);
-			if (!escaped) {
-				insideString = !insideString;
-			}
-		}
-
-		if (insideString) {
-			continue;
-		}
-
-		if (!insideComment && currentCharacter + nextCharacter === '//') {
-			result += jsonString.slice(offset, i);
-			offset = i;
-			insideComment = singleComment;
-			i++;
-		} else if (insideComment === singleComment && currentCharacter + nextCharacter === '\r\n') {
-			i++;
-			insideComment = false;
-			result += strip(jsonString, offset, i);
-			offset = i;
-			continue;
-		} else if (insideComment === singleComment && currentCharacter === '\n') {
-			insideComment = false;
-			result += strip(jsonString, offset, i);
-			offset = i;
-		} else if (!insideComment && currentCharacter + nextCharacter === '/*') {
-			result += jsonString.slice(offset, i);
-			offset = i;
-			insideComment = multiComment;
-			i++;
-			continue;
-		} else if (insideComment === multiComment && currentCharacter + nextCharacter === '*/') {
-			i++;
-			insideComment = false;
-			result += strip(jsonString, offset, i + 1);
-			offset = i + 1;
-			continue;
-		}
-	}
-
-	return result + (insideComment ? strip(jsonString.slice(offset)) : jsonString.slice(offset));
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.safeTrimTrailingSeparator = exports.normalizeSeparators = exports.hasRoot = exports.hasAbsoluteRoot = exports.ensureAbsoluteRoot = exports.dirname = void 0;
+const path = __importStar(__webpack_require__(622));
+const assert_1 = __importDefault(__webpack_require__(357));
+const IS_WINDOWS = process.platform === 'win32';
+/**
+ * Similar to path.dirname except normalizes the path separators and slightly better handling for Windows UNC paths.
+ *
+ * For example, on Linux/macOS:
+ * - `/               => /`
+ * - `/hello          => /`
+ *
+ * For example, on Windows:
+ * - `C:\             => C:\`
+ * - `C:\hello        => C:\`
+ * - `C:              => C:`
+ * - `C:hello         => C:`
+ * - `\               => \`
+ * - `\hello          => \`
+ * - `\\hello         => \\hello`
+ * - `\\hello\world   => \\hello\world`
+ */
+function dirname(p) {
+    // Normalize slashes and trim unnecessary trailing slash
+    p = safeTrimTrailingSeparator(p);
+    // Windows UNC root, e.g. \\hello or \\hello\world
+    if (IS_WINDOWS && /^\\\\[^\\]+(\\[^\\]+)?$/.test(p)) {
+        return p;
+    }
+    // Get dirname
+    let result = path.dirname(p);
+    // Trim trailing slash for Windows UNC root, e.g. \\hello\world\
+    if (IS_WINDOWS && /^\\\\[^\\]+\\[^\\]+\\$/.test(result)) {
+        result = safeTrimTrailingSeparator(result);
+    }
+    return result;
+}
+exports.dirname = dirname;
+/**
+ * Roots the path if not already rooted. On Windows, relative roots like `\`
+ * or `C:` are expanded based on the current working directory.
+ */
+function ensureAbsoluteRoot(root, itemPath) {
+    assert_1.default(root, `ensureAbsoluteRoot parameter 'root' must not be empty`);
+    assert_1.default(itemPath, `ensureAbsoluteRoot parameter 'itemPath' must not be empty`);
+    // Already rooted
+    if (hasAbsoluteRoot(itemPath)) {
+        return itemPath;
+    }
+    // Windows
+    if (IS_WINDOWS) {
+        // Check for itemPath like C: or C:foo
+        if (itemPath.match(/^[A-Z]:[^\\/]|^[A-Z]:$/i)) {
+            let cwd = process.cwd();
+            assert_1.default(cwd.match(/^[A-Z]:\\/i), `Expected current directory to start with an absolute drive root. Actual '${cwd}'`);
+            // Drive letter matches cwd? Expand to cwd
+            if (itemPath[0].toUpperCase() === cwd[0].toUpperCase()) {
+                // Drive only, e.g. C:
+                if (itemPath.length === 2) {
+                    // Preserve specified drive letter case (upper or lower)
+                    return `${itemPath[0]}:\\${cwd.substr(3)}`;
+                }
+                // Drive + path, e.g. C:foo
+                else {
+                    if (!cwd.endsWith('\\')) {
+                        cwd += '\\';
+                    }
+                    // Preserve specified drive letter case (upper or lower)
+                    return `${itemPath[0]}:\\${cwd.substr(3)}${itemPath.substr(2)}`;
+                }
+            }
+            // Different drive
+            else {
+                return `${itemPath[0]}:\\${itemPath.substr(2)}`;
+            }
+        }
+        // Check for itemPath like \ or \foo
+        else if (normalizeSeparators(itemPath).match(/^\\$|^\\[^\\]/)) {
+            const cwd = process.cwd();
+            assert_1.default(cwd.match(/^[A-Z]:\\/i), `Expected current directory to start with an absolute drive root. Actual '${cwd}'`);
+            return `${cwd[0]}:\\${itemPath.substr(1)}`;
+        }
+    }
+    assert_1.default(hasAbsoluteRoot(root), `ensureAbsoluteRoot parameter 'root' must have an absolute root`);
+    // Otherwise ensure root ends with a separator
+    if (root.endsWith('/') || (IS_WINDOWS && root.endsWith('\\'))) {
+        // Intentionally empty
+    }
+    else {
+        // Append separator
+        root += path.sep;
+    }
+    return root + itemPath;
+}
+exports.ensureAbsoluteRoot = ensureAbsoluteRoot;
+/**
+ * On Linux/macOS, true if path starts with `/`. On Windows, true for paths like:
+ * `\\hello\share` and `C:\hello` (and using alternate separator).
+ */
+function hasAbsoluteRoot(itemPath) {
+    assert_1.default(itemPath, `hasAbsoluteRoot parameter 'itemPath' must not be empty`);
+    // Normalize separators
+    itemPath = normalizeSeparators(itemPath);
+    // Windows
+    if (IS_WINDOWS) {
+        // E.g. \\hello\share or C:\hello
+        return itemPath.startsWith('\\\\') || /^[A-Z]:\\/i.test(itemPath);
+    }
+    // E.g. /hello
+    return itemPath.startsWith('/');
+}
+exports.hasAbsoluteRoot = hasAbsoluteRoot;
+/**
+ * On Linux/macOS, true if path starts with `/`. On Windows, true for paths like:
+ * `\`, `\hello`, `\\hello\share`, `C:`, and `C:\hello` (and using alternate separator).
+ */
+function hasRoot(itemPath) {
+    assert_1.default(itemPath, `isRooted parameter 'itemPath' must not be empty`);
+    // Normalize separators
+    itemPath = normalizeSeparators(itemPath);
+    // Windows
+    if (IS_WINDOWS) {
+        // E.g. \ or \hello or \\hello
+        // E.g. C: or C:\hello
+        return itemPath.startsWith('\\') || /^[A-Z]:/i.test(itemPath);
+    }
+    // E.g. /hello
+    return itemPath.startsWith('/');
+}
+exports.hasRoot = hasRoot;
+/**
+ * Removes redundant slashes and converts `/` to `\` on Windows
+ */
+function normalizeSeparators(p) {
+    p = p || '';
+    // Windows
+    if (IS_WINDOWS) {
+        // Convert slashes on Windows
+        p = p.replace(/\//g, '\\');
+        // Remove redundant slashes
+        const isUnc = /^\\\\+[^\\]/.test(p); // e.g. \\hello
+        return (isUnc ? '\\' : '') + p.replace(/\\\\+/g, '\\'); // preserve leading \\ for UNC
+    }
+    // Remove redundant slashes
+    return p.replace(/\/\/+/g, '/');
+}
+exports.normalizeSeparators = normalizeSeparators;
+/**
+ * Normalizes the path separators and trims the trailing separator (when safe).
+ * For example, `/foo/ => /foo` but `/ => /`
+ */
+function safeTrimTrailingSeparator(p) {
+    // Short-circuit if empty
+    if (!p) {
+        return '';
+    }
+    // Normalize separators
+    p = normalizeSeparators(p);
+    // No trailing slash
+    if (!p.endsWith(path.sep)) {
+        return p;
+    }
+    // Check '/' on Linux/macOS and '\' on Windows
+    if (p === path.sep) {
+        return p;
+    }
+    // On Windows check if drive root. E.g. C:\
+    if (IS_WINDOWS && /^[A-Z]:\\$/i.test(p)) {
+        return p;
+    }
+    // Otherwise trim trailing slash
+    return p.substr(0, p.length - 1);
+}
+exports.safeTrimTrailingSeparator = safeTrimTrailingSeparator;
+//# sourceMappingURL=internal-path-helper.js.map
 
+/***/ }),
+
+/***/ 975:
+/***/ (function(__unusedmodule, exports) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SearchState = void 0;
+class SearchState {
+    constructor(path, level) {
+        this.path = path;
+        this.level = level;
+    }
+}
+exports.SearchState = SearchState;
+//# sourceMappingURL=internal-search-state.js.map
 
 /***/ }),
 

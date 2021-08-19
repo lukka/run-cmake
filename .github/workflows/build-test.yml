@@ -29,11 +29,15 @@ jobs:
       run: |
         echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
         echo "@${{ github.repository_owner }}:registry=https://npm.pkg.github.com/" >> ~/.npmrc
+    - uses: lukka/get-cmake@latest
     - run: |
         npm install
         npm run test
       name: build and test
-
+    - name: Coveralls
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
 
   tests:
     name: '${{ matrix.os }}: functional tests'
@@ -48,11 +52,20 @@ jobs:
       with:
         submodules: true
 
-    - name: basic test for run-cmake
+    - uses: lukka/get-cmake@latest
+
+    - name: test for run-cmake (Ninja)
       uses: ./
       with:
-        cmakeGenerator: 'Ninja'  
-        cmakeListsOrSettingsJson: 'CMakeListsTxtBasic'
         cmakeListsTxtPath: '${{ github.workspace }}/__tests__/theAssets/CMakeLists.txt'
-        buildDirectory: '${{ runner.workspace }}/b/ninja/'
+        configurePreset: default
+        buildPreset: default
+        testPreset: default
 
+    - name: test for run-cmake (Ninja Multi-Config)
+      uses: ./
+      with:
+        cmakeListsTxtPath: '${{ github.workspace }}/__tests__/theAssets/CMakeLists.txt'
+        configurePreset: default-multi
+        buildPreset: default-multi
+        testPreset: default-multi
