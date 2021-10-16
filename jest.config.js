@@ -1,11 +1,29 @@
 module.exports = {
-    clearMocks: true,
-    moduleFileExtensions: ['js', 'ts'],
-    testEnvironment: 'node',
-    testMatch: ['**/*.test.ts'],
-    testRunner: 'jest-circus/runner',
-    transform: {
-      '^.+\\.ts$': 'ts-jest'
+  clearMocks: true,
+  restoreMocks: true,
+  moduleFileExtensions: ['js', 'ts'],
+  testEnvironment: 'node',
+  testMatch: ['**/*.test.ts'],
+  testRunner: 'jest-circus/runner',
+  transform: {
+    '^.+\\.ts$': 'ts-jest'
+  },
+  verbose: true,
+  silent: false,
+  globals: {
+    'ts-jest': {
+      tsconfig: './tsconfig.json',
     },
-    verbose: true
-  }
+  },
+  collectCoverage: true,
+  coveragePathIgnorePatterns: [
+    "<rootDir>/build/", "<rootDir>/node_modules/", "<rootDir>/__tests__", "__tests__", "<rootDir>/src/action.ts"
+  ],
+  collectCoverageFrom: [
+    "src/*.ts",
+    "!**/node_modules/**",
+    "!**/build/**",
+    "!**/dist/**"
+  ]
+
+}
