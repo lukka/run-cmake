@@ -2,9 +2,9 @@
 
 [![Coverage Status](https://coveralls.io/repos/github/lukka/run-cmake/badge.svg?branch=main)](https://coveralls.io/github/lukka/run-cmake?branch=main)
 
-- [Before using this action, consider writing a C++/CMake/vcpkg based _pure_ workflow!](#before-using-this-action-consider-writing-a-ccmakevcpkg-based-pure-workflow)
+- [Quickstart with a C++ project template](#quickstart-with-a-c-project-template)
 - [The **run-cmake@v10** action for using CMake with CMakePreset.json on GitHub workflows](#the-run-cmakev10-action-for-using-cmake-with-cmakepresetjson-on-github-workflows)
-  - [Quickstart](#quickstart)
+  - [Quickstart with instructions](#quickstart-with-instructions)
   - [Action reference: all input/output parameters](#action-reference-all-inputoutput-parameters)
   - [Flowchart](#flowchart)
   - [Samples](#samples)
@@ -12,10 +12,9 @@
 - [Disclaimer](#disclaimer)
 - [Contributing](#contributing)
 
-# Before using this action, consider writing a [C++/CMake/vcpkg based _pure_ workflow](https://github.com/lukka/CppBuildTasks-Validation/blob/master/.github/workflows/hosted-pure-workflow.yml)!
+# Quickstart with a C++ project template
 
-A __pure__ workflow is one without using special GitHub action that you cannot run locally on your development machine, but directly using the tools (`CMake`, `Ninja`, `vcpkg`) you already use daily.
-You can read more in this issue about it: https://github.com/lukka/run-cmake/issues/41
+Take a look at this [C++ project template](https://github.com/lukka/CppCMakeVcpkgTemplate) that applies all the following instructions, but also shows how to create a __pure__ workflow without using special GitHub action that you cannot run locally on your development machine, but directly using the tools (`CMake`, `Ninja`, `vcpkg`, `C++` compilers) you already use daily.
 
 # [The **run-cmake@v10** action for using CMake with CMakePreset.json on GitHub workflows](https://github.com/marketplace/actions/run-cmake)
 
@@ -30,12 +29,14 @@ Special features which provide added value over a pure workflow are:
 
 The provided [samples](#samples) use [GitHub hosted runners](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/virtual-environments-for-github-hosted-runners).
 
-## Quickstart
+<br>
+
+## Quickstart with instructions
 
 It is __highly recommended__ to use:
 - [vcpkg as a submodule](#vcpkgsubmodule).
 - a [vcpkg.json](#vcpkgjson) manifest file to declaratively specify the dependencies.
-- a CMakePreset.json file.
+- a `CMakePresets.json` file.
 
 ```yaml
 jobs:
