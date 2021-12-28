@@ -3,7 +3,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/lukka/run-cmake/badge.svg?branch=main)](https://coveralls.io/github/lukka/run-cmake?branch=main)
 
 - [Quickstart with a C++ project template](#quickstart-with-a-c-project-template)
-- [The **run-cmake@v10** action for using CMake with CMakePreset.json on GitHub workflows](#the-run-cmakev10-action-for-using-cmake-with-cmakepresetjson-on-github-workflows)
+- [The **run-cmake@v10** action for using CMake with CMakePresets.json on GitHub workflows](#the-run-cmakev10-action-for-using-cmake-with-cmakepresetsjson-on-github-workflows)
   - [Quickstart with instructions](#quickstart-with-instructions)
   - [Action reference: all input/output parameters](#action-reference-all-inputoutput-parameters)
   - [Flowchart](#flowchart)
@@ -16,15 +16,16 @@
 
 Take a look at this [C++ project template](https://github.com/lukka/CppCMakeVcpkgTemplate) that applies all the following instructions, but also shows how to create a __pure__ workflow without using special GitHub action that you cannot run locally on your development machine, but directly using the tools (`CMake`, `Ninja`, `vcpkg`, `C++` compilers) you already use daily.
 
-# [The **run-cmake@v10** action for using CMake with CMakePreset.json on GitHub workflows](https://github.com/marketplace/actions/run-cmake)
+# [The **run-cmake@v10** action for using CMake with CMakePresets.json on GitHub workflows](https://github.com/marketplace/actions/run-cmake)
 
-The **run-cmake** action runs [CMake](https://cmake.org) on GitHub workflows by leveraging the configurations specified into [CMakePreset.json](https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html).
+The **run-cmake** action runs [CMake](https://cmake.org) on GitHub workflows by leveraging the configurations specified into [CMakePresets.json](https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html).
 
 Good companions are the [run-vcpkg](https://github.com/marketplace/actions/run-vcpkg) action and the [get-cmake](https://github.com/marketplace/actions/get-cmake) action.
 
 Special features which provide added value over a pure workflow are:
   - automatic dump of log files created by `CMake` (e.g., `CMakeOutput.log`) and `vcpkg`. The content of those files flow into the workflow output log. Customizable by the user.
-  - annotations for `CMake` errors/warnings and for build (`gcc`/`msvc`/`clang`) errors/warning are created inline in the changed source files the build run for, e.g.: ![Annotation](./docs/imgs/annotation.png)
+  - annotations for `CMake` errors/warnings and for build (`gcc`/`msvc`/`clang`) errors/warning are created inline in the changed source files the build run for, e.g.:  
+  ![Annotation](./docs/imgs/annotation.png)
   - when necessary, it sets the environment to build with the MSVC toolset.
 
 The provided [samples](#samples) use [GitHub hosted runners](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/virtual-environments-for-github-hosted-runners).
@@ -78,7 +79,7 @@ jobs:
           # (i.e. let CMake run `vcpkg install`) using the vcpkg.cmake toolchain.
           # runVcpkgInstall: true
 
-      - name: Run CMake consuming CMakePreset.json and vcpkg.json by mean of vcpkg.
+      - name: Run CMake consuming CMakePresets.json and vcpkg.json by mean of vcpkg.
         uses: lukka/run-cmake@v10
         with:
           # This is the default path to the CMakeLists.txt along side the
