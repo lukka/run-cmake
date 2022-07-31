@@ -8,6 +8,7 @@
   - [Action reference: all input/output parameters](#action-reference-all-inputoutput-parameters)
   - [Flowchart](#flowchart)
   - [Samples](#samples)
+  - [Who is using `run-cmake`](#who-is-using-run-cmake)
 - [License](#license)
 - [Disclaimer](#disclaimer)
 - [Contributing](#contributing)
@@ -154,6 +155,12 @@ _Checkmarks_ indicates whether the samples "uses" or specifies the thing in the 
 |[link](https://github.com/lukka/CppBuildTasks-Validation/blob/v10/.github/workflows/hosted-ninja-vcpkg.yml)|❌|❌|✅|✅|✅|❌|✅
 |[link](https://github.com/lukka/CppBuildTasks-Validation/blob/v10/.github/workflows/hosted-ninja-vcpkg-install.yml)|❌|❌|✅|✅|✅|✅|❌|
 |[link](https://github.com/lukka/CppBuildTasks-Validation/blob/v10/.github/workflows/hosted-ninja-vcpkg_submod-triplet.yml)|✅|✅|✅|✅|✅|❌|✅
+
+<br>
+
+## Who is using `run-cmake`
+
+[This graph](https://lukka.github.io/graph/graph.html) shows the list of public repositories with more than 25 stars using `run-cmake`.
 
 <br>
 
