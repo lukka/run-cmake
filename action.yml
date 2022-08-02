@@ -14,16 +14,16 @@ inputs:
     description: "Path to CMakeLists.txt."
   configurePreset:
     default: ""
-    required: false
-    description: "The name of the configure preset. Optional."
+    required: true
+    description: "The name of the configure preset. Required. This value is stored in the CONFIGURE_PRESET_NAME environment variable, and used by the default value of 'configurePresetCmdString' input."
   buildPreset:
     default: ""
     required: false
-    description: "The name of the build preset. Optional."
+    description: "The name of the build preset. Optional. This value is stored in the BUILD_PRESET_NAME environment variable, and used by the default value of 'buildPresetCmdString' input.'"
   testPreset:
     default: ""
     required: false
-    description: "The name of the test preset. Optional."
+    description: "The name of the test preset. Optional. This value is stored in the TEST_PRESET_NAME environment variable, and used by the default value of 'testPresetCmdString' input.'"
   
   # The following inputs are rarely set by the user, since the default values suffice the most common scenarios.
   useShell:
