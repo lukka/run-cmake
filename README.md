@@ -120,26 +120,31 @@ Flowchart with related input in [action.yml](https://github.com/lukka/run-cmake/
               │ No                 │ the environment for MSVC  │
               │                    └─────────────┬─────────────┘
               │                                  ▼
+              │                    ┌───────────────────────────┐
+              │                    │ $CONFIGURE_PRESET_NAME =  │
+              │                    │ configurePreset's value   │
+              │                    └─────────────┬─────────────┘
+              │                                  ▼
               │                    ┌───────────────────────────┐  Inputs:
               ├────────────────────┤ run `cmake --preset`      │   - `cmakeListsTxtPath`
               │                    └───────────────────────────┘   - `configurePreset`
               │                                                    - `configurePresetCmdString`
               │
               ▼
-┌──────────────────────────┐
-│ <if buildPreset provided>│    Inputs:
-│                          │     - `cmakeListsTxtPath`
-│ run                      │     - `buildPreset`
-│ `cmake --build --preset` │     - `buildPresetCmdString`
-└─────────────┬────────────┘
+┌───────────────────────────────────┐    Inputs:
+│ <if buildPreset provided>         │     - `buildPreset`
+│                                   │     - `cmakeListsTxtPath`
+│ $BUILD_PRESET_NAME=buildPreset    │     - `buildPresetCmdString`
+│ run: `cmake --build --preset`     │
+└─────────────┬─────────────────────┘
               │
               ▼
-┌──────────────────────────┐
-│ <if testPreset provided> │    Inputs:
-│                          │     - `cmakeListsTxtPath`
-│ run                      │     - `testPreset`
-│ `ctest --preset`         │     - `testPresetCmdString`
-└─────────────┬────────────┘
+┌───────────────────────────────────┐
+│ <if testPreset provided>          │    Inputs:
+│                                   │     - `testPreset`
+│ $TEST_PRESET_NAME=testPreset      │     - `cmakeListsTxtPath`
+│ run a`ctest --preset`             │     - `testPresetCmdString`
+└─────────────┬─────────────────────┘
               │
               ▼
               ⬬
