@@ -6,7 +6,7 @@
 
 "use strict";
 
-// Copyright (c) 2019-2020-2021 Luca Cappa
+// Copyright (c) 2019-2020-2021-2022 Luca Cappa
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -22,20 +22,24 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.main = void 0;
 const libaction = __nccwpck_require__(7740);
 const runcmakelib = __nccwpck_require__(5504);
+const cmakeglobals = __nccwpck_require__(9511);
 const core = __nccwpck_require__(2186);
-const configurePresetCmdStringInput = "CONFIGUREPRESETCMDSTRING";
-const buildPresetCmdStringInput = "BUILDPRESETCMDSTRING";
-const testPresetCmdStringInput = "TESTPRESETCMDSTRING";
 const runVcpkgEnvFormatStringInput = "RUNVCPKGENVFORMATSTRING";
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         const actionLib = new libaction.ActionLib();
         try {
-            const configurePresetCmdStringFormat = actionLib.getInput(configurePresetCmdStringInput, false);
-            const buildPresetCmdStringFormat = actionLib.getInput(buildPresetCmdStringInput, false);
-            const testPresetCmdStringFormat = actionLib.getInput(testPresetCmdStringInput, false);
+            const configurePreset = actionLib.getInput(cmakeglobals.configurePreset, false);
+            const buildPreset = actionLib.getInput(cmakeglobals.buildPreset, false);
+            const testPreset = actionLib.getInput(cmakeglobals.testPreset, false);
+            const configurePresetCmdStringFormat = actionLib.getInput(cmakeglobals.configurePresetFormat, false);
+            const buildPresetCmdStringFormat = actionLib.getInput(cmakeglobals.buildPresetFormat, false);
+            const testPresetCmdStringFormat = actionLib.getInput(cmakeglobals.testPresetFormat, false);
+            const configurePresetAdditionalArgs = actionLib.getInput(cmakeglobals.configurePresetAdditionalArgs, false);
+            const buildPresetAdditionalArgs = actionLib.getInput(cmakeglobals.buildPresetAdditionalArgs, false);
+            const testPresetAdditionalArgs = actionLib.getInput(cmakeglobals.testPresetAdditionalArgs, false);
             const runVcpkgEnvFormatString = actionLib.getInput(runVcpkgEnvFormatStringInput, false);
-            yield runcmakelib.CMakeRunner.run(actionLib, configurePresetCmdStringFormat, buildPresetCmdStringFormat, testPresetCmdStringFormat, runVcpkgEnvFormatString);
+            yield runcmakelib.CMakeRunner.run(actionLib, configurePreset, configurePresetCmdStringFormat, configurePresetAdditionalArgs, buildPreset, buildPresetCmdStringFormat, buildPresetAdditionalArgs, testPreset, testPresetCmdStringFormat, testPresetAdditionalArgs, runVcpkgEnvFormatString);
             actionLib.info('run-cmake action execution succeeded');
             process.exitCode = 0;
         }
@@ -5131,11 +5135,17 @@ __exportStar(__nccwpck_require__(9604), exports);
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.logCollectionRegExps = exports.testPreset = exports.buildPreset = exports.configurePreset = exports.cmakeListsTxtPath = void 0;
+exports.logCollectionRegExps = exports.testPresetAdditionalArgs = exports.buildPresetAdditionalArgs = exports.configurePresetAdditionalArgs = exports.testPresetFormat = exports.buildPresetFormat = exports.configurePresetFormat = exports.testPreset = exports.buildPreset = exports.configurePreset = exports.cmakeListsTxtPath = void 0;
 exports.cmakeListsTxtPath = 'cmakeListsTxtPath';
 exports.configurePreset = 'configurePreset';
 exports.buildPreset = 'buildPreset';
 exports.testPreset = 'testPreset';
+exports.configurePresetFormat = 'configurePresetCmdString';
+exports.buildPresetFormat = 'buildPresetCmdString';
+exports.testPresetFormat = 'testPresetCmdString';
+exports.configurePresetAdditionalArgs = 'configurePresetAdditionalArgs';
+exports.buildPresetAdditionalArgs = 'buildPresetAdditionalArgs';
+exports.testPresetAdditionalArgs = 'testPresetAdditionalArgs';
 exports.logCollectionRegExps = 'logCollectionRegExps';
 //# sourceMappingURL=cmake-globals.js.map
 
@@ -5186,27 +5196,30 @@ const using_statement_1 = __nccwpck_require__(8515);
 const cmakeutil = __importStar(__nccwpck_require__(4067));
 const runvcpkglib = __importStar(__nccwpck_require__(4393));
 class CMakeRunner {
-    constructor(baseLib, configurePresetCmdStringFormat = CMakeRunner.configurePresetDefault, buildPresetCmdStringFormat = CMakeRunner.buildPresetDefault, testPresetCmdStringFormat = CMakeRunner.testPresetDefault, vcpkgEnvStringFormat = CMakeRunner.vcpkgEnvDefault) {
-        var _a, _b, _c, _d, _e, _f;
+    constructor(baseLib, configurePreset = null, configurePresetCmdStringFormat = CMakeRunner.configurePresetDefault, configurePresetCmdStringAddArgs = null, buildPreset = null, buildPresetCmdStringFormat = CMakeRunner.buildPresetDefault, buildPresetCmdStringAddArgs = null, testPreset = null, testPresetCmdStringFormat = CMakeRunner.testPresetDefault, testPresetCmdStringAddArgs = null, vcpkgEnvStringFormat = CMakeRunner.vcpkgEnvDefault) {
+        var _a, _b, _c;
         this.baseLib = baseLib;
+        this.configurePreset = configurePreset;
         this.configurePresetCmdStringFormat = configurePresetCmdStringFormat;
+        this.configurePresetCmdStringAddArgs = configurePresetCmdStringAddArgs;
+        this.buildPreset = buildPreset;
         this.buildPresetCmdStringFormat = buildPresetCmdStringFormat;
+        this.buildPresetCmdStringAddArgs = buildPresetCmdStringAddArgs;
+        this.testPreset = testPreset;
         this.testPresetCmdStringFormat = testPresetCmdStringFormat;
+        this.testPresetCmdStringAddArgs = testPresetCmdStringAddArgs;
         this.vcpkgEnvStringFormat = vcpkgEnvStringFormat;
         this.baseUtils = new baseutillib.BaseUtilLib(this.baseLib);
         const regs = (_a = this.baseLib.getDelimitedInput(cmakeglobals.logCollectionRegExps, ';', false)) !== null && _a !== void 0 ? _a : [];
         this.logFilesCollector = new baseutillib.LogFileCollector(this.baseLib, regs, (path) => baseutillib.dumpFile(this.baseLib, path));
         this.cmakeListsTxtPath = (_b = this.baseLib.getPathInput(cmakeglobals.cmakeListsTxtPath, true, true)) !== null && _b !== void 0 ? _b : "";
-        this.cmakeConfigurePreset = (_c = this.baseLib.getInput(cmakeglobals.configurePreset, true)) !== null && _c !== void 0 ? _c : null;
-        this.cmakeBuildPreset = (_d = this.baseLib.getInput(cmakeglobals.buildPreset, false)) !== null && _d !== void 0 ? _d : null;
-        this.cmakeTestPreset = (_e = this.baseLib.getInput(cmakeglobals.testPreset, false)) !== null && _e !== void 0 ? _e : null;
-        this.cmakeSourceDir = path.dirname((_f = baseutillib.BaseUtilLib.normalizePath(this.cmakeListsTxtPath)) !== null && _f !== void 0 ? _f : "");
+        this.cmakeSourceDir = path.dirname((_c = baseutillib.BaseUtilLib.normalizePath(this.cmakeListsTxtPath)) !== null && _c !== void 0 ? _c : "");
         baseutillib.BaseUtilLib.throwIfNull(this.cmakeSourceDir, cmakeglobals.cmakeListsTxtPath);
     }
-    static run(baseLib, configurePresetCmdStringFormat, buildPresetCmdStringFormat, testPresetCmdStringFormat, vcpkgEnvCmdStringFormat) {
+    static run(baseLib, configurePreset, configurePresetCmdStringFormat, configurePresetCmdStringAddArgs, buildPreset, buildPresetCmdStringFormat, buildPresetCmdStringAddArgs, testPreset, testPresetCmdStringFormat, testPresetCmdStringAddArgs, vcpkgEnvCmdStringFormat) {
         return __awaiter(this, void 0, void 0, function* () {
             yield using_statement_1.using(baseutillib.Matcher.createMatcher('all', baseLib, __dirname), () => __awaiter(this, void 0, void 0, function* () {
-                const cmakeRunner = new CMakeRunner(baseLib, configurePresetCmdStringFormat, buildPresetCmdStringFormat, testPresetCmdStringFormat, vcpkgEnvCmdStringFormat);
+                const cmakeRunner = new CMakeRunner(baseLib, configurePreset, configurePresetCmdStringFormat, configurePresetCmdStringAddArgs, buildPreset, buildPresetCmdStringFormat, buildPresetCmdStringAddArgs, testPreset, testPresetCmdStringFormat, testPresetCmdStringAddArgs, vcpkgEnvCmdStringFormat);
                 yield cmakeRunner.run();
             }));
         });
@@ -5215,35 +5228,35 @@ class CMakeRunner {
         return __awaiter(this, void 0, void 0, function* () {
             this.baseLib.debug('run()<<');
             const cmake = yield this.baseLib.which('cmake', true);
+            this.baseLib.debug(`cmake located at: '${cmake}'.`);
             const ctest = yield this.baseLib.which('ctest', true);
-            if (this.cmakeConfigurePreset) {
+            this.baseLib.debug(`ctest located at: '${ctest}'.`);
+            if (this.configurePreset) {
                 const configureTool = this.baseLib.tool(cmake);
-                yield this.configure(configureTool, this.cmakeConfigurePreset);
+                yield this.configure(configureTool, this.configurePreset);
             }
-            if (this.cmakeBuildPreset) {
+            if (this.buildPreset) {
                 const buildTool = this.baseLib.tool(cmake);
-                yield this.build(buildTool, this.cmakeBuildPreset);
+                yield this.build(buildTool, this.buildPreset);
             }
-            if (this.cmakeTestPreset) {
+            if (this.testPreset) {
                 const testTool = this.baseLib.tool(ctest);
-                yield this.test(testTool, this.cmakeTestPreset);
+                yield this.test(testTool, this.testPreset);
             }
             this.baseLib.debug('run()>>');
         });
     }
-    test(cmake, testPresetName) {
+    test(ctest, testPresetName) {
         return __awaiter(this, void 0, void 0, function* () {
             this.baseLib.debug('test()<<');
             baseutillib.setEnvVarIfUndefined("TEST_PRESET_NAME", testPresetName);
-            const args = baseutillib.replaceFromEnvVar(this.testPresetCmdStringFormat);
-            const cmakeArgs = eval(args);
-            this.baseLib.debug(`CTest arguments: ${cmakeArgs}`);
-            for (const arg of cmakeArgs) {
-                cmake.arg(arg);
+            CMakeRunner.addArguments(ctest, this.testPresetCmdStringFormat);
+            if (this.testPresetCmdStringAddArgs) {
+                CMakeRunner.addArguments(ctest, this.testPresetCmdStringAddArgs);
             }
             this.baseLib.debug(`Testing with CTest ...`);
             yield this.baseUtils.wrapOp("Test with CTest", () => __awaiter(this, void 0, void 0, function* () {
-                return yield this.launchCMake(cmake, this.cmakeSourceDir, this.logFilesCollector);
+                return yield this.launchCMake(ctest, this.cmakeSourceDir, this.logFilesCollector);
             }));
             this.baseLib.debug('test()>>');
         });
@@ -5252,11 +5265,9 @@ class CMakeRunner {
         return __awaiter(this, void 0, void 0, function* () {
             this.baseLib.debug('build()<<');
             baseutillib.setEnvVarIfUndefined("BUILD_PRESET_NAME", buildPresetName);
-            const args = baseutillib.replaceFromEnvVar(this.buildPresetCmdStringFormat);
-            const cmakeArgs = eval(args);
-            this.baseLib.debug(`CMake arguments: ${cmakeArgs}`);
-            for (const arg of cmakeArgs) {
-                cmake.arg(arg);
+            CMakeRunner.addArguments(cmake, this.buildPresetCmdStringFormat);
+            if (this.buildPresetCmdStringAddArgs) {
+                CMakeRunner.addArguments(cmake, this.buildPresetCmdStringAddArgs);
             }
             this.baseLib.debug(`Building with CMake ...`);
             yield this.baseUtils.wrapOp("Build with CMake", () => __awaiter(this, void 0, void 0, function* () {
@@ -5270,11 +5281,9 @@ class CMakeRunner {
             this.baseLib.debug('configure()<<');
             baseutillib.setEnvVarIfUndefined("CONFIGURE_PRESET_NAME", configurePresetName);
             const args = baseutillib.replaceFromEnvVar(this.configurePresetCmdStringFormat);
-            // Transform to array.
-            const cmakeArgs = eval(args);
-            this.baseLib.debug(`CMake arguments: ${cmakeArgs}`);
-            for (const arg of cmakeArgs) {
-                cmake.arg(arg);
+            CMakeRunner.addArguments(cmake, this.configurePresetCmdStringFormat);
+            if (this.configurePresetCmdStringAddArgs) {
+                CMakeRunner.addArguments(cmake, this.configurePresetCmdStringAddArgs);
             }
             yield this.baseUtils.wrapOp(`Setup C/C++ toolset environment variables`, () => __awaiter(this, void 0, void 0, function* () {
                 const vcpkgRoot = process.env[runvcpkglib.VCPKGROOT];
@@ -5331,6 +5340,13 @@ class CMakeRunner {
                 throw new Error(`"CMake failed with error code: '${code}'.`);
             }
         });
+    }
+    static addArguments(tool, args) {
+        const additionalArgs = baseutillib.replaceFromEnvVar(args);
+        const arghs = eval(additionalArgs);
+        for (const arg of arghs) {
+            tool.arg(arg);
+        }
     }
 }
 exports.CMakeRunner = CMakeRunner;
@@ -5925,7 +5941,7 @@ const path = __importStar(__nccwpck_require__(1017));
  */
 function getOrdinaryCachedPaths(vcpkgRootDir) {
     const pathsToCache = [
-        vcpkgRootDir,
+        path.join(vcpkgRootDir, '*'),
         path.normalize(`!${path.join(vcpkgRootDir, 'installed')}`),
         path.normalize(`!${path.join(vcpkgRootDir, 'vcpkg_installed')}`),
         path.normalize(`!${path.join(vcpkgRootDir, 'packages')}`),
