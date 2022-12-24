@@ -5,9 +5,9 @@
 import * as libaction from '@lukka/action-lib';
 import * as runcmakelib from '@lukka/run-cmake-lib'
 import * as cmakeglobals from '@lukka/run-cmake-lib/build/cmake-globals'
+import * as vcpkgglobals from '@lukka/run-cmake-lib/build/vcpkg-globals'
 import * as core from '@actions/core'
 
-const runVcpkgEnvFormatStringInput = "RUNVCPKGENVFORMATSTRING";
 
 export async function main(): Promise<void> {
 
@@ -22,7 +22,7 @@ export async function main(): Promise<void> {
     const configurePresetAdditionalArgs = actionLib.getInput(cmakeglobals.configurePresetAdditionalArgs, false);
     const buildPresetAdditionalArgs = actionLib.getInput(cmakeglobals.buildPresetAdditionalArgs, false);
     const testPresetAdditionalArgs = actionLib.getInput(cmakeglobals.testPresetAdditionalArgs, false);
-    const runVcpkgEnvFormatString = actionLib.getInput(runVcpkgEnvFormatStringInput, false);
+    const runVcpkgEnvFormatString = actionLib.getInput(vcpkgglobals.runVcpkgEnvFormatStringInput, false);
     await runcmakelib.CMakeRunner.run(
       actionLib,
       configurePreset, configurePresetCmdStringFormat, configurePresetAdditionalArgs,

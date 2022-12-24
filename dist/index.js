@@ -23,8 +23,8 @@ exports.main = void 0;
 const libaction = __nccwpck_require__(7740);
 const runcmakelib = __nccwpck_require__(5504);
 const cmakeglobals = __nccwpck_require__(9511);
+const vcpkgglobals = __nccwpck_require__(6347);
 const core = __nccwpck_require__(2186);
-const runVcpkgEnvFormatStringInput = "RUNVCPKGENVFORMATSTRING";
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         const actionLib = new libaction.ActionLib();
@@ -38,7 +38,7 @@ function main() {
             const configurePresetAdditionalArgs = actionLib.getInput(cmakeglobals.configurePresetAdditionalArgs, false);
             const buildPresetAdditionalArgs = actionLib.getInput(cmakeglobals.buildPresetAdditionalArgs, false);
             const testPresetAdditionalArgs = actionLib.getInput(cmakeglobals.testPresetAdditionalArgs, false);
-            const runVcpkgEnvFormatString = actionLib.getInput(runVcpkgEnvFormatStringInput, false);
+            const runVcpkgEnvFormatString = actionLib.getInput(vcpkgglobals.runVcpkgEnvFormatStringInput, false);
             yield runcmakelib.CMakeRunner.run(actionLib, configurePreset, configurePresetCmdStringFormat, configurePresetAdditionalArgs, buildPreset, buildPresetCmdStringFormat, buildPresetAdditionalArgs, testPreset, testPresetCmdStringFormat, testPresetAdditionalArgs, runVcpkgEnvFormatString);
             actionLib.info('run-cmake action execution succeeded');
             process.exitCode = 0;
@@ -5446,6 +5446,9 @@ exports.injectEnvVariables = injectEnvVariables;
 
 "use strict";
 
+// Copyright (c) 2019-2020-2021-2022 Luca Cappa
+// Released under the term specified in file LICENSE.txt
+// SPDX short identifier: MIT
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
@@ -5460,6 +5463,24 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 __exportStar(__nccwpck_require__(9511), exports);
 __exportStar(__nccwpck_require__(6578), exports);
 //# sourceMappingURL=index.js.map
+
+/***/ }),
+
+/***/ 6347:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+// Copyright (c) 2019-2020-2021-2022 Luca Cappa
+// Released under the term specified in file LICENSE.txt
+// SPDX short identifier: MIT
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.runVcpkgEnvFormatStringInput = exports.vcpkgRoot = exports.vcpkgLastBuiltCommitId = exports.outVcpkgRootPath = void 0;
+exports.outVcpkgRootPath = "RUNVCPKG_VCPKG_ROOT";
+exports.vcpkgLastBuiltCommitId = 'vcpkgLastBuiltCommitId';
+exports.vcpkgRoot = 'VCPKG_ROOT';
+exports.runVcpkgEnvFormatStringInput = "RUNVCPKGENVFORMATSTRING";
+//# sourceMappingURL=vcpkg-globals.js.map
 
 /***/ }),
 
