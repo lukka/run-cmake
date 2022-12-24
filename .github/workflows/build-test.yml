@@ -4,7 +4,7 @@ on:
   push:
   pull_request:
   schedule:
-    - cron: '0 1 * * SUN'
+    - cron: '0 1 * * FRI'
   workflow_dispatch:
 
 jobs:
@@ -74,3 +74,12 @@ jobs:
         configurePreset: default-multi
         buildPreset: default-multi
         testPreset: default-multi
+
+    - name: build and test (skip configure) for run-cmake (Ninja Multi-Config) with specific config
+      uses: ./
+      with:
+        cmakeListsTxtPath: '${{ github.workspace }}/__tests__/theAssets/CMakeLists.txt'
+        buildPreset: default-multi
+        buildPresetAdditionalArgs: "['--config Release']"
+        testPreset: default-multi
+        testPresetAdditionalArgs: "['--config Release']"

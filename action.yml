@@ -14,7 +14,7 @@ inputs:
     description: "Path to CMakeLists.txt."
   configurePreset:
     default: ""
-    required: true
+    required: false
     description: "The name of the configure preset. Required. This value is stored in the CONFIGURE_PRESET_NAME environment variable, and used by the default value of 'configurePresetCmdString' input."
   buildPreset:
     default: ""
@@ -24,7 +24,19 @@ inputs:
     default: ""
     required: false
     description: "The name of the test preset. Optional. This value is stored in the TEST_PRESET_NAME environment variable, and used by the default value of 'testPresetCmdString' input.'"
-  
+  configurePresetAdditionalArgs:
+    default: "[]"
+    required: false
+    description: "A string representing list of additional arguments for configuring. Optional. Useful when specifing additional variables such as, e.g., ['-DVARIABLE=NAME', '-DANOTHERVARIABLE=ANOTHERNAME']"
+  buildPresetAdditionalArgs:
+    default: "[]"
+    required: false
+    description: "A string representing list of additional arguments for building. Optional. Useful when specifing the config to build with a multi configuration generator, e.g., ['--config DEBUG']"
+  testPresetAdditionalArgs:
+    default: "[]"
+    required: false
+    description: "A string representing list of additional arguments for testing. Optional. Useful when specifing the config to test with a multi configuration generator, e.g., ['--config DEBUG']"
+
   # The following inputs are rarely set by the user, since the default values suffice the most common scenarios.
   useShell:
     default: true

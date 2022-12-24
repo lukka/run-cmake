@@ -1,8 +1,10 @@
 # Contributing
-  * [Prerequisites](#prerequisites)
-  * [Building](#build-and-lint)
-  * [Packaging](#packaging)
-  * [Testing](#testing)
+- [Contributing](#contributing)
+  - [Prerequisites](#prerequisites)
+    - [Setup for GitHub Registry public packages](#setup-for-github-registry-public-packages)
+  - [Build and lint](#build-and-lint)
+  - [Packaging](#packaging)
+  - [Testing](#testing)
 
 The software is provided as is, there is no warranty of any kind. All users are encouraged to improve the [source code](https://github.com/lukka/run-cmake) with fixes and new features contributed by means of Pull Requests.
 
