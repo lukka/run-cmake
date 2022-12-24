@@ -36,7 +36,7 @@ The provided [samples](#samples) use [GitHub hosted runners](https://help.github
 ## Quickstart with instructions
 
 It is __highly recommended__ to use:
-- a [vcpkg.json]([#vcpkgjson](https://vcpkg.io/en/docs/maintainers/manifest-files.html)) manifest file to declaratively specify the dependencies.
+- a [vcpkg.json](https://vcpkg.io/en/docs/maintainers/manifest-files.html) manifest file to declaratively specify the dependencies.
 - a [CMakePresets.json](https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html) file.
 - [vcpkg as a submodule of your repository](https://github.com/microsoft/vcpkg/blob/master/README.md#vcpkg-as-a-submodule).
 
