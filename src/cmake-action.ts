@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2020-2021-2022 Luca Cappa
+// Copyright (c) 2019-2020-2021-2022-2023 Luca Cappa
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 
@@ -16,6 +16,8 @@ export async function main(): Promise<void> {
     const configurePreset = actionLib.getInput(cmakeglobals.configurePreset, false);
     const buildPreset = actionLib.getInput(cmakeglobals.buildPreset, false);
     const testPreset = actionLib.getInput(cmakeglobals.testPreset, false);
+    const workflowPreset = actionLib.getInput(cmakeglobals.workflowPreset, false);
+    const workflowPresetCmdStringFormat = actionLib.getInput(cmakeglobals.workflowPresetFormat, false);
     const configurePresetCmdStringFormat = actionLib.getInput(cmakeglobals.configurePresetFormat, false);
     const buildPresetCmdStringFormat = actionLib.getInput(cmakeglobals.buildPresetFormat, false);
     const testPresetCmdStringFormat = actionLib.getInput(cmakeglobals.testPresetFormat, false);
@@ -25,6 +27,7 @@ export async function main(): Promise<void> {
     const runVcpkgEnvFormatString = actionLib.getInput(vcpkgglobals.runVcpkgEnvFormatStringInput, false);
     await runcmakelib.CMakeRunner.run(
       actionLib,
+      workflowPreset, workflowPresetCmdStringFormat,
       configurePreset, configurePresetCmdStringFormat, configurePresetAdditionalArgs,
       buildPreset, buildPresetCmdStringFormat, buildPresetAdditionalArgs,
       testPreset, testPresetCmdStringFormat, testPresetAdditionalArgs,

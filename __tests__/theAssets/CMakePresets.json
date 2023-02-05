@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 6,
   "cmakeMinimumRequired": {
     "major": 3,
     "minor": 21,
@@ -51,6 +51,21 @@
     {
       "name": "default-multi",
       "configurePreset": "default-multi"
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "default-workflow",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "default-multi"
+        },
+        {
+          "type": "build",
+          "name": "default-multi"
+        }
+      ]
     }
   ]
 }
