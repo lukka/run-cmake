@@ -88,6 +88,10 @@ jobs:
           # located elsewhere.
           # cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
 
+          # You could use CMake workflow presets defined in the CMakePresets.json 
+          # with just this line below.
+          # workflowPreset: 'workflow-name'
+
           # This is the name of the CMakePresets.json's configuration to use to generate
           # the project files. This configuration leverages the vcpkg.cmake toolchain file to
           # run vcpkg and install all dependencies specified in vcpkg.json.
@@ -131,6 +135,12 @@ Description of all input parameters:
 Flowchart with related input in [action.yml](https://github.com/lukka/run-cmake/blob/main/action.yml) which let customize the flow.
 
 ```
+┌───────────────────────────┐      ┌───────────────────────────┐
+│ <if workflowPreset        │  Yes │ Run the workflow          │  Inputs:
+│ provided>                 ├─────►│ and then exit             │   - `cmakeListsTxtPath`
+└─────────────┬─────────────┘      └─────────────┬─────────────┘   - `workflowPreset`
+              │ No                               ⬬                 - `workflowPresetCmdString`
+              ▼
 ┌───────────────────────────┐      ┌───────────────────────────┐
 │ <if configurePreset       │  Yes │ <if VCPKG_ROOT defined    │  Inputs:
 │ provided>                 ├─────►│ and CC and CXX undefined> │   - `runVcpkgEnvFormatString`
