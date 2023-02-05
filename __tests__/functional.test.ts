@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2020-2021 Luca Cappa
+// Copyright (c) 2019-2020-2021-2023 Luca Cappa
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 
@@ -91,6 +91,18 @@ describe('run-cmake functional tests', () => {
         process.env.INPUT_CONFIGUREPRESET = "default-multi"
         process.env.INPUT_BUILDPRESET = "default-multi"
         process.env.INPUT_TESTPRESET = "default-multi"
+        process.env.INPUT_CMAKELISTSTXTPATH = path.join(assetDirectory, 'CMakeLists.txt');
+        const options: cp.ExecSyncOptions = {
+            env: process.env,
+            stdio: "inherit"
+        };
+        console.log(cp.execSync(`node ${testScript}`, options)?.toString());
+    });
+
+    test('run workflow', () => {
+        process.env.INPUT_WORKFLOWPRESET = "default-workflow";
+        process.env.INPUT_BUILDPRESET = "default-multi"; // Must be ignored
+        process.env.INPUT_TESTPRESET = "default-multi"; // Must be ignored
         process.env.INPUT_CMAKELISTSTXTPATH = path.join(assetDirectory, 'CMakeLists.txt');
         const options: cp.ExecSyncOptions = {
             env: process.env,
