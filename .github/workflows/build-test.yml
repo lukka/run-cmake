@@ -66,6 +66,7 @@ jobs:
         configurePreset: default
         buildPreset: default
         testPreset: default
+        packagePreset: default
 
     - name: test for run-cmake (Ninja Multi-Config)
       uses: ./
@@ -74,6 +75,7 @@ jobs:
         configurePreset: default-multi
         buildPreset: default-multi
         testPreset: default-multi
+        packagePreset: default-multi
 
     - name: build and test (skip configure) for run-cmake (Ninja Multi-Config) with specific config
       uses: ./

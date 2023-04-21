@@ -32,6 +32,15 @@ function envTest(useShell: boolean, envVarValue?: string): void {
     console.log(cp.execSync(`node ${testScript}`, options)?.toString());
 }
 
+function noInputsTest(): void {
+    process.env.INPUT_CMAKELISTSTXTPATH = path.join(assetDirectory, 'CMakeLists.txt');
+    const options: cp.ExecSyncOptions = {
+        env: process.env,
+        stdio: "inherit",
+    };
+    console.log(cp.execSync(`node ${testScript}`, options)?.toString());
+}
+
 describe('run-cmake functional tests', () => {
     beforeEach(async () => {
         await io.rmRF(buildDirectory);
@@ -87,10 +96,11 @@ describe('run-cmake functional tests', () => {
         console.log(cp.execSync(`node ${testScript}`, options)?.toString());
     });
 
-    test('configure and build test with Ninja (Multi-Config)', () => {
+    test('configure build package and test with Ninja (Multi-Config)', () => {
         process.env.INPUT_CONFIGUREPRESET = "default-multi"
         process.env.INPUT_BUILDPRESET = "default-multi"
         process.env.INPUT_TESTPRESET = "default-multi"
+        process.env.INPUT_PACKAGEPRESET = "default-multi"
         process.env.INPUT_CMAKELISTSTXTPATH = path.join(assetDirectory, 'CMakeLists.txt');
         const options: cp.ExecSyncOptions = {
             env: process.env,
@@ -115,6 +125,11 @@ describe('run-cmake functional tests', () => {
         // Building will use an environment variable that will not be
         // resolved since not being run inside a shell, and it will throw.
         expect(() => envTest(false, undefined)).toThrow();
+    });
+
+    test('should throw when no inputs are provided', () => {
+        // Not specifying any input should fail.
+        expect(() => noInputsTest()).toThrow();
     });
 
     test('basic test for environment variables in input, with shell', () => {

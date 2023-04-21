@@ -53,6 +53,31 @@
       "configurePreset": "default-multi"
     }
   ],
+  "packagePresets": [
+    {
+      "packageName": "default-package-name",
+      "packageVersion": "0.1",
+      "name": "default",
+      "configurePreset": "default",
+      "generators": [
+        "TGZ",
+        "ZIP"
+      ]
+    },
+    {
+      "packageName": "default-multi-package-name",
+      "packageVersion": "0.1",
+      "name": "default-multi",
+      "configurePreset": "default-multi",
+      "generators": [
+        "TGZ",
+        "ZIP"
+      ],
+      "configurations": [
+        "Debug"
+      ]
+    }
+  ],
   "workflowPresets": [
     {
       "name": "default-workflow",
