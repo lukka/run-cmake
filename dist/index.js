@@ -32,16 +32,19 @@ function main() {
             const configurePreset = actionLib.getInput(cmakeglobals.configurePreset, false);
             const buildPreset = actionLib.getInput(cmakeglobals.buildPreset, false);
             const testPreset = actionLib.getInput(cmakeglobals.testPreset, false);
+            const packagePreset = actionLib.getInput(cmakeglobals.packagePreset, false);
             const workflowPreset = actionLib.getInput(cmakeglobals.workflowPreset, false);
             const workflowPresetCmdStringFormat = actionLib.getInput(cmakeglobals.workflowPresetFormat, false);
             const configurePresetCmdStringFormat = actionLib.getInput(cmakeglobals.configurePresetFormat, false);
             const buildPresetCmdStringFormat = actionLib.getInput(cmakeglobals.buildPresetFormat, false);
             const testPresetCmdStringFormat = actionLib.getInput(cmakeglobals.testPresetFormat, false);
+            const packagePresetCmdStringFormat = actionLib.getInput(cmakeglobals.packagePresetFormat, false);
             const configurePresetAdditionalArgs = actionLib.getInput(cmakeglobals.configurePresetAdditionalArgs, false);
             const buildPresetAdditionalArgs = actionLib.getInput(cmakeglobals.buildPresetAdditionalArgs, false);
             const testPresetAdditionalArgs = actionLib.getInput(cmakeglobals.testPresetAdditionalArgs, false);
+            const packagePresetAdditionalArgs = actionLib.getInput(cmakeglobals.packagePresetAdditionalArgs, false);
             const runVcpkgEnvFormatString = actionLib.getInput(vcpkgglobals.runVcpkgEnvFormatStringInput, false);
-            yield runcmakelib.CMakeRunner.run(actionLib, workflowPreset, workflowPresetCmdStringFormat, configurePreset, configurePresetCmdStringFormat, configurePresetAdditionalArgs, buildPreset, buildPresetCmdStringFormat, buildPresetAdditionalArgs, testPreset, testPresetCmdStringFormat, testPresetAdditionalArgs, runVcpkgEnvFormatString);
+            yield runcmakelib.CMakeRunner.run(actionLib, workflowPreset, workflowPresetCmdStringFormat, configurePreset, configurePresetCmdStringFormat, configurePresetAdditionalArgs, buildPreset, buildPresetCmdStringFormat, buildPresetAdditionalArgs, testPreset, testPresetCmdStringFormat, testPresetAdditionalArgs, packagePreset, packagePresetCmdStringFormat, packagePresetAdditionalArgs, runVcpkgEnvFormatString);
             actionLib.info('run-cmake action execution succeeded');
             process.exitCode = 0;
         }
@@ -4345,6 +4348,9 @@ class ActionToolRunner {
         this.path = path;
         this.arguments = [];
     }
+    getName() {
+        return this.path;
+    }
     _argStringToArray(text) {
         return this.__argStringToArray(text);
     }
@@ -4631,6 +4637,9 @@ class ActionLib {
     }
     hashFiles(fileGlob, options) {
         return actionglob.hashFiles(fileGlob, options);
+    }
+    addPath(path) {
+        core.addPath(path);
     }
 }
 exports.ActionLib = ActionLib;
@@ -5137,19 +5146,22 @@ __exportStar(__nccwpck_require__(9604), exports);
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.logCollectionRegExps = exports.testPresetAdditionalArgs = exports.buildPresetAdditionalArgs = exports.configurePresetAdditionalArgs = exports.workflowPresetFormat = exports.testPresetFormat = exports.buildPresetFormat = exports.configurePresetFormat = exports.workflowPreset = exports.testPreset = exports.buildPreset = exports.configurePreset = exports.cmakeListsTxtPath = void 0;
+exports.logCollectionRegExps = exports.packagePresetAdditionalArgs = exports.testPresetAdditionalArgs = exports.buildPresetAdditionalArgs = exports.configurePresetAdditionalArgs = exports.workflowPresetFormat = exports.packagePresetFormat = exports.testPresetFormat = exports.buildPresetFormat = exports.configurePresetFormat = exports.workflowPreset = exports.packagePreset = exports.testPreset = exports.buildPreset = exports.configurePreset = exports.cmakeListsTxtPath = void 0;
 exports.cmakeListsTxtPath = 'cmakeListsTxtPath';
 exports.configurePreset = 'configurePreset';
 exports.buildPreset = 'buildPreset';
 exports.testPreset = 'testPreset';
+exports.packagePreset = 'packagePreset';
 exports.workflowPreset = 'workflowPreset';
 exports.configurePresetFormat = 'configurePresetCmdString';
 exports.buildPresetFormat = 'buildPresetCmdString';
 exports.testPresetFormat = 'testPresetCmdString';
+exports.packagePresetFormat = 'packagePresetCmdString';
 exports.workflowPresetFormat = 'workflowPresetCmdString';
 exports.configurePresetAdditionalArgs = 'configurePresetAdditionalArgs';
 exports.buildPresetAdditionalArgs = 'buildPresetAdditionalArgs';
 exports.testPresetAdditionalArgs = 'testPresetAdditionalArgs';
+exports.packagePresetAdditionalArgs = 'packagePresetAdditionalArgs';
 exports.logCollectionRegExps = 'logCollectionRegExps';
 //# sourceMappingURL=cmake-globals.js.map
 
@@ -5200,7 +5212,7 @@ const using_statement_1 = __nccwpck_require__(8515);
 const cmakeutil = __importStar(__nccwpck_require__(4067));
 const runvcpkglib = __importStar(__nccwpck_require__(4393));
 class CMakeRunner {
-    constructor(baseLib, workflowPreset = null, workflowPresetCmdStringFormat = CMakeRunner.workflowPresetDefault, configurePreset = null, configurePresetCmdStringFormat = CMakeRunner.configurePresetDefault, configurePresetCmdStringAddArgs = null, buildPreset = null, buildPresetCmdStringFormat = CMakeRunner.buildPresetDefault, buildPresetCmdStringAddArgs = null, testPreset = null, testPresetCmdStringFormat = CMakeRunner.testPresetDefault, testPresetCmdStringAddArgs = null, vcpkgEnvStringFormat = CMakeRunner.vcpkgEnvDefault) {
+    constructor(baseLib, workflowPreset = null, workflowPresetCmdStringFormat = CMakeRunner.workflowPresetDefault, configurePreset = null, configurePresetCmdStringFormat = CMakeRunner.configurePresetDefault, configurePresetCmdStringAddArgs = null, buildPreset = null, buildPresetCmdStringFormat = CMakeRunner.buildPresetDefault, buildPresetCmdStringAddArgs = null, testPreset = null, testPresetCmdStringFormat = CMakeRunner.testPresetDefault, testPresetCmdStringAddArgs = null, packagePreset = null, packagePresetCmdStringFormat = CMakeRunner.packagePresetDefault, packagePresetCmdStringAddArgs = null, vcpkgEnvStringFormat = CMakeRunner.vcpkgEnvDefault) {
         var _a, _b, _c;
         this.baseLib = baseLib;
         this.workflowPreset = workflowPreset;
@@ -5214,6 +5226,9 @@ class CMakeRunner {
         this.testPreset = testPreset;
         this.testPresetCmdStringFormat = testPresetCmdStringFormat;
         this.testPresetCmdStringAddArgs = testPresetCmdStringAddArgs;
+        this.packagePreset = packagePreset;
+        this.packagePresetCmdStringFormat = packagePresetCmdStringFormat;
+        this.packagePresetCmdStringAddArgs = packagePresetCmdStringAddArgs;
         this.vcpkgEnvStringFormat = vcpkgEnvStringFormat;
         this.baseUtils = new baseutillib.BaseUtilLib(this.baseLib);
         const regs = (_a = this.baseLib.getDelimitedInput(cmakeglobals.logCollectionRegExps, ';', false)) !== null && _a !== void 0 ? _a : [];
@@ -5222,10 +5237,10 @@ class CMakeRunner {
         this.cmakeSourceDir = path.dirname((_c = baseutillib.BaseUtilLib.normalizePath(this.cmakeListsTxtPath)) !== null && _c !== void 0 ? _c : "");
         baseutillib.BaseUtilLib.throwIfNull(this.cmakeSourceDir, cmakeglobals.cmakeListsTxtPath);
     }
-    static run(baseLib, workflowPreset, workflowPresetCmdStringFormat, configurePreset, configurePresetCmdStringFormat, configurePresetCmdStringAddArgs, buildPreset, buildPresetCmdStringFormat, buildPresetCmdStringAddArgs, testPreset, testPresetCmdStringFormat, testPresetCmdStringAddArgs, vcpkgEnvCmdStringFormat) {
+    static run(baseLib, workflowPreset, workflowPresetCmdStringFormat, configurePreset, configurePresetCmdStringFormat, configurePresetCmdStringAddArgs, buildPreset, buildPresetCmdStringFormat, buildPresetCmdStringAddArgs, testPreset, testPresetCmdStringFormat, testPresetCmdStringAddArgs, packagePreset, packagePresetCmdStringFormat, packagePresetCmdStringAddArgs, vcpkgEnvCmdStringFormat) {
         return __awaiter(this, void 0, void 0, function* () {
             yield using_statement_1.using(baseutillib.Matcher.createMatcher('all', baseLib, __dirname), () => __awaiter(this, void 0, void 0, function* () {
-                const cmakeRunner = new CMakeRunner(baseLib, workflowPreset, workflowPresetCmdStringFormat, configurePreset, configurePresetCmdStringFormat, configurePresetCmdStringAddArgs, buildPreset, buildPresetCmdStringFormat, buildPresetCmdStringAddArgs, testPreset, testPresetCmdStringFormat, testPresetCmdStringAddArgs, vcpkgEnvCmdStringFormat);
+                const cmakeRunner = new CMakeRunner(baseLib, workflowPreset, workflowPresetCmdStringFormat, configurePreset, configurePresetCmdStringFormat, configurePresetCmdStringAddArgs, buildPreset, buildPresetCmdStringFormat, buildPresetCmdStringAddArgs, testPreset, testPresetCmdStringFormat, testPresetCmdStringAddArgs, packagePreset, packagePresetCmdStringFormat, packagePresetCmdStringAddArgs, vcpkgEnvCmdStringFormat);
                 yield cmakeRunner.run();
             }));
         });
@@ -5237,23 +5252,38 @@ class CMakeRunner {
             this.baseLib.debug(`cmake located at: '${cmake}'.`);
             const ctest = yield this.baseLib.which('ctest', true);
             this.baseLib.debug(`ctest located at: '${ctest}'.`);
+            const cpack = yield this.baseLib.which('cpack', true);
+            this.baseLib.debug(`cpack located at: '${cpack}'.`);
+            let onePresetInputProvided = false;
             if (this.workflowPreset) {
+                onePresetInputProvided = true;
                 const workflowTool = this.baseLib.tool(cmake);
                 yield this.workflow(workflowTool, this.workflowPreset);
             }
             else {
                 if (this.configurePreset) {
+                    onePresetInputProvided = true;
                     const configureTool = this.baseLib.tool(cmake);
                     yield this.configure(configureTool, this.configurePreset);
                 }
                 if (this.buildPreset) {
+                    onePresetInputProvided = true;
                     const buildTool = this.baseLib.tool(cmake);
                     yield this.build(buildTool, this.buildPreset);
                 }
                 if (this.testPreset) {
+                    onePresetInputProvided = true;
                     const testTool = this.baseLib.tool(ctest);
                     yield this.test(testTool, this.testPreset);
                 }
+                if (this.packagePreset) {
+                    onePresetInputProvided = true;
+                    const packageTool = this.baseLib.tool(cpack);
+                    yield this.package(packageTool, this.packagePreset);
+                }
+            }
+            if (!onePresetInputProvided) {
+                throw new Error(`"Error: no preset has been specified in any of the inputs. Please provide at least the name of one preset.`);
             }
             this.baseLib.debug('run()>>');
         });
@@ -5268,9 +5298,24 @@ class CMakeRunner {
             }
             this.baseLib.debug(`Testing with CTest ...`);
             yield this.baseUtils.wrapOp("Test with CTest", () => __awaiter(this, void 0, void 0, function* () {
-                return yield this.launchCMake(ctest, this.cmakeSourceDir, this.logFilesCollector);
+                return yield this.launchTool(ctest, this.cmakeSourceDir, this.logFilesCollector);
             }));
             this.baseLib.debug('test()>>');
+        });
+    }
+    package(cpack, packagePresetName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.baseLib.debug('package()<<');
+            baseutillib.setEnvVarIfUndefined("PACKAGE_PRESET_NAME", packagePresetName);
+            CMakeRunner.addArguments(cpack, this.packagePresetCmdStringFormat);
+            if (this.packagePresetCmdStringAddArgs) {
+                CMakeRunner.addArguments(cpack, this.packagePresetCmdStringAddArgs);
+            }
+            this.baseLib.debug(`Packaging with CPack ...`);
+            yield this.baseUtils.wrapOp("Package with CPack", () => __awaiter(this, void 0, void 0, function* () {
+                return yield this.launchTool(cpack, this.cmakeSourceDir, this.logFilesCollector);
+            }));
+            this.baseLib.debug('package()>>');
         });
     }
     build(cmake, buildPresetName) {
@@ -5283,7 +5328,7 @@ class CMakeRunner {
             }
             this.baseLib.debug(`Building with CMake ...`);
             yield this.baseUtils.wrapOp("Build with CMake", () => __awaiter(this, void 0, void 0, function* () {
-                return yield this.launchCMake(cmake, this.cmakeSourceDir, this.logFilesCollector);
+                return yield this.launchTool(cmake, this.cmakeSourceDir, this.logFilesCollector);
             }));
             this.baseLib.debug('build()>>');
         });
@@ -5326,7 +5371,7 @@ class CMakeRunner {
             }));
             // 
             this.baseLib.debug(`Generating project files with CMake ...`);
-            yield this.baseUtils.wrapOp("Generate project files with CMake", () => __awaiter(this, void 0, void 0, function* () { return yield this.launchCMake(cmake, this.cmakeSourceDir, this.logFilesCollector); }));
+            yield this.baseUtils.wrapOp("Generate project files with CMake", () => __awaiter(this, void 0, void 0, function* () { return yield this.launchTool(cmake, this.cmakeSourceDir, this.logFilesCollector); }));
             this.baseLib.debug('configure()>>');
         });
     }
@@ -5337,11 +5382,11 @@ class CMakeRunner {
             CMakeRunner.addArguments(cmake, this.workflowPresetCmdStringFormat);
             // 
             this.baseLib.debug(`Running the workflow preset named '${workflowPresetName}' ...`);
-            yield this.baseUtils.wrapOp(`Running workflow '${workflowPresetName}' with CMake`, () => __awaiter(this, void 0, void 0, function* () { return yield this.launchCMake(cmake, this.cmakeSourceDir, this.logFilesCollector); }));
+            yield this.baseUtils.wrapOp(`Running workflow '${workflowPresetName}' with CMake`, () => __awaiter(this, void 0, void 0, function* () { return yield this.launchTool(cmake, this.cmakeSourceDir, this.logFilesCollector); }));
             this.baseLib.debug('workflow()>>');
         });
     }
-    launchCMake(cmake, sourceDir, logCollector) {
+    launchTool(tool, sourceDir, logCollector) {
         return __awaiter(this, void 0, void 0, function* () {
             const options = {
                 cwd: sourceDir,
@@ -5357,16 +5402,16 @@ class CMakeRunner {
                     stderr: (t) => logCollector.handleOutput(t),
                 }
             };
-            const code = yield cmake.exec(options);
+            const code = yield tool.exec(options);
             if (code !== 0) {
-                throw new Error(`"CMake failed with error code: '${code}'.`);
+                throw new Error(`"'${tool.getName()}' failed with error code: '${code}'.`);
             }
         });
     }
     static addArguments(tool, args) {
         const additionalArgs = baseutillib.replaceFromEnvVar(args);
-        const arghs = eval(additionalArgs);
-        for (const arg of arghs) {
+        const evaluatedArgs = eval(additionalArgs);
+        for (const arg of evaluatedArgs) {
             tool.arg(arg);
         }
     }
@@ -5376,6 +5421,7 @@ CMakeRunner.workflowPresetDefault = "[`--workflow`, `--preset`, `$[env.WORKFLOW_
 CMakeRunner.configurePresetDefault = "[`--preset`, `$[env.CONFIGURE_PRESET_NAME]`]";
 CMakeRunner.buildPresetDefault = "[`--build`, `--preset`, `$[env.BUILD_PRESET_NAME]`]";
 CMakeRunner.testPresetDefault = "[`--preset`, `$[env.TEST_PRESET_NAME]`]";
+CMakeRunner.packagePresetDefault = "[`--preset`, `$[env.PACKAGE_PRESET_NAME]`]";
 CMakeRunner.vcpkgEnvDefault = "[`env`, `--bin`, `--include`, `--tools`, `--python`, `--triplet $[env.VCPKG_DEFAULT_TRIPLET]`, `set`]";
 //# sourceMappingURL=cmake-runner.js.map
 
@@ -5535,18 +5581,19 @@ __exportStar(__nccwpck_require__(6188), exports);
 
 "use strict";
 
-// Copyright (c) 2019-2020-2021-2022 Luca Cappa
+// Copyright (c) 2019-2020-2021-2022-2023 Luca Cappa
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.VCPKG_CONFIGURATION_JSON = exports.VCPKG_JSON = exports.VCPKGDEFAULTTRIPLET = exports.VCPKGROOT = exports.vcpkgLastBuiltCommitId = exports.RUNVCPKG_VCPKG_DEFAULT_TRIPLET = exports.RUNVCPKG_VCPKG_ROOT = void 0;
+exports.VCPKG_BINARY_SOURCES = exports.VCPKG_INSTALLED_DIR = exports.VCPKG_JSON = exports.VCPKGDEFAULTTRIPLET = exports.VCPKGROOT = exports.vcpkgLastBuiltCommitId = exports.RUNVCPKG_VCPKG_DEFAULT_TRIPLET = exports.RUNVCPKG_VCPKG_ROOT = void 0;
 exports.RUNVCPKG_VCPKG_ROOT = "RUNVCPKG_VCPKG_ROOT";
 exports.RUNVCPKG_VCPKG_DEFAULT_TRIPLET = "RUNVCPKG_VCPKG_DEFAULT_TRIPLET";
 exports.vcpkgLastBuiltCommitId = 'vcpkgLastBuiltCommitId';
 exports.VCPKGROOT = 'VCPKG_ROOT';
 exports.VCPKGDEFAULTTRIPLET = "VCPKG_DEFAULT_TRIPLET";
 exports.VCPKG_JSON = "vcpkg.json";
-exports.VCPKG_CONFIGURATION_JSON = "vcpkg-configuration.json";
+exports.VCPKG_INSTALLED_DIR = "VCPKG_INSTALLED_DIR";
+exports.VCPKG_BINARY_SOURCES = `VCPKG_BINARY_SOURCES`;
 //# sourceMappingURL=vcpkg-globals.js.map
 
 /***/ }),
@@ -5556,7 +5603,7 @@ exports.VCPKG_CONFIGURATION_JSON = "vcpkg-configuration.json";
 
 "use strict";
 
-// Copyright (c) 2019-2020-2021-2022 Luca Cappa
+// Copyright (c) 2019-2020-2021-2022-2023 Luca Cappa
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
@@ -5619,7 +5666,7 @@ class VcpkgRunner {
                 vcpkgUrl = VcpkgRunner.DEFAULTVCPKGURL;
                 baseUtil.baseLib.info(`The vcpkg's URL Git repository is not provided, using the predefined: '${VcpkgRunner.DEFAULTVCPKGURL}'`);
             }
-            baseutillib.setEnvVarIfUndefined("VCPKG_INSTALLED_DIR", yield vcpkgutils.getDefaultVcpkgInstallDirectory(baseUtil.baseLib));
+            baseutillib.setEnvVarIfUndefined(globals.VCPKG_INSTALLED_DIR, yield vcpkgutils.getDefaultVcpkgInstallDirectory(baseUtil.baseLib));
             baseutillib.setEnvVarIfUndefined(globals.VCPKGDEFAULTTRIPLET, baseUtil.getDefaultTriplet());
             if (!vcpkgInstallCmd) {
                 vcpkgInstallCmd = baseutillib.replaceFromEnvVar(VcpkgRunner.VCPKGINSTALLCMDDEFAULT);
@@ -5668,6 +5715,14 @@ class VcpkgRunner {
             if (!process.env[VcpkgRunner.VCPKG_ENABLE_METRICS]) {
                 process.env[VcpkgRunner.VCPKG_DISABLE_METRICS] = "1";
             }
+            // If running in a GitHub Runner, enable the GH's cache provider for the vcpkg's binary cache.
+            if (process.env['GITHUB_ACTIONS'] === 'true') {
+                yield this.baseUtils.wrapOp(`Setup to run on GitHub Action runners`, () => __awaiter(this, void 0, void 0, function* () {
+                    // Allow users to define the vcpkg's binary source explicitly in the workflow, in that case don't override it.
+                    if (!process.env[globals.VCPKG_BINARY_SOURCES])
+                        this.baseUtils.setVariableVerbose(globals.VCPKG_BINARY_SOURCES, VcpkgRunner.VCPKG_BINARY_SOURCES_GHA);
+                }));
+            }
             // Ensuring `this.vcpkgDestPath` is existent, since is going to be used as current working directory.
             if (!(yield this.baseUtils.baseLib.exist(this.vcpkgDestPath))) {
                 this.baseUtils.baseLib.debug(`Creating vcpkg root directory as it is not existing: ${this.vcpkgDestPath}`);
@@ -5695,6 +5750,7 @@ class VcpkgRunner {
             if (needRebuild) {
                 yield this.baseUtils.wrapOp("Build vcpkg executable", () => this.build());
             }
+            this.baseUtils.wrapOpSync(`Add to PATH vcpkg at '${this.vcpkgDestPath}'`, () => this.baseUtils.baseLib.addPath(this.vcpkgDestPath));
             yield this.runVcpkgInstall();
             this.baseUtils.wrapOpSync("Set output environment variables", () => this.setOutputs());
             this.baseUtils.baseLib.debug("runImpl()>>");
@@ -5892,7 +5948,7 @@ class VcpkgRunner {
                     this.baseUtils.baseLib.info(`vcpkg executable returned code ${result.code}, forcing a rebuild.`);
                 }
             }
-            this.baseUtils.baseLib.debug(`checkExecutable()>> -> ${needRebuild}`);
+            this.baseUtils.baseLib.debug(`checkExecutable()>> -> DoesItNeedRebuild=${needRebuild}`);
             return needRebuild;
         });
     }
@@ -5906,6 +5962,10 @@ class VcpkgRunner {
             else {
                 bootstrapFileName += '.sh';
             }
+            // On on arm platforms the VCPKG_FORCE_SYSTEM_BINARIES 
+            // environment variable must be set.
+            if (process.arch === 'arm64')
+                this.baseUtils.baseLib.setVariable(VcpkgRunner.VCPKG_FORCE_SYSTEM_BINARIES, "1");
             if (this.baseUtils.isWin32()) {
                 const cmdPath = yield this.baseUtils.baseLib.which('cmd.exe', true);
                 const cmdTool = this.baseUtils.baseLib.tool(cmdPath);
@@ -5935,6 +5995,8 @@ VcpkgRunner.VCPKGINSTALLCMDDEFAULT = '[`install`, `--recurse`, `--clean-after-bu
 VcpkgRunner.DEFAULTVCPKGURL = 'https://github.com/microsoft/vcpkg.git';
 VcpkgRunner.VCPKG_ENABLE_METRICS = "VCPKG_ENABLE_METRICS";
 VcpkgRunner.VCPKG_DISABLE_METRICS = "VCPKG_DISABLE_METRICS";
+VcpkgRunner.VCPKG_BINARY_SOURCES_GHA = 'clear;x-gha,readwrite';
+VcpkgRunner.VCPKG_FORCE_SYSTEM_BINARIES = "VCPKG_FORCE_SYSTEM_BINARIES";
 //# sourceMappingURL=vcpkg-runner.js.map
 
 /***/ }),
@@ -5944,7 +6006,7 @@ VcpkgRunner.VCPKG_DISABLE_METRICS = "VCPKG_DISABLE_METRICS";
 
 "use strict";
 
-// Copyright (c) 2020-2021-2022 Luca Cappa
+// Copyright (c) 2020-2021-2022-2023 Luca Cappa
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
@@ -5981,7 +6043,7 @@ const path = __importStar(__nccwpck_require__(1017));
 /**
  *
  * @param vcpkgRootDir The VCPKG_ROOT directory.
- * @returns The list of paths to cache, and the ones to not cache (with the prefix exclamation mark).
+ * @returns The list of paths to cache, and the ones to not cache (with the exclamation mark prefix).
  */
 function getOrdinaryCachedPaths(vcpkgRootDir) {
     const pathsToCache = [
@@ -19994,7 +20056,7 @@ var __webpack_exports__ = {};
 "use strict";
 var exports = __webpack_exports__;
 
-// Copyright (c) 2019-2020-2021 Luca Cappa
+// Copyright (c) 2019-2020-2021-2022-2023 Luca Cappa
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 Object.defineProperty(exports, "__esModule", ({ value: true }));

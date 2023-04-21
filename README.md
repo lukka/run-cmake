@@ -19,7 +19,7 @@ Take a look at this [C++ project template](https://github.com/lukka/CppCMakeVcpk
 
 # [**run-cmake@v10** runs CMake with CMakePresets.json](https://github.com/marketplace/actions/run-cmake)
 
-The **run-cmake** action runs [CMake](https://cmake.org) on GitHub workflows leveraging [CMakePresets.json](https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html).
+The **run-cmake** action runs [CMake](https://cmake.org) on GitHub workflows leveraging [CMakePresets.json](https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html). Note that usage of CMakePresets.json is required.
 
 Good companions are the [run-vcpkg](https://github.com/marketplace/actions/run-vcpkg) action and the [get-cmake](https://github.com/marketplace/actions/get-cmake) action.
 
@@ -37,7 +37,7 @@ The provided [samples](#samples) use [GitHub hosted runners](https://help.github
 
 It is __highly recommended__ to use:
 - a [vcpkg.json](https://vcpkg.io/en/docs/maintainers/manifest-files.html) manifest file to declaratively specify the dependencies.
-- a [CMakePresets.json](https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html) file.
+- the required [CMakePresets.json](https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html) file.
 - [vcpkg as a submodule of your repository](https://github.com/microsoft/vcpkg/blob/master/README.md#vcpkg-as-a-submodule).
 
 ```yaml
@@ -89,7 +89,8 @@ jobs:
           # cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
 
           # You could use CMake workflow presets defined in the CMakePresets.json 
-          # with just this line below.
+          # with just this line below. Note this one cannot be used with any other 
+          # preset input, it is mutually exclusive.
           # workflowPreset: 'workflow-name'
 
           # This is the name of the CMakePresets.json's configuration to use to generate
@@ -163,7 +164,7 @@ Flowchart with related input in [action.yml](https://github.com/lukka/run-cmake/
 │ <if buildPreset provided>         │     Inputs:
 │                                   │     - `buildPreset`
 │ $BUILD_PRESET_NAME=buildPreset    │     - `cmakeListsTxtPath`
-│ run: `cmake --build --preset`     │     - `buildPresetCmdString`
+│ runs: `cmake --build --preset`    │     - `buildPresetCmdString`
 └─────────────┬─────────────────────┘     - `buildPresetAdditionalArgs`
               │
               ▼
@@ -171,9 +172,15 @@ Flowchart with related input in [action.yml](https://github.com/lukka/run-cmake/
 │ <if testPreset provided>          │    Inputs:
 │                                   │     - `testPreset`
 │ $TEST_PRESET_NAME=testPreset      │     - `cmakeListsTxtPath`
-│ run a`ctest --preset`             │     - `testPresetCmdString`
+│ runs: `ctest --preset`            │     - `testPresetCmdString`
 └─────────────┬─────────────────────┘     - `testPresetAdditionalArgs`
               │
+┌───────────────────────────────────┐
+│ <if packagePreset provided>       │    Inputs:
+│                                   │     - `packagePreset`
+│ $PACKAGE_PRESET_NAME=packagePreset│     - `cmakeListsTxtPath`
+│ runs: `cpack --preset`            │     - `packagePresetCmdString`
+└─────────────┬─────────────────────┘     - `packagePresetAdditionalArgs`
               ▼
               ⬬
 ```

@@ -8,7 +8,6 @@ import * as cmakeglobals from '@lukka/run-cmake-lib/build/cmake-globals'
 import * as vcpkgglobals from '@lukka/run-cmake-lib/build/vcpkg-globals'
 import * as core from '@actions/core'
 
-
 export async function main(): Promise<void> {
 
   const actionLib: libaction.ActionLib = new libaction.ActionLib();
@@ -16,14 +15,17 @@ export async function main(): Promise<void> {
     const configurePreset = actionLib.getInput(cmakeglobals.configurePreset, false);
     const buildPreset = actionLib.getInput(cmakeglobals.buildPreset, false);
     const testPreset = actionLib.getInput(cmakeglobals.testPreset, false);
+    const packagePreset = actionLib.getInput(cmakeglobals.packagePreset, false);
     const workflowPreset = actionLib.getInput(cmakeglobals.workflowPreset, false);
     const workflowPresetCmdStringFormat = actionLib.getInput(cmakeglobals.workflowPresetFormat, false);
     const configurePresetCmdStringFormat = actionLib.getInput(cmakeglobals.configurePresetFormat, false);
     const buildPresetCmdStringFormat = actionLib.getInput(cmakeglobals.buildPresetFormat, false);
     const testPresetCmdStringFormat = actionLib.getInput(cmakeglobals.testPresetFormat, false);
+    const packagePresetCmdStringFormat = actionLib.getInput(cmakeglobals.packagePresetFormat, false);
     const configurePresetAdditionalArgs = actionLib.getInput(cmakeglobals.configurePresetAdditionalArgs, false);
     const buildPresetAdditionalArgs = actionLib.getInput(cmakeglobals.buildPresetAdditionalArgs, false);
     const testPresetAdditionalArgs = actionLib.getInput(cmakeglobals.testPresetAdditionalArgs, false);
+    const packagePresetAdditionalArgs = actionLib.getInput(cmakeglobals.packagePresetAdditionalArgs, false);
     const runVcpkgEnvFormatString = actionLib.getInput(vcpkgglobals.runVcpkgEnvFormatStringInput, false);
     await runcmakelib.CMakeRunner.run(
       actionLib,
@@ -31,6 +33,7 @@ export async function main(): Promise<void> {
       configurePreset, configurePresetCmdStringFormat, configurePresetAdditionalArgs,
       buildPreset, buildPresetCmdStringFormat, buildPresetAdditionalArgs,
       testPreset, testPresetCmdStringFormat, testPresetAdditionalArgs,
+      packagePreset, packagePresetCmdStringFormat, packagePresetAdditionalArgs,
       runVcpkgEnvFormatString);
     actionLib.info('run-cmake action execution succeeded');
     process.exitCode = 0;

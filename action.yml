@@ -3,7 +3,7 @@
 # SPDX short identifier: MIT
 
 name: 'run-cmake'
-description: 'Run CMake with CMakePreset.json to configure, build and test C/C++ source code.'
+description: 'Run CMake with CMakePreset.json to configure, build, package and test C/C++ source code.'
 author: 'Luca Cappa https://github.com/lukka'
 inputs:
 
@@ -15,19 +15,23 @@ inputs:
   workflowPreset:
     default: ""
     required: false
-    description: "The name of the workflow preset. Optional. This value is stored in the WORKFLOW_PRESET_NAME environment variable, and used by the default value of 'workflowPresetCmdString' input."
+    description: "The name of the workflow preset. Optional, it cannot be used with any other preset input. This value is stored in the WORKFLOW_PRESET_NAME environment variable, and used by the default value of 'workflowPresetCmdString' input."
   configurePreset:
     default: ""
     required: false
-    description: "The name of the configure preset. Optional. This value is stored in the CONFIGURE_PRESET_NAME environment variable, and used by the default value of 'configurePresetCmdString' input."
+    description: "The name of the configure preset. Optional, but at least one of the preset input must be provided. This value is stored in the CONFIGURE_PRESET_NAME environment variable, and used by the default value of 'configurePresetCmdString' input."
   buildPreset:
     default: ""
     required: false
-    description: "The name of the build preset. Optional. This value is stored in the BUILD_PRESET_NAME environment variable, and used by the default value of 'buildPresetCmdString' input.'"
+    description: "The name of the build preset. Optional, but at least one of the preset input must be provided. This value is stored in the BUILD_PRESET_NAME environment variable, and used by the default value of 'buildPresetCmdString' input.'"
   testPreset:
     default: ""
     required: false
-    description: "The name of the test preset. Optional. This value is stored in the TEST_PRESET_NAME environment variable, and used by the default value of 'testPresetCmdString' input.'"
+    description: "The name of the test preset (ctest). Optional, but at least one of the preset input must be provided. This value is stored in the TEST_PRESET_NAME environment variable, and used by the default value of 'testPresetCmdString' input.'"
+  packagePreset:
+    default: ""
+    required: false
+    description: "The name of the package preset (cpack). Optional, but at least one of the preset input must be provided. This value is stored in the PACKAGE_PRESET_NAME environment variable, and used by the default value of 'packagePresetCmdString' input.'"
   configurePresetAdditionalArgs:
     default: "[]"
     required: false
@@ -40,6 +44,11 @@ inputs:
     default: "[]"
     required: false
     description: "A string representing list of additional arguments for testing. Optional. Useful when specifing the config to test with a multi configuration generator, e.g., ['--config DEBUG']"
+  packagePresetAdditionalArgs:
+    default: "[]"
+    required: false
+    description: "A string representing list of additional arguments for cpack. Optional."
+
 
   # The following inputs are rarely set by the user, since the default values suffice the most common scenarios.
   useShell:
@@ -66,6 +75,10 @@ inputs:
     default: "[`--preset`, `$[env.TEST_PRESET_NAME]`]"
     required: false
     description: "The CTest command format string to run test."
+  packagePresetCmdString:
+    default: "[`--preset`, `$[env.PACKAGE_PRESET_NAME]`]"
+    required: false
+    description: "The CPack command format string to package the project."
   runVcpkgEnvFormatString:
     default: "[`env`, `--bin`, `--include`, `--tools`, `--python`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `set`]"
     required: false
