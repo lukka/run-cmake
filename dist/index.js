@@ -4177,7 +4177,7 @@ function copyFile(srcFile, destFile, force) {
 
 "use strict";
 
-// Copyright (c) 2019-2020-2021-2022 Luca Cappa
+// Copyright (c) 2019-2020-2021-2022-2023 Luca Cappa
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
@@ -4673,7 +4673,7 @@ __exportStar(__nccwpck_require__(7447), exports);
 
 "use strict";
 
-// Copyright (c) 2019-2020-2021-2022 Luca Cappa
+// Copyright (c) 2019-2020-2021-2022-2023 Luca Cappa
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
@@ -4840,12 +4840,12 @@ class BaseUtilLib {
         }
         return null;
     }
-    // Force 'name' env variable to have value of 'value'.
+    // Set both the environment variable and the workflow variable with the same name.
+    // The workflow variable might be re-used in subsequent steps.
     setEnvVar(name, value) {
-        // Set variable both as env var and as step variable, which might be re-used in subseqeunt steps.  
         process.env[name] = value;
         this.baseLib.setVariable(name, value);
-        this.baseLib.debug(`Set variable and the env variable '${name}' to value '${value}'.`);
+        this.baseLib.debug(`Set env ariable and the workflow variable named '${name}' to value '${value}'.`);
     }
     trimString(value) {
         var _a;
@@ -5361,34 +5361,8 @@ class CMakeRunner {
             if (this.configurePresetCmdStringAddArgs) {
                 CMakeRunner.addArguments(cmake, this.configurePresetCmdStringAddArgs);
             }
-            yield this.baseUtils.wrapOp(`Setup C/C++ toolset environment variables`, () => __awaiter(this, void 0, void 0, function* () {
-                const vcpkgRoot = process.env[runvcpkglib.VCPKGROOT];
-                // if VCPKG_ROOT is defined, then use it.
-                if (!vcpkgRoot || vcpkgRoot.length == 0) {
-                    this.baseLib.info(`Skipping setting up the environment since VCPKG_ROOT is not defined. It is needed to know where vcpkg executable is located.`);
-                }
-                else if (!this.baseUtils.isWin32()) {
-                    this.baseLib.info(`Skipping setting up the environment since the platform is not Windows.`);
-                }
-                else if (process.env.CXX || process.env.CC) {
-                    // If a C++ compiler is user-enforced, skip setting up the environment for MSVC.
-                    this.baseLib.info(`Skipping setting up the environment since CXX or CC environment variable are defined. This allows user customization.`);
-                }
-                else {
-                    // If Win32 && (!CC && !CXX), let hardcode CC and CXX so that CMake uses the MSVC toolset.
-                    process.env['CC'] = "cl.exe";
-                    process.env['CXX'] = "cl.exe";
-                    this.baseLib.setVariable("CC", "cl.exe");
-                    this.baseLib.setVariable("CXX", "cl.exe");
-                    // Use vcpkg to set the environment using provided command line (which includes the triplet).
-                    // This is only useful to setup the environment for MSVC on Windows.
-                    baseutillib.setEnvVarIfUndefined(runvcpkglib.VCPKGDEFAULTTRIPLET, this.baseUtils.getDefaultTriplet());
-                    const vcpkgEnvArgsString = baseutillib.replaceFromEnvVar(this.vcpkgEnvStringFormat);
-                    const vcpkgEnvArgs = eval(vcpkgEnvArgsString);
-                    this.baseLib.debug(`'vcpkg env' arguments: ${vcpkgEnvArgs}`);
-                    yield cmakeutil.injectEnvVariables(this.baseUtils, vcpkgRoot, vcpkgEnvArgs);
-                }
-            }));
+            const vcpkgRoot = process.env[runvcpkglib.VCPKGROOT];
+            yield cmakeutil.setupMsvc(this.baseUtils, vcpkgRoot, this.vcpkgEnvStringFormat);
             // 
             this.baseLib.debug(`Generating project files with CMake ...`);
             yield this.baseUtils.wrapOp("Generate project files with CMake", () => __awaiter(this, void 0, void 0, function* () { return yield this.launchTool(cmake, this.cmakeSourceDir, this.logFilesCollector); }));
@@ -5452,7 +5426,7 @@ CMakeRunner.vcpkgEnvDefault = "[`env`, `--bin`, `--include`, `--tools`, `--pytho
 
 "use strict";
 
-// Copyright (c) 2019-2020-2021-2022 Luca Cappa
+// Copyright (c) 2019-2020-2021-2022-2023 Luca Cappa
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
@@ -5484,48 +5458,109 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.injectEnvVariables = void 0;
-const cmakeutil = __importStar(__nccwpck_require__(1017));
+exports.setupMsvc = exports.injectEnvVariables = exports.getVcpkgExePath = void 0;
+const baseutillib = __importStar(__nccwpck_require__(2365));
+const cmakeutil = __importStar(__nccwpck_require__(4067));
+const path = __importStar(__nccwpck_require__(1017));
+const runvcpkglib = __importStar(__nccwpck_require__(4393));
+function getVcpkgExePath(baseUtils, vcpkgRoot) {
+    // Search for vcpkg tool and run it
+    let vcpkgPath = path.join(vcpkgRoot, 'vcpkg');
+    if (baseUtils.isWin32()) {
+        vcpkgPath += '.exe';
+    }
+    return vcpkgPath;
+}
+exports.getVcpkgExePath = getVcpkgExePath;
 function injectEnvVariables(baseUtils, vcpkgRoot, args) {
     return __awaiter(this, void 0, void 0, function* () {
-        // Search for vcpkg tool and run it
-        let vcpkgPath = cmakeutil.join(vcpkgRoot, 'vcpkg');
-        if (baseUtils.isWin32()) {
-            vcpkgPath += '.exe';
-        }
-        const vcpkg = baseUtils.baseLib.tool(vcpkgPath);
-        for (const arg of args) {
-            vcpkg.arg(arg);
-        }
-        const options = {
-            cwd: vcpkgRoot,
-            failOnStdErr: false,
-            errStream: process.stdout,
-            outStream: process.stdout,
-            ignoreReturnCode: true,
-            silent: false,
-            windowsVerbatimArguments: false,
-            env: process.env
-        };
-        const output = yield vcpkg.execSync(options);
-        if (output.code !== 0) {
-            throw new Error(`${output.stdout}\n\n${output.stderr}`);
-        }
-        const map = baseUtils.parseVcpkgEnvOutput(output.stdout);
-        for (const key in map) {
-            if (baseUtils.isVariableStrippingPath(key))
-                continue;
-            if (key.toUpperCase() === "PATH") {
-                process.env[key] = process.env[key] + cmakeutil.delimiter + map[key];
+        try {
+            baseUtils.baseLib.debug(`injectEnvVariables()<<`);
+            const vcpkgPath = getVcpkgExePath(baseUtils, vcpkgRoot);
+            const vcpkg = baseUtils.baseLib.tool(vcpkgPath);
+            for (const arg of args) {
+                vcpkg.arg(arg);
             }
-            else {
-                process.env[key] = map[key];
+            const options = {
+                cwd: vcpkgRoot,
+                failOnStdErr: false,
+                errStream: process.stdout,
+                outStream: process.stdout,
+                ignoreReturnCode: true,
+                silent: false,
+                windowsVerbatimArguments: false,
+                env: process.env
+            };
+            const output = yield vcpkg.execSync(options);
+            if (output.code !== 0) {
+                throw new Error(`vcpkg failed with: ${output.stdout}\n\n${output.stderr}`);
             }
-            baseUtils.baseLib.debug(`set ${key}=${process.env[key]}`);
+            const map = baseUtils.parseVcpkgEnvOutput(output.stdout);
+            for (const key in map) {
+                let newValue;
+                if (baseUtils.isVariableStrippingPath(key))
+                    continue;
+                if (key.toUpperCase() === "PATH") {
+                    newValue = process.env[key] + path.delimiter + map[key];
+                }
+                else {
+                    newValue = map[key];
+                }
+                if (!newValue)
+                    baseUtils.baseLib.warning(`The value for '${key}' cannot be determined.`);
+                else {
+                    baseUtils.setEnvVar(key, newValue);
+                    baseUtils.baseLib.debug(`set ${key}=${newValue}`);
+                }
+            }
+        }
+        finally {
+            baseUtils.baseLib.debug(`injectEnvVariables()>>`);
         }
     });
 }
 exports.injectEnvVariables = injectEnvVariables;
+function setupMsvc(baseUtils, vcpkgRoot, vcpkgEnvStringFormat) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (!baseUtils.isWin32()) {
+            baseUtils.baseLib.debug(`Skipping setting up the environment since the platform is not Windows.`);
+        }
+        else {
+            yield baseUtils.wrapOp(`Setup MSVC C/C++ toolset environment variables`, () => __awaiter(this, void 0, void 0, function* () {
+                if (!vcpkgRoot || vcpkgRoot.length == 0) {
+                    baseUtils.baseLib.info(`Skipping setting up the environment since VCPKG_ROOT is not defined, and it is required to locate the vcpkg executable which provides the environment variables to be set for MSVC.`);
+                    const vcpkgRoot = process.env[runvcpkglib.VCPKGROOT];
+                }
+                else {
+                    // if VCPKG_ROOT is defined, then use vcpkg to setup the environment.
+                    if (process.env.CXX || process.env.CC) {
+                        // If a C++ compiler is user-enforced, skip setting up the environment for MSVC.
+                        baseUtils.baseLib.info(`Skipping setting up the environment since CXX or CC environment variables are defined. This allows user customization of used MSVC version.`);
+                    }
+                    else {
+                        const vcpkgPath = cmakeutil.getVcpkgExePath(baseUtils, vcpkgRoot);
+                        if (!vcpkgPath || !baseUtils.fileExists(vcpkgPath)) {
+                            baseUtils.baseLib.warning(`Skipping setting up the environment since vcpkg's executable is not found at: '${vcpkgPath}'.`);
+                        }
+                        else {
+                            // If defined(Win32) && (!defined(CC) && !defined(CXX)), let's hardcode CC and CXX so that CMake uses the MSVC toolset.
+                            baseUtils.setEnvVar('CC', "cl.exe");
+                            baseUtils.setEnvVar('CXX', "cl.exe");
+                            // Use vcpkg to set the environment using provided command line (which includes the triplet).
+                            // This is only useful to setup the environment for MSVC on Windows.
+                            baseutillib.setEnvVarIfUndefined(runvcpkglib.VCPKGDEFAULTTRIPLET, baseUtils.getDefaultTriplet());
+                            const vcpkgEnvArgsString = baseutillib.replaceFromEnvVar(vcpkgEnvStringFormat);
+                            const vcpkgEnvArgs = eval(vcpkgEnvArgsString);
+                            baseUtils.baseLib.debug(`'vcpkg env' arguments: ${vcpkgEnvArgs}`);
+                            yield cmakeutil.injectEnvVariables(baseUtils, vcpkgRoot, vcpkgEnvArgs);
+                        }
+                    }
+                }
+            }));
+        }
+    });
+}
+exports.setupMsvc = setupMsvc;
 //# sourceMappingURL=cmake-utils.js.map
 
 /***/ }),
