@@ -53,6 +53,7 @@ describe('run-cmake functional tests', () => {
                 delete process.env[key];
             });
         process.env.GITHUB_WORKSPACE = assetDirectory;
+        delete process.env.VCPKG_ROOT;
     }, 300000);
 
     afterAll(async () => {
@@ -109,6 +110,20 @@ describe('run-cmake functional tests', () => {
         console.log(cp.execSync(`node ${testScript}`, options)?.toString());
     });
 
+    test('configure build package and test with Ninja (Multi-Config) and VCPKG_ROOT (set to non yet built vcpkg executable) must succeed.', () => {
+        process.env.INPUT_CONFIGUREPRESET = "default-multi";
+        process.env.INPUT_BUILDPRESET = "default-multi";
+        process.env.INPUT_TESTPRESET = "default-multi";
+        process.env.INPUT_PACKAGEPRESET = "default-multi";
+        process.env.VCPKG_ROOT = "does-not-exist-path";
+        process.env.INPUT_CMAKELISTSTXTPATH = path.join(assetDirectory, 'CMakeLists.txt');
+        const options: cp.ExecSyncOptions = {
+            env: process.env,
+            stdio: "inherit"
+        };
+        console.log(cp.execSync(`node ${testScript}`, options)?.toString());
+    });
+
     test('run workflow', () => {
         process.env.INPUT_WORKFLOWPRESET = "default-workflow";
         process.env.INPUT_BUILDPRESET = "default-multi"; // Must be ignored
@@ -121,7 +136,7 @@ describe('run-cmake functional tests', () => {
         console.log(cp.execSync(`node ${testScript}`, options)?.toString());
     });
 
-    test('basic test for environment variables in input, no shell, it must throw', () => {
+    test('basic test for xenvironment variables in input, no shell, it must throw', () => {
         // Building will use an environment variable that will not be
         // resolved since not being run inside a shell, and it will throw.
         expect(() => envTest(false, undefined)).toThrow();
