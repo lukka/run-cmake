@@ -5497,20 +5497,31 @@ function injectEnvVariables(baseUtils, vcpkgRoot, args) {
             }
             const map = baseUtils.parseVcpkgEnvOutput(output.stdout);
             for (const key in map) {
-                let newValue;
-                if (baseUtils.isVariableStrippingPath(key))
-                    continue;
-                if (key.toUpperCase() === "PATH") {
-                    newValue = process.env[key] + path.delimiter + map[key];
+                try {
+                    let newValue;
+                    if (baseUtils.isVariableStrippingPath(key))
+                        continue;
+                    if (key.toUpperCase() === "PATH") {
+                        newValue = process.env[key] + path.delimiter + map[key];
+                    }
+                    else {
+                        newValue = map[key];
+                    }
+                    if (!newValue)
+                        baseUtils.baseLib.warning(`The value for '${key}' cannot be determined.`);
+                    else {
+                        if (key in process.env) {
+                            const oldValue = process.env[key];
+                            baseUtils.baseLib.debug(`Env var '${key}' changed from '${oldValue}' to '${newValue}'.`);
+                        }
+                        else {
+                            baseUtils.baseLib.debug(`Set env var ${key}=${newValue}`);
+                        }
+                        process.env[key] = newValue;
+                    }
                 }
-                else {
-                    newValue = map[key];
-                }
-                if (!newValue)
-                    baseUtils.baseLib.warning(`The value for '${key}' cannot be determined.`);
-                else {
-                    baseUtils.setEnvVar(key, newValue);
-                    baseUtils.baseLib.debug(`set ${key}=${newValue}`);
+                catch (err) {
+                    baseutillib.dumpError(baseUtils.baseLib, err);
                 }
             }
         }
@@ -5544,8 +5555,8 @@ function setupMsvc(baseUtils, vcpkgRoot, vcpkgEnvStringFormat) {
                         }
                         else {
                             // If defined(Win32) && (!defined(CC) && !defined(CXX)), let's hardcode CC and CXX so that CMake uses the MSVC toolset.
-                            baseUtils.setEnvVar('CC', "cl.exe");
-                            baseUtils.setEnvVar('CXX', "cl.exe");
+                            process.env['CC'] = "cl.exe";
+                            process.env['CXX'] = "cl.exe";
                             // Use vcpkg to set the environment using provided command line (which includes the triplet).
                             // This is only useful to setup the environment for MSVC on Windows.
                             baseutillib.setEnvVarIfUndefined(runvcpkglib.VCPKGDEFAULTTRIPLET, baseUtils.getDefaultTriplet());
