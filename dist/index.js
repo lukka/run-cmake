@@ -5250,6 +5250,7 @@ class CMakeRunner {
         this.packagePresetCmdStringFormat = packagePresetCmdStringFormat;
         this.packagePresetCmdStringAddArgs = packagePresetCmdStringAddArgs;
         this.vcpkgEnvStringFormat = vcpkgEnvStringFormat;
+        this.msvcSetup = false;
         this.baseUtils = new baseutillib.BaseUtilLib(this.baseLib);
         const regs = (_a = this.baseLib.getDelimitedInput(cmakeglobals.logCollectionRegExps, ';', false)) !== null && _a !== void 0 ? _a : [];
         this.logFilesCollector = new baseutillib.LogFileCollector(this.baseLib, regs, (path) => baseutillib.dumpFile(this.baseLib, path));
@@ -5361,8 +5362,6 @@ class CMakeRunner {
             if (this.configurePresetCmdStringAddArgs) {
                 CMakeRunner.addArguments(cmake, this.configurePresetCmdStringAddArgs);
             }
-            const vcpkgRoot = process.env[runvcpkglib.VCPKGROOT];
-            yield cmakeutil.setupMsvc(this.baseUtils, vcpkgRoot, this.vcpkgEnvStringFormat);
             // 
             this.baseLib.debug(`Generating project files with CMake ...`);
             yield this.baseUtils.wrapOp("Generate project files with CMake", () => __awaiter(this, void 0, void 0, function* () { return yield this.launchTool(cmake, this.cmakeSourceDir, this.logFilesCollector); }));
@@ -5396,6 +5395,11 @@ class CMakeRunner {
                     stderr: (t) => logCollector.handleOutput(t),
                 }
             };
+            if (!this.msvcSetup) {
+                this.msvcSetup = true;
+                const vcpkgRoot = process.env[runvcpkglib.VCPKGROOT];
+                yield cmakeutil.setupMsvc(this.baseUtils, vcpkgRoot, this.vcpkgEnvStringFormat);
+            }
             const code = yield tool.exec(options);
             if (code !== 0) {
                 throw new Error(`"'${tool.getName()}' failed with error code: '${code}'.`);
@@ -5500,6 +5504,9 @@ function injectEnvVariables(baseUtils, vcpkgRoot, args) {
                 try {
                     let newValue;
                     if (baseUtils.isVariableStrippingPath(key))
+                        continue;
+                    // Skip VCPKG_ROOT if already defined.
+                    if (key === vcpkgRoot && vcpkgRoot in process.env)
                         continue;
                     if (key.toUpperCase() === "PATH") {
                         newValue = process.env[key] + path.delimiter + map[key];

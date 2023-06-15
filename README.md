@@ -137,52 +137,53 @@ Flowchart with related input in [action.yml](https://github.com/lukka/run-cmake/
 
 ```
 ┌───────────────────────────┐      ┌───────────────────────────┐
-│ <if workflowPreset        │  Yes │ Run the workflow          │  Inputs:
+│ <if workflowPreset        │  Yes │ Run the workflow       `*`│  Inputs:
 │ provided>                 ├─────►│ and then exit             │   - `cmakeListsTxtPath`
 └─────────────┬─────────────┘      └─────────────┬─────────────┘   - `workflowPreset`
               │ No                               ⬬                 - `workflowPresetCmdString`
               ▼
-┌───────────────────────────┐      ┌───────────────────────────┐
-│ <if configurePreset       │  Yes │ <if VCPKG_ROOT defined    │  Inputs:
-│ provided>                 ├─────►│ and CC and CXX undefined> │   - `runVcpkgEnvFormatString`
-└─────────────┬─────────────┘      │ run `vcpkg env` to set    │   - `configurePresetAdditionalArgs`
-              │ No                 │ the environment for MSVC  │
-              │                    └─────────────┬─────────────┘
-              │                                  ▼
-              │                    ┌───────────────────────────┐
-              │                    │ $CONFIGURE_PRESET_NAME =  │
-              │                    │ configurePreset's value   │
-              │                    └─────────────┬─────────────┘
-              │                                  ▼
-              │                    ┌───────────────────────────┐  Inputs:
-              ├────────────────────┤ run `cmake --preset`      │   - `cmakeListsTxtPath`
-              │                    └───────────────────────────┘   - `configurePreset`
-              │                                                    - `configurePresetCmdString`
-              │
+┌──────────────────────────────────┐ 
+│ <if configurePreset           `*`│     Inputs:
+│ provided>                        |      - `cmakeListsTxtPath`
+|                                  |      - `configurePreset`
+│ $CONFIGURE_PRESET_NAME =         │      - `configurePresetCmdString`
+│ configurePreset's value          │
+| runs: `cmake --preset`           │   
+└─────────────┬────────────────────┘ 
               ▼
 ┌───────────────────────────────────┐
-│ <if buildPreset provided>         │     Inputs:
+│ <if buildPreset provided>      `*`│     Inputs:
 │                                   │     - `buildPreset`
 │ $BUILD_PRESET_NAME=buildPreset    │     - `cmakeListsTxtPath`
 │ runs: `cmake --build --preset`    │     - `buildPresetCmdString`
 └─────────────┬─────────────────────┘     - `buildPresetAdditionalArgs`
-              │
               ▼
 ┌───────────────────────────────────┐
-│ <if testPreset provided>          │    Inputs:
+│ <if testPreset provided>       `*`│    Inputs:
 │                                   │     - `testPreset`
 │ $TEST_PRESET_NAME=testPreset      │     - `cmakeListsTxtPath`
 │ runs: `ctest --preset`            │     - `testPresetCmdString`
 └─────────────┬─────────────────────┘     - `testPresetAdditionalArgs`
-              │
+              ▼
 ┌───────────────────────────────────┐
-│ <if packagePreset provided>       │    Inputs:
+│ <if packagePreset provided>    `*`│    Inputs:
 │                                   │     - `packagePreset`
 │ $PACKAGE_PRESET_NAME=packagePreset│     - `cmakeListsTxtPath`
 │ runs: `cpack --preset`            │     - `packagePresetCmdString`
 └─────────────┬─────────────────────┘     - `packagePresetAdditionalArgs`
               ▼
-              ⬬
+              ⬬ END
+
+
+  `*` On Windows agents, the MSVC environment setup is run for each block
+   with to * on top right corner. Note that VCPKG_ROOT won't be overridden
+   if it already set in the environment.
+ ┌───────────────────────────┐
+ │ <if VCPKG_ROOT defined    │  Inputs:
+ │ and CC and CXX undefined> │   - `runVcpkgEnvFormatString`
+ │ run `vcpkg env` to set    │   - `configurePresetAdditionalArgs`
+ │ the environment for MSVC  │
+ └───────────────────────────┘
 ```
 
 <br>
@@ -210,7 +211,7 @@ _Checkmarks_ indicates whether the samples "uses" or specifies the thing in the 
 
 All the content in this repository is licensed under the [MIT License](LICENSE.txt).
 
-Copyright © 2019-2020-2021-2022 Luca Cappa
+Copyright © 2019-2020-2021-2022-2023 Luca Cappa
 
 <br>
 
