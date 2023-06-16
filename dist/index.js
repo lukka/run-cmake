@@ -5505,8 +5505,8 @@ function injectEnvVariables(baseUtils, vcpkgRoot, args) {
                     let newValue;
                     if (baseUtils.isVariableStrippingPath(key))
                         continue;
-                    // Skip VCPKG_ROOT if already defined.
-                    if (key === vcpkgRoot && vcpkgRoot in process.env)
+                    // Skip VCPKG_ROOT.
+                    if (key.toUpperCase() === runvcpkglib.VCPKGROOT)
                         continue;
                     if (key.toUpperCase() === "PATH") {
                         newValue = process.env[key] + path.delimiter + map[key];
