@@ -175,9 +175,10 @@ Flowchart with related input in [action.yml](https://github.com/lukka/run-cmake/
               ⬬ END
 
 
-  `*` On Windows agents, the MSVC environment setup is run for each block
-   with to * on top right corner. Note that VCPKG_ROOT won't be overridden
-   if it already set in the environment.
+  `*` On Windows runners, the MSVC environment is setup for each block
+   with the `*` on the top right corner. Note that VCPKG_ROOT will not be 
+   overridden by the value defined in the VS Developer Command Prompt 
+   environment, but the original value will be kept.
  ┌───────────────────────────┐
  │ <if VCPKG_ROOT defined    │  Inputs:
  │ and CC and CXX undefined> │   - `runVcpkgEnvFormatString`
