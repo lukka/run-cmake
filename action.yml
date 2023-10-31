@@ -85,7 +85,7 @@ inputs:
     description: "Specify the command line to dump the environment variables with the 'vcpkg env' command. This command is only used when setting up the environment for MSVC on Windows."
 
 runs:
-  using: 'node16'
+  using: 'node20'
   main: './dist/index.js'
 
 branding:

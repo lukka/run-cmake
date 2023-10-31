@@ -21,6 +21,12 @@ describe('run-cmake unit tests', () => {
         jest.spyOn(runcmakelib.CMakeRunner, "run").mockImplementation(() => { throw new Error(); })
         // Act
         await cmakeaction.main();
+
+        // The failure sets an exit code different than 0, and this will fail `npm run test`.
+        // On node20+ on Linux/Windows (but not on macOS) this leads to a failing exit 
+        // code: https://github.com/jestjs/jest/issues/14501
+        process.exitCode = 0;
+
         // Assert
         expect(setFailedMock).toBeCalledTimes(1);
     });

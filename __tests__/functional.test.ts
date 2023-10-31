@@ -136,7 +136,7 @@ describe('run-cmake functional tests', () => {
         console.log(cp.execSync(`node ${testScript}`, options)?.toString());
     });
 
-    test('basic test for xenvironment variables in input, no shell, it must throw', () => {
+    test('basic test for environment variables in input, no shell, it must throw', () => {
         // Building will use an environment variable that will not be
         // resolved since not being run inside a shell, and it will throw.
         expect(() => envTest(false, undefined)).toThrow();

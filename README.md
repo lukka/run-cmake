@@ -15,7 +15,7 @@
 
 # Quickstart with a C++ project template
 
-Take a look at this [C++ project template](https://github.com/lukka/CppCMakeVcpkgTemplate) that applies all the following instructions and also shows how to create a __pure__ workflow without using special GitHub action that you cannot run locally on your development machine, but directly using the tools (`CMake`, `Ninja`, `vcpkg`, `C++` compilers) you already use daily.
+Take a look at this [C++ project template](https://github.com/lukka/CppCMakeVcpkgTemplate/tree/v11) that applies all the following instructions, but also shows how to create a __pure__ workflow without using special GitHub action that you cannot run locally on your development machine, but directly using the tools (`CMake`, `Ninja`, `vcpkg`, `C++` compilers) you already use daily.
 
 # [**run-cmake@v10** runs CMake with CMakePresets.json](https://github.com/marketplace/actions/run-cmake)
 
@@ -24,12 +24,15 @@ The **run-cmake** action runs [CMake](https://cmake.org) on GitHub workflows lev
 Good companions are the [run-vcpkg](https://github.com/marketplace/actions/run-vcpkg) action and the [get-cmake](https://github.com/marketplace/actions/get-cmake) action.
 
 Special features which provide added value over a pure workflow are:
-  - annotations for `CMake` errors/warnings and for build (`gcc`/`msvc`/`clang`) errors/warnings are created inline in the changed source files the build run for, e.g.:  
+  - annotations for `CMake` errors/warnings and for build (`gcc`/`msvc`/`clang`) errors/warnings are created inline in the changed source files the build run for, e.g.:
     ![Annotation](./docs/imgs/annotation.png)
   - when necessary, it sets up the environment to build with the `MSVC` toolset.
   - automatic dump of log files created by `CMake` (e.g., `CMakeOutput.log`) and `vcpkg`. The content of those files flow into the workflow output log. The regex is customizable by the user.
 
 The provided [samples](#samples) use [GitHub hosted runners](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/virtual-environments-for-github-hosted-runners).
+
+Good companions are the [run-vcpkg](https://github.com/marketplace/actions/run-vcpkg) action and the
+[get-cmake](https://github.com/marketplace/actions/get-cmake) action.
 
 <br>
 
@@ -49,38 +52,42 @@ jobs:
       # Install latest CMake and Ninja.
       - uses: lukka/get-cmake@latest
       # Or pin to a specific CMake version:
-      # lukka/get-cmake@v3.21.2
+      # lukka/get-cmake@v3.27
 
-      # Restore from cache the previously built ports. If a "cache miss" occurs,
-      # then vcpkg is bootstrapped. Since a the vcpkg.json is being used later on
-      # to install the packages when `run-cmake` runs, no packages are installed at
-      # this time.
-      - name: Restore artifacts, or setup vcpkg (do not install any package)
-        uses: lukka/run-vcpkg@v10 # Always specify the specific _version_ of the 
+      # Setup vcpkg: ensures vcpkg is downloaded and built.
+      # Since vcpkg.json is being used later on to install the packages
+      # when `run-cmake` runs, no packages are installed at this time
+      # (and vcpkg does not run).
+      - name: Setup anew (or from cache) vcpkg (and does not build any package)
+        uses: lukka/run-vcpkg@v11 # Always specify the specific _version_ of the
                                   # action you need, `v10` in this case to stay up
-                                  # to date with fixes on the v10 branch.
+                                  # to date with fixes on the v11 branch.
         #with:
           # This is the default location of the directory containing vcpkg sources.
           # Change it to the right location if needed.
           # vcpkgDirectory: '${{ github.workspace }}/vcpkg'
 
           # If not using a submodule for vcpkg sources, this specifies which commit
-          # id must be checkout from a Git repo. It must not set if using a submodule
-          # for vcpkg.
+          # id must be checkout from a Git repo.
+          # Note: it must not be set if using a Git submodule for vcpkg.
           # vcpkgGitCommitId: '${{ matrix.vcpkgCommitId }}'
 
-          # This is the glob expression used to locate the vpkg.json and add its
-          # hash to the cache key. Change it to match a single manifest file you want
-          # to use.
-          # vcpkgJsonGlob: '**/vcpkg.json'
-
-          # This is needed to run `vcpkg install` command (after vcpkg is built) in
-          # the directory where vcpkg.json has been located. Default is false,
-          # It is highly suggested to let `run-cmake` to run vcpkg (i.e. `false`)
-          # (i.e. let CMake run `vcpkg install`) using the vcpkg.cmake toolchain.
+          # This is only needed if the command `vcpkg install` must run at this step.
+          # Instead it is highly suggested to let `run-cmake` to run vcpkg later on
+          # using the vcpkg.cmake toolchain. The default is `false`.
           # runVcpkgInstall: true
 
-      - name: Run CMake consuming CMakePresets.json and vcpkg.json by mean of vcpkg.
+          # This is only needed if `runVpkgInstall` is `true`.
+          # This glob expression used to locate the vcpkg.json and  use
+          # its directory location as `working directory` when running `vcpkg install`.
+          # Change it to match a single manifest file you want to use.
+          # Note: do not use `${{ github.context }}` to compose the value as it
+          # contains backslashes that would be misinterpreted. Instead
+          # compose a value relative to the root of the repository using
+          # `**/path/from/root/of/repo/to/vcpkg.json` to match the desired `vcpkg.json`.
+          # vcpkgJsonGlob: '**/vcpkg.json'
+
+      - name: Run CMake consuming CMakePreset.json and run vcpkg to build packages
         uses: lukka/run-cmake@v10
         with:
           # This is the default path to the CMakeLists.txt along side the
@@ -88,8 +95,8 @@ jobs:
           # located elsewhere.
           # cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
 
-          # You could use CMake workflow presets defined in the CMakePresets.json 
-          # with just this line below. Note this one cannot be used with any other 
+          # You could use CMake workflow presets defined in the CMakePresets.json
+          # with just this line below. Note this one cannot be used with any other
           # preset input, it is mutually exclusive.
           # workflowPreset: 'workflow-name'
 
@@ -108,7 +115,7 @@ jobs:
           # configuration to build.
           # This is useful to reduce the number of CMake's Presets you need in CMakePresets.json.
           buildPresetAdditionalArgs: "['--config Release']"
-    
+
           # This is the name of the CMakePresets.json's configuration to test the project with.
           testPreset: 'ninja-multi-vcpkg'
           # Additional arguments can be appended when testing, for example to specify the config
@@ -116,10 +123,15 @@ jobs:
           # This is useful to reduce the number of CMake's Presets you need in CMakePresets.json.
           testPresetAdditionalArgs: "['--config Release']"
 
-    #env:
-    #  VCPKG_DEFAULT_TRIPLET: ${{ matrix.triplet }} # [OPTIONAL] Define the vcpkg's triplet 
-    # you want to enforce, otherwise the default one for the hosting system will be 
-    # automatically choosen (x64 is the default on all platforms,  e.g. x64-osx).
+     #  [OPTIONAL] Define the vcpkg's triplet you want to enforce, otherwise the default one
+    #  for the hosting system will be automatically choosen (x64 is the default on all
+    #  platforms, e.g. `x64-osx`).
+    #  VCPKG_DEFAULT_TRIPLET: ${{ matrix.triplet }}
+    #
+    #  [OPTIONAL] By default the action disables vcpkg's telemetry by defining VCPKG_DISABLE_METRICS.
+    #  This behavior can be disabled by defining `VCPKG_ENABLE_METRICS` as follows.
+    #  VCPKG_ENABLE_METRICS: 1
+    #
 ```
 
 <br>
@@ -142,14 +154,14 @@ Flowchart with related input in [action.yml](https://github.com/lukka/run-cmake/
 └─────────────┬─────────────┘      └─────────────┬─────────────┘   - `workflowPreset`
               │ No                               ⬬                 - `workflowPresetCmdString`
               ▼
-┌──────────────────────────────────┐ 
+┌──────────────────────────────────┐
 │ <if configurePreset           `*`│     Inputs:
 │ provided>                        |      - `cmakeListsTxtPath`
 |                                  |      - `configurePreset`
 │ $CONFIGURE_PRESET_NAME =         │      - `configurePresetCmdString`
 │ configurePreset's value          │
-| runs: `cmake --preset`           │   
-└─────────────┬────────────────────┘ 
+| runs: `cmake --preset`           │
+└─────────────┬────────────────────┘
               ▼
 ┌───────────────────────────────────┐
 │ <if buildPreset provided>      `*`│     Inputs:
@@ -176,8 +188,8 @@ Flowchart with related input in [action.yml](https://github.com/lukka/run-cmake/
 
 
   `*` On Windows runners, the MSVC environment is setup for each block
-   with the `*` on the top right corner. Note that VCPKG_ROOT will not be 
-   overridden by the value defined in the VS Developer Command Prompt 
+   with the `*` on the top right corner. Note that VCPKG_ROOT will not be
+   overridden by the value defined in the VS Developer Command Prompt
    environment, but the original value will be kept.
  ┌───────────────────────────┐
  │ <if VCPKG_ROOT defined    │  Inputs:
