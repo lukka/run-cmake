@@ -9,7 +9,6 @@ import * as vcpkgglobals from '@lukka/run-cmake-lib/build/vcpkg-globals'
 import * as core from '@actions/core'
 
 export async function main(): Promise<void> {
-
   const actionLib: libaction.ActionLib = new libaction.ActionLib();
   try {
     const configurePreset = actionLib.getInput(cmakeglobals.configurePreset, false);

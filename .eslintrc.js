@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2020 Luca Cappa
+// Copyright (c) 2019-2020-2023 Luca Cappa
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 
@@ -9,7 +9,6 @@ module.exports = {
   ],
   parserOptions: {
     ecmaVersion: 2018,  // Allows for the parsing of modern ECMAScript features
-    sourceType: 'module',  // Allows for the use of imports
     project: './tsconfig.json',
     tsconfigRootDir: __dirname,
   },
