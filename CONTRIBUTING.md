@@ -24,8 +24,8 @@ to populate the dependencies in `./node_modules` directory.
 Unexpectedly, a public package still requires authentication when downloading it, hence if you want to `npm install` those packages correctly, you need to obtain a token with `read:packages` scope. Then create in the root of the repository a `.npmrc` file with the following content:
 
 ```
-//npm.pkg.github.com/:_authToken=YOURTOKEN
-@lukka:registry=https://npm.pkg.github.com/
+    //npm.pkg.github.com/:_authToken=YOURTOKEN
+    @lukka:registry=https://npm.pkg.github.com/
 ```
 
 __Note__: **Never commit this `.npmrc` file!**
