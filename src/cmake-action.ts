@@ -7,6 +7,8 @@ import * as runcmakelib from '@lukka/run-cmake-lib'
 import * as cmakeglobals from '@lukka/run-cmake-lib/build/cmake-globals'
 import * as vcpkgglobals from '@lukka/run-cmake-lib/build/vcpkg-globals'
 import * as core from '@actions/core'
+import * as process from "process"
+import * as os from "os"
 
 export async function main(): Promise<void> {
   const actionLib: libaction.ActionLib = new libaction.ActionLib();
@@ -26,6 +28,12 @@ export async function main(): Promise<void> {
     const testPresetAdditionalArgs = actionLib.getInput(cmakeglobals.testPresetAdditionalArgs, false);
     const packagePresetAdditionalArgs = actionLib.getInput(cmakeglobals.packagePresetAdditionalArgs, false);
     const runVcpkgEnvFormatString = actionLib.getInput(vcpkgglobals.runVcpkgEnvFormatStringInput, false);
+
+    // Set parallelization level
+    const nproc = os.availableParallelism();
+    process.env["CMAKE_BUILD_PARALLEL_LEVEL"] = `${nproc}`;
+    process.env["CTEST_PARALLEL_LEVEL"] = `${nproc}`;
+
     await runcmakelib.CMakeRunner.run(
       actionLib,
       workflowPreset, workflowPresetCmdStringFormat,
