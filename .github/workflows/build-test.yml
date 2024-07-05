@@ -89,4 +89,4 @@ jobs:
         buildPreset: default-multi
         buildPresetAdditionalArgs: "['--config Release']"
         testPreset: default-multi
-        testPresetAdditionalArgs: "['--config Release']"
+        testPresetAdditionalArgs: "['--build-config', 'Release']"
