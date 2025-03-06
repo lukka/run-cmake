@@ -5,6 +5,8 @@
 - [Quickstart with a C++ project template](#quickstart-with-a-c-project-template)
 - [**run-cmake@v10** runs CMake with CMakePresets.json](#run-cmakev10-runs-cmake-with-cmakepresetsjson)
   - [Quickstart with instructions](#quickstart-with-instructions)
+  - [Best practises](#best-practises)
+    - [Usage of github.workspace in multi platform workflows](#usage-of-githubworkspace-in-multi-platform-workflows)
   - [Action reference: all input/output parameters](#action-reference-all-inputoutput-parameters)
   - [Flowchart](#flowchart)
   - [Samples](#samples)
@@ -136,6 +138,19 @@ jobs:
 
 <br>
 
+## Best practises
+
+### Usage of github.workspace in multi platform workflows
+
+Using `github.workspace` may be challenging since it contains backslashes on Windows which are interpreted as escape sequences when used as base path of additional arguments. To work around this, you could use the `String.raw` function which prevents the escape sequences from being processed, e.g.:
+
+````yaml
+  with:
+    configurePresetAdditionalArgs: "[ String.raw`-DD3D9_INCLUDE_DIR=${{ github.workspace }}/cache/Include` ]"
+````
+
+<br>
+
 ## Action reference: all input/output parameters
 
 Description of all input parameters:
@@ -224,7 +239,7 @@ _Checkmarks_ indicates whether the samples "uses" or specifies the thing in the 
 
 All the content in this repository is licensed under the [MIT License](LICENSE.txt).
 
-Copyright © 2019-2020-2021-2022-2023 Luca Cappa
+Copyright © 2019-2020-2021-2022-2023-2024-2025 Luca Cappa
 
 <br>
 
