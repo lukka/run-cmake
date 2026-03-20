@@ -6,7 +6,7 @@
 
 "use strict";
 
-// Copyright (c) 2019-2020-2021-2022-2023-2024 Luca Cappa
+// Copyright (c) 2019-2020-2021-2023-2024-2025-2026 Luca Cappa
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -56138,7 +56138,7 @@ var __webpack_exports__ = {};
 "use strict";
 var exports = __webpack_exports__;
 
-// Copyright (c) 2019-2020-2021-2022-2023 Luca Cappa
+// Copyright (c) 2019-2020-2021-2023-2024-2025-2026 Luca Cappa
 // Released under the term specified in file LICENSE.txt
 // SPDX short identifier: MIT
 Object.defineProperty(exports, "__esModule", ({ value: true }));
