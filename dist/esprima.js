@@ -836,6 +836,24 @@ parseStatement: true, parseSourceElement: true */
         };
     }
 
+    function isImplicitOctalLiteral() {
+        var i, ch;
+
+        // Implicit octal, unless there is a non-octal digit.
+        // (Annex B.1.1 on Numeric Literals)
+        for (i = index + 1; i < length; ++i) {
+            ch = source[i];
+            if (ch === '8' || ch === '9') {
+                return false;
+            }
+            if (!isOctalDigit(ch)) {
+                return true;
+            }
+        }
+
+        return true;
+    }
+
     function scanNumericLiteral() {
         var number, start, ch;
 
@@ -857,12 +875,9 @@ parseStatement: true, parseSourceElement: true */
                     return scanHexLiteral(start);
                 }
                 if (isOctalDigit(ch)) {
-                    return scanOctalLiteral(start);
-                }
-
-                // decimal number starts with '0' such as '09' is illegal.
-                if (ch && isDecimalDigit(ch.charCodeAt(0))) {
-                    throwError({}, Messages.UnexpectedToken, 'ILLEGAL');
+                    if (isImplicitOctalLiteral()) {
+                        return scanOctalLiteral(start);
+                    }
                 }
             }
 
@@ -1260,7 +1275,7 @@ parseStatement: true, parseSourceElement: true */
             }
             return collectRegex();
         }
-        if (prevToken.type === 'Keyword') {
+        if (prevToken.type === 'Keyword' && prevToken.value !== 'this') {
             return collectRegex();
         }
         return scanPunctuator();
@@ -1945,7 +1960,8 @@ parseStatement: true, parseSourceElement: true */
     }
 
     function consumeSemicolon() {
-        var line;
+        var line, oldIndex = index, oldLineNumber = lineNumber,
+            oldLineStart = lineStart, oldLookahead = lookahead;
 
         // Catch the very common case first: immediately a semicolon (U+003B).
         if (source.charCodeAt(index) === 0x3B || match(';')) {
@@ -1956,6 +1972,10 @@ parseStatement: true, parseSourceElement: true */
         line = lineNumber;
         skipComment();
         if (lineNumber !== line) {
+            index = oldIndex;
+            lineNumber = oldLineNumber;
+            lineStart = oldLineStart;
+            lookahead = oldLookahead;
             return;
         }
 
@@ -2266,14 +2286,11 @@ parseStatement: true, parseSourceElement: true */
     }
 
     function parseLeftHandSideExpressionAllowCall() {
-        var previousAllowIn, expr, args, property, startToken;
+        var expr, args, property, startToken, previousAllowIn = state.allowIn;
 
         startToken = lookahead;
-
-        previousAllowIn = state.allowIn;
         state.allowIn = true;
         expr = matchKeyword('new') ? parseNewExpression() : parsePrimaryExpression();
-        state.allowIn = previousAllowIn;
 
         for (;;) {
             if (match('.')) {
@@ -2290,18 +2307,18 @@ parseStatement: true, parseSourceElement: true */
             }
             delegate.markEnd(expr, startToken);
         }
+        state.allowIn = previousAllowIn;
 
         return expr;
     }
 
     function parseLeftHandSideExpression() {
-        var previousAllowIn, expr, property, startToken;
+        var expr, property, startToken;
+        assert(state.allowIn, 'callee of new expression always allow in keyword.');
 
         startToken = lookahead;
 
-        previousAllowIn = state.allowIn;
         expr = matchKeyword('new') ? parseNewExpression() : parsePrimaryExpression();
-        state.allowIn = previousAllowIn;
 
         while (match('.') || match('[')) {
             if (match('[')) {
@@ -2313,7 +2330,6 @@ parseStatement: true, parseSourceElement: true */
             }
             delegate.markEnd(expr, startToken);
         }
-
         return expr;
     }
 
@@ -2816,7 +2832,7 @@ parseStatement: true, parseSourceElement: true */
     }
 
     function parseForStatement() {
-        var init, test, update, left, right, body, oldInIteration;
+        var init, test, update, left, right, body, oldInIteration, previousAllowIn = state.allowIn;
 
         init = test = update = null;
 
@@ -2830,7 +2846,7 @@ parseStatement: true, parseSourceElement: true */
             if (matchKeyword('var') || matchKeyword('let')) {
                 state.allowIn = false;
                 init = parseForVariableDeclaration();
-                state.allowIn = true;
+                state.allowIn = previousAllowIn;
 
                 if (init.declarations.length === 1 && matchKeyword('in')) {
                     lex();
@@ -2841,7 +2857,7 @@ parseStatement: true, parseSourceElement: true */
             } else {
                 state.allowIn = false;
                 init = parseExpression();
-                state.allowIn = true;
+                state.allowIn = previousAllowIn;
 
                 if (matchKeyword('in')) {
                     // LeftHandSideExpression
@@ -3724,7 +3740,7 @@ parseStatement: true, parseSourceElement: true */
     }
 
     // Sync with *.json manifests.
-    exports.version = '1.2.2';
+    exports.version = '1.2.5';
 
     exports.tokenize = tokenize;
 
