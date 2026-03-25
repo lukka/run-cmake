@@ -6402,7 +6402,8 @@ class BaseUtilLib {
             }
             else if (lastKey !== null && line.trim().length > 0) {
                 // Continuation line of a multiline value (e.g. X_VCPKG_RECURSIVE_DATA with embedded JSON)
-                map[lastKey] = map[lastKey] + '\n' + line;
+                const sep = os.platform().toLowerCase() === 'win32' ? '' : '\n';
+                map[lastKey] = map[lastKey] + sep + line;
             }
         }
         return map;
