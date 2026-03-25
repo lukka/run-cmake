@@ -6401,8 +6401,10 @@ class BaseUtilLib {
                 }
             }
             else if (lastKey !== null && line.trim().length > 0) {
-                // Continuation line of a multiline value (e.g. X_VCPKG_RECURSIVE_DATA with embedded JSON)
-                map[lastKey] = map[lastKey] + '\n' + line;
+                // Continuation line of a multiline value (e.g. X_VCPKG_RECURSIVE_DATA with embedded JSON).
+                // Compact the value by joining without newlines so it can be safely passed as an
+                // environment variable on Windows (which does not support newlines in env var values).
+                map[lastKey] = map[lastKey] + line.trim();
             }
         }
         return map;
