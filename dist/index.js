@@ -7027,7 +7027,7 @@ function injectEnvVariables(baseUtils, vcpkgRoot, args) {
                     if (key.toUpperCase() === runvcpkglib.VCPKGROOT)
                         continue;
                     if (key.toUpperCase() === "PATH") {
-                        newValue = process.env[key] + path.delimiter + map[key];
+                        newValue = process.env[key] ? process.env[key] + path.delimiter + map[key] : map[key];
                     }
                     else {
                         newValue = map[key];
