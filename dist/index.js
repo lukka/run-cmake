@@ -7023,11 +7023,25 @@ function injectEnvVariables(baseUtils, vcpkgRoot, args) {
                     let newValue;
                     if (baseUtils.isVariableStrippingPath(key))
                         continue;
-                    // Skip VCPKG_ROOT.
-                    if (key.toUpperCase() === runvcpkglib.VCPKGROOT)
+                    // Skip VCPKG_ROOT and internal VCPKG recursive data to avoid poisoning the environment
+                    if (key.toUpperCase() === runvcpkglib.VCPKGROOT || key.toUpperCase().startsWith("X_VCPKG_"))
                         continue;
                     if (key.toUpperCase() === "PATH") {
-                        newValue = process.env[key] ? process.env[key] + path.delimiter + map[key] : map[key];
+                        // vcpkg env already outputs the fully resolved paths from MSVC + the original system PATH.
+                        // To safely avoid the 32767 chars limit in the environment block on Windows, while preserving
+                        // system paths like Ninja, we must merge process.env.PATH with map["PATH"] and strictly deduplicate.
+                        const existingPaths = process.env[key] ? process.env[key].split(path.delimiter) : [];
+                        const vcpkgPaths = map[key].split(path.delimiter);
+                        // Keep vcpkg paths first, then append any from existing process.env that aren't already included
+                        const deduplicatedPaths = new Set(vcpkgPaths);
+                        const finalPaths = [...vcpkgPaths];
+                        for (const p of existingPaths) {
+                            if (!deduplicatedPaths.has(p) && p.trim().length > 0) {
+                                finalPaths.push(p);
+                                deduplicatedPaths.add(p);
+                            }
+                        }
+                        newValue = finalPaths.join(path.delimiter);
                     }
                     else {
                         newValue = map[key];
