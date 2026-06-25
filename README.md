@@ -214,6 +214,8 @@ Flowchart with related input in [action.yml](https://github.com/lukka/run-cmake/
  └───────────────────────────┘
 ```
 
+By default `runVcpkgEnvFormatString` does not pass `--tools` to `vcpkg env`, so CMake already configured in `PATH` (for example by `lukka/get-cmake`) stays preferred over toolchain-bundled CMake executables (e.g. Visual Studio's one). If you need `--tools`, explicitly add it in your custom `runVcpkgEnvFormatString` input.
+
 <br>
 
 ## Samples
@@ -252,4 +254,3 @@ The software is provided as is, there is no warranty of any kind. All users are 
 # Contributing
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md)
-
