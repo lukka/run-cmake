@@ -5,8 +5,6 @@
 import * as core from '@actions/core'
 import * as cmakeaction from '../src/cmake-action'
 import * as runcmakelib from '@lukka/run-cmake-lib'
-import * as fs from 'fs'
-import * as path from 'path'
 
 jest.setTimeout(15 * 1000);
 // Mocks entire action-lib module.
@@ -31,12 +29,6 @@ describe('run-cmake unit tests', () => {
 
         // Assert
         expect(setFailedMock).toBeCalledTimes(1);
-    });
-
-    test('default runVcpkgEnvFormatString does not force --tools', () => {
-        const actionYml = fs.readFileSync(path.join(__dirname, '..', 'action.yml'), 'utf-8');
-        expect(actionYml).toContain("default: \"[`env`, `--bin`, `--include`, `--python`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `set`]\"");
-        expect(actionYml).not.toContain("default: \"[`env`, `--bin`, `--include`, `--tools`, `--python`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `set`]\"");
     });
 
 });

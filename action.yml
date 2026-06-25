@@ -80,9 +80,9 @@ inputs:
     required: false
     description: "The CPack command format string to package the project."
   runVcpkgEnvFormatString:
-    default: "[`env`, `--bin`, `--include`, `--python`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `set`]"
+    default: "[`env`, `--bin`, `--include`, `--tools`, `--python`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `set`]"
     required: false
-    description: "Specify the command line to dump the environment variables with the 'vcpkg env' command. This command is only used when setting up the environment for MSVC on Windows. The default does not use '--tools' to avoid overriding CMake from PATH (e.g. from get-cmake)."
+    description: "Specify the command line to dump the environment variables with the 'vcpkg env' command. This command is only used when setting up the environment for MSVC on Windows."
 
 runs:
   using: 'node24'
