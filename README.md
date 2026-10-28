@@ -214,6 +214,11 @@ Flowchart with related input in [action.yml](https://github.com/lukka/run-cmake/
  └───────────────────────────┘
 ```
 
+If you want `vcpkg env` to avoid adding tool paths to `PATH`, provide a custom `runVcpkgEnvFormatString` without `--tools`, for example:
+```yaml
+runVcpkgEnvFormatString: "[`env`, `--bin`, `--include`, `--python`, `--triplet`, `$[env.VCPKG_DEFAULT_TRIPLET]`, `set`]"
+```
+
 <br>
 
 ## Samples
@@ -252,4 +257,3 @@ The software is provided as is, there is no warranty of any kind. All users are 
 # Contributing
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md)
-
